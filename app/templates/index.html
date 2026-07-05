@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VayuSense — AI Decision Intelligence for the Air We Breathe</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+  :root { --bg:#0b1020; --card:#141b31; --line:#233052; --txt:#e8ecf6; --dim:#9aa7c7;
+          --accent:#4da3ff; --nv:#76b900; --bad:#ff5c7a; --ok:#3ddc97; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--txt); font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:26px 5vw 10px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  header h1 { font-size:26px; letter-spacing:.3px; }
+  header h1 span { color:var(--accent); }
+  header p { color:var(--dim); }
+  .wrap { padding:10px 5vw 60px; display:grid; gap:18px; grid-template-columns:repeat(12,1fr); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .span4{grid-column:span 4} .span6{grid-column:span 6} .span8{grid-column:span 8} .span12{grid-column:span 12}
+  @media (max-width:900px){ .span4,.span6,.span8{grid-column:span 12} }
+  h2 { font-size:15px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+  select { background:#0e1530; color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:15px; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+  .kpi { background:#0e1530; border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .kpi .v { font-size:24px; font-weight:700; }
+  .kpi .l { color:var(--dim); font-size:12px; text-transform:uppercase; }
+  .kpi .who { font-size:12px; margin-top:4px; }
+  .who.bad{color:var(--bad)} .who.ok{color:var(--ok)}
+  .bench { display:flex; gap:18px; align-items:center; }
+  .bench .big { font-size:44px; font-weight:800; color:var(--nv); }
+  .bench small { color:var(--dim); display:block; }
+  #chat { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto; padding-right:4px; }
+  .msg { padding:10px 14px; border-radius:12px; max-width:85%; white-space:pre-wrap; }
+  .me { background:#1d2b52; align-self:flex-end; }
+  .bot { background:#0e1530; border:1px solid var(--line); align-self:flex-start; }
+  .askrow { display:flex; gap:10px; margin-top:12px; }
+  .askrow input { flex:1; background:#0e1530; color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:12px; font-size:15px; }
+  .askrow button { background:var(--accent); border:0; color:#04122b; font-weight:700; padding:0 22px; border-radius:10px; cursor:pointer; }
+  .askrow button:disabled{opacity:.5}
+  .foot { grid-column:span 12; color:var(--dim); font-size:13px; text-align:center; }
+  .tag { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:2px 10px; margin:2px; font-size:12px; color:var(--dim); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vayu<span>Sense</span></h1>
+  <p>AI decision intelligence for the air we breathe — powered by NVIDIA-accelerated analytics + Google ADK agents</p>
+</header>
+
+<div class="wrap">
+  <div class="card span8">
+    <h2>Pollution trend — <select id="citySel"></select> <select id="paramSel">
+      <option value="pm25">PM2.5</option><option value="pm10">PM10</option>
+      <option value="no2">NO₂</option><option value="o3">O₃</option>
+    </select></h2>
+    <div id="trendChart" style="height:340px"></div>
+  </div>
+
+  <div class="card span4">
+    <h2>⚡ GPU acceleration (NVIDIA cuDF)</h2>
+    <div class="bench">
+      <div class="big" id="speedup">—</div>
+      <div>
+        <small id="benchRows">pipeline benchmark</small>
+        <small id="benchTimes"></small>
+        <small>NVIDIA T4 · RAPIDS cuDF vs pandas</small>
+      </div>
+    </div>
+    <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:12px;border-radius:10px"
+         onerror="this.style.display='none'">
+    <p style="color:var(--dim);font-size:13px;margin-top:8px">
+      Faster pipeline → fresher insight → faster decisions for schools, clinics & city wards.
+    </p>
+  </div>
+
+  <div class="card span4">
+    <h2>Latest levels vs WHO guidelines</h2>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <div class="card span8">
+    <h2>🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">data analyst → health advisor</span></h2>
+    <div id="chat">
+      <div class="msg bot">Namaste! Ask me anything — e.g. “Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?”</div>
+    </div>
+    <div class="askrow">
+      <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
+      <button id="askBtn" onclick="ask()">Ask</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    Data: OpenAQ global archive (AWS Open Data) · Analytics: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini · Built solo by Anshul Jain (Team BloodWyrm)
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let CITY = 'Delhi';
+
+async function loadCities(){
+  const cities = await (await fetch('/api/cities')).json();
+  $('citySel').innerHTML = cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
+  $('citySel').onchange = () => { CITY = $('citySel').value; refresh(); };
+  $('paramSel').onchange = refresh;
+}
+
+async function refresh(){
+  const p = $('paramSel').value;
+  const t = await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
+  if(t.series){
+    Plotly.newPlot('trendChart', [
+      {x:t.series.map(d=>d.date), y:t.series.map(d=>d.mean), name:'daily mean', mode:'lines', line:{color:'#4da3ff',width:1.5}},
+      {x:t.series.map(d=>d.date), y:t.series.map(d=>d.roll7), name:'7-day trend', mode:'lines', line:{color:'#ffb44d',width:3}},
+    ], {paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#9aa7c7'},
+        margin:{t:10,r:10,b:40,l:45}, legend:{orientation:'h'}}, {displayModeBar:false});
+  }
+  const s = await (await fetch(`/api/snapshot?city=${CITY}`)).json();
+  if(s.pollutants){
+    $('kpis').innerHTML = Object.entries(s.pollutants).map(([k,v])=>{
+      const bad = v.times_who_limit && v.times_who_limit > 1;
+      return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div>
+        <div class="v">${v.daily_mean}</div>
+        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit ? v.times_who_limit+'× WHO limit' : '—'}</div></div>`;
+    }).join('');
+  }
+}
+
+async function loadBench(){
+  try{
+    const b = await (await fetch('/api/benchmark')).json();
+    if(b.speedup){
+      $('speedup').textContent = b.speedup + '×';
+      $('benchRows').textContent = b.rows.toLocaleString() + ' sensor readings';
+      $('benchTimes').textContent = `pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`;
+    }
+  }catch(e){}
+}
+
+async function ask(){
+  const q = $('q').value.trim(); if(!q) return;
+  $('q').value=''; $('askBtn').disabled = true;
+  const chat = $('chat');
+  chat.insertAdjacentHTML('beforeend', `<div class="msg me"></div>`);
+  chat.lastElementChild.textContent = q;
+  chat.insertAdjacentHTML('beforeend', `<div class="msg bot">Analyzing data…</div>`);
+  chat.scrollTop = chat.scrollHeight;
+  try{
+    const r = await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
+    chat.lastElementChild.textContent = r.answer || 'No answer.';
+  }catch(e){ chat.lastElementChild.textContent = 'Error: '+e; }
+  $('askBtn').disabled = false;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+loadCities().then(refresh); loadBench();
+</script>
+</body>
+</html>
