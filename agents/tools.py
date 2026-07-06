@@ -97,3 +97,40 @@ def get_worst_stations(city: str, top_n: int = 5) -> str:
     if d.empty:
         return json.dumps({"error": f"no station data for {city}"})
     return json.dumps([{"station": r.location, "avg_pm25": round(float(r.value), 1)} for r in d.itertuples()])
+
+
+def get_human_impact(city: str) -> str:
+    """Translate a city's annual average PM2.5 into two plain-human-stakes metrics that
+    go beyond a raw AQI number: (1) the equivalent daily cigarette exposure (Berkeley
+    Earth methodology: sustained 22 ug/m3 of PM2.5 for 24h ~= smoking 1 cigarette), and
+    (2) an illustrative life-expectancy impact using an AQLI-style coefficient (~0.98
+    years of life expectancy lost per 10 ug/m3 of PM2.5 sustained above the WHO annual
+    guideline of 5 ug/m3, based on published air-quality epidemiology). This is an
+    ESTIMATE for decision-support/awareness, not a medical or actuarial diagnosis.
+
+    Args:
+        city: City name, e.g. "Delhi".
+    """
+    df = _daily()
+    d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == "pm25")]
+    if d.empty:
+        return json.dumps({"error": f"no PM2.5 data for {city}"})
+    annual_avg = float(d["mean"].mean())
+    who_annual = 5.0  # WHO 2021 annual PM2.5 guideline (ug/m3)
+    cigarettes_per_day = round(annual_avg / 22.0, 1)
+    excess = max(0.0, annual_avg - who_annual)
+    years_lost = round((excess / 10.0) * 0.98, 2)
+    return json.dumps({
+        "city": city,
+        "annual_avg_pm25": round(annual_avg, 1),
+        "who_annual_guideline": who_annual,
+        "cigarettes_per_day_equivalent": cigarettes_per_day,
+        "cigarettes_per_year_equivalent": round(cigarettes_per_day * 365, 0),
+        "estimated_life_expectancy_years_lost": years_lost,
+        "methodology": (
+            "Cigarette-equivalence: Berkeley Earth (22 ug/m3 sustained PM2.5 ~ 1 cigarette/day). "
+            "Life-expectancy impact: AQLI-style coefficient (~0.98 years per 10 ug/m3 of PM2.5 "
+            "sustained above the WHO annual guideline of 5 ug/m3). Illustrative estimate, not a "
+            "medical or actuarial diagnosis."
+        ),
+    })

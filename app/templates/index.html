@@ -9,86 +9,103 @@
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
   :root{
-    --bg:#0e1424; --txt:#eef2fb; --dim:#a7b3d1; --line:rgba(255,255,255,.09);
-    --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.09);
-    --blue:#6aa8ff; --violet:#a78bfa; --nv:#8ad12e; --bad:#ff7a94; --ok:#43dfa5; --amber:#ffc76a;
+    --bg:#0e1424; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
+    --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
+    --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --bad:#ff8aa3; --ok:#4fe3ac; --amber:#ffce80;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--txt);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden}
   canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
-  #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.45;
+  #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(95px);opacity:.4;
     background:
-      radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(106,168,255,.32), transparent 60%),
-      radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(167,139,250,.24), transparent 60%)}
-  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+      radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(157,193,255,.3), transparent 60%),
+      radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(185,168,251,.22), transparent 60%)}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
-  .shell{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:100px 4vw 60px}
+  .shell{position:relative;z-index:2;max-width:1140px;margin:0 auto;padding:104px 4vw 70px}
 
-  nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;width:min(1120px,94vw);
-    display:flex;align-items:center;gap:22px;padding:12px 20px;border-radius:18px;
-    background:rgba(15,21,40,.6);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-  .logo{font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
-  .logo .dot{width:24px;height:24px;border-radius:8px;background:conic-gradient(from 210deg,#6aa8ff,#a78bfa,#6aa8ff);box-shadow:0 0 16px rgba(106,168,255,.5)}
-  .logo span{color:var(--blue)}
-  nav .right{margin-left:auto;display:flex;gap:12px;align-items:center}
+  nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;width:min(1100px,94vw);
+    display:flex;align-items:center;gap:20px;padding:12px 18px;border-radius:18px;
+    background:rgba(15,21,40,.62);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .logo{font-weight:800;font-size:16.5px;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
+  .logo .dot{width:22px;height:22px;border-radius:8px;background:conic-gradient(from 210deg,#cfe0ff,#b9a8fb,#cfe0ff);box-shadow:0 0 16px rgba(207,224,255,.45)}
+  .logo span{color:var(--blueSolid)}
+  nav .right{margin-left:auto;display:flex;gap:10px;align-items:center}
   select{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);border-radius:12px;
-    padding:9px 14px;font-size:14px;font-family:inherit;backdrop-filter:blur(8px)}
+    padding:8px 13px;font-size:13.5px;font-family:inherit;backdrop-filter:blur(8px)}
   select option{background:#141b31}
 
-  .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
-  .card{position:relative;padding:22px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
+  .sectionHead{margin:52px 0 20px}
+  .sectionHead:first-child{margin-top:0}
+  .kicker{color:var(--blueSolid);font-size:11.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+  .sectionHead h1{font-size:23px;font-weight:800;letter-spacing:-.01em}
+  .sectionHead p{color:var(--dim);font-size:14px;margin-top:4px;max-width:520px}
+
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+  .card{position:relative;padding:24px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;transition:background .3s}
   .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
-    background:linear-gradient(140deg,rgba(255,255,255,.22),transparent 40%);
+    background:linear-gradient(140deg,rgba(255,255,255,.2),transparent 40%);
     -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
-  .s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
-  @media(max-width:940px){.s4,.s5,.s7,.s8{grid-column:span 12}}
-  h2{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:1.6px;margin-bottom:16px;font-weight:700}
-  .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin-left:6px;font-size:11px;color:var(--dim);letter-spacing:.4px}
+  .s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}
+  @media(max-width:940px){.s4,.s6,.s8{grid-column:span 12}}
+  .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:10.5px;color:var(--dim);letter-spacing:.3px;font-weight:600}
 
-  .scoreWrap{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
-  .ring{position:relative;width:170px;height:170px;flex:none}
+  /* HERO: score + impact */
+  .heroRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.heroRow{grid-template-columns:1fr}}
+  .scoreWrap{display:flex;align-items:center;gap:24px}
+  .ring{position:relative;width:150px;height:150px;flex:none}
   .ring svg{transform:rotate(-90deg)}
   .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .ring .val b{font-size:44px;font-weight:900;line-height:1}
-  .ring .val small{color:var(--dim);font-size:12px;margin-top:4px}
-  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:99px;font-weight:700;font-size:14px;border:1px solid}
-  .scoreTxt{color:var(--dim);font-size:14px;line-height:1.6;margin-top:12px;max-width:300px}
+  .ring .val b{font-size:40px;font-weight:900;line-height:1}
+  .ring .val small{color:var(--dim);font-size:11px;margin-top:3px}
+  .verdict{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;font-weight:700;font-size:13px;border:1px solid;margin-bottom:10px}
+  .scoreTxt{color:var(--dim);font-size:13.5px;line-height:1.6;max-width:280px}
 
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
-  .kpi{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:14px;transition:transform .2s}
-  .kpi:hover{transform:translateY(-3px)}
-  .kpi .l{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:1px}
-  .kpi .v{font-size:26px;font-weight:800;margin:4px 0}
-  .kpi .who{font-size:12px;font-weight:600}
+  .impactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px}
+  .impactStat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .impactStat .n{font-size:30px;font-weight:900;line-height:1}
+  .impactStat .n span{font-size:15px;font-weight:700;color:var(--dim)}
+  .impactStat .l{color:var(--dim);font-size:12px;margin-top:5px}
+  .impactNote{color:var(--dim);font-size:11px;line-height:1.5;margin-top:12px;opacity:.75}
+
+  /* KPI strip */
+  .kpiStrip{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
+  .kpi{flex:1;min-width:120px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:14px;padding:13px;transition:transform .2s}
+  .kpi:hover{transform:translateY(-2px)}
+  .kpi .l{color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px}
+  .kpi .v{font-size:22px;font-weight:800;margin:3px 0}
+  .kpi .who{font-size:11px;font-weight:600}
   .who.bad{color:var(--bad)} .who.ok{color:var(--ok)}
 
-  .bench{display:flex;gap:20px;align-items:center}
-  .bench .big{font-size:46px;font-weight:900;color:var(--nv);text-shadow:0 0 30px rgba(138,209,46,.3)}
-  .bench small{color:var(--dim);display:block;font-size:12.5px;line-height:1.5}
+  .bench{display:flex;gap:18px;align-items:center}
+  .bench .big{font-size:42px;font-weight:900;color:var(--nv);text-shadow:0 0 28px rgba(154,219,63,.28)}
+  .bench small{color:var(--dim);display:block;font-size:12px;line-height:1.5}
 
-  #chat{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;padding-right:4px}
+  #chat{display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;padding-right:4px}
   #chat::-webkit-scrollbar{width:6px} #chat::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
-  .msg{padding:12px 16px;border-radius:16px;max-width:85%;white-space:pre-wrap;font-size:14.5px;line-height:1.55;
+  .msg{padding:12px 16px;border-radius:16px;max-width:85%;white-space:pre-wrap;font-size:14px;line-height:1.55;
     animation:pop .35s cubic-bezier(.2,.8,.2,1)}
   @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}}
-  .me{background:linear-gradient(135deg,rgba(106,168,255,.25),rgba(167,139,250,.2));border:1px solid rgba(106,168,255,.25);align-self:flex-end}
-  .bot{background:rgba(255,255,255,.05);border:1px solid var(--line);align-self:flex-start}
+  .me{background:linear-gradient(135deg,rgba(157,193,255,.22),rgba(185,168,251,.18));border:1px solid rgba(157,193,255,.25);align-self:flex-end}
+  .bot{background:rgba(255,255,255,.045);border:1px solid var(--line);align-self:flex-start}
   .bot.thinking i{display:inline-block;animation:blink 1.2s infinite}
   @keyframes blink{50%{opacity:.2}}
   .askrow{display:flex;gap:10px;margin-top:14px}
-  .askrow input{flex:1;background:rgba(255,255,255,.06);color:var(--txt);border:1px solid var(--line);border-radius:14px;
-    padding:14px 16px;font-size:15px;font-family:inherit;outline:none;transition:border .2s}
-  .askrow input:focus{border-color:rgba(106,168,255,.5)}
-  .askrow button{background:linear-gradient(135deg,#a9cdff,#6aa8ff);border:0;color:#071023;font-weight:800;
-    padding:0 24px;border-radius:14px;cursor:pointer;font-size:15px;font-family:inherit;transition:transform .2s;box-shadow:0 6px 22px rgba(106,168,255,.35)}
+  .askrow input{flex:1;background:rgba(255,255,255,.055);color:var(--txt);border:1px solid var(--line);border-radius:14px;
+    padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
+  .askrow input:focus{border-color:rgba(157,193,255,.5)}
+  .askrow button{background:linear-gradient(135deg,#e3ecff,#9dc1ff);border:0;color:#0b1226;font-weight:800;
+    padding:0 22px;border-radius:14px;cursor:pointer;font-size:14.5px;font-family:inherit;transition:transform .2s;box-shadow:0 6px 20px rgba(157,193,255,.3)}
   .askrow button:hover{transform:translateY(-2px)} .askrow button:disabled{opacity:.5;transform:none}
   .sugg{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .sugg span{font-size:12.5px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;transition:all .2s}
+  .sugg span{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;transition:all .2s}
   .sugg span:hover{color:var(--txt);background:var(--glass2)}
 
-  .foot{color:var(--dim);font-size:13px;text-align:center;margin-top:26px}
-  .reveal{opacity:0;transform:translateY(26px);filter:blur(6px);
+  .foot{color:var(--dim);font-size:12.5px;text-align:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
+  .reveal{opacity:0;transform:translateY(22px);filter:blur(6px);
     transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s}
   .reveal.on{opacity:1;transform:none;filter:none}
 </style>
@@ -110,68 +127,111 @@
   </div>
 </nav>
 
+<div class="sectionHead reveal">
+  <div class="kicker">Right now</div>
+  <h1>What does today's air actually cost you?</h1>
+  <p>Not just a number — the real, lived stakes of breathing this city's air.</p>
+</div>
+
 <div class="grid">
-  <div class="card s5 reveal">
-    <h2>Air safety score <span class="tag" id="scoreCity">Delhi</span></h2>
-    <div class="scoreWrap">
-      <div class="ring">
-        <svg width="170" height="170" viewBox="0 0 170 170">
-          <circle cx="85" cy="85" r="74" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="13"/>
-          <circle id="ringArc" cx="85" cy="85" r="74" fill="none" stroke="url(#g1)" stroke-width="13"
-                  stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/>
-          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#6aa8ff"/><stop offset="100%" stop-color="#a78bfa"/>
-          </linearGradient></defs>
-        </svg>
-        <div class="val"><b id="scoreVal">–</b><small>out of 100</small></div>
+  <div class="s6 reveal">
+    <div class="card">
+      <div class="eyebrow">Air safety score <span class="tag" id="scoreCity">Delhi</span></div>
+      <div class="scoreWrap">
+        <div class="ring">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
+            <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="url(#g1)" stroke-width="12"
+                    stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/>
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#cfe0ff"/><stop offset="100%" stop-color="#b9a8fb"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="val"><b id="scoreVal">–</b><small>out of 100</small></div>
+        </div>
+        <div>
+          <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
+          <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
+        </div>
       </div>
-      <div>
-        <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
-        <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
+    </div>
+  </div>
+
+  <div class="s6 reveal">
+    <div class="card">
+      <div class="eyebrow">🫁 Human impact <span class="tag">beyond AQI</span></div>
+      <div class="impactGrid">
+        <div class="impactStat">
+          <div class="n" id="impCig">–<span> /day</span></div>
+          <div class="l">Cigarette-equivalent exposure</div>
+        </div>
+        <div class="impactStat">
+          <div class="n" id="impYears">–<span> yrs</span></div>
+          <div class="l">Est. life expectancy impact</div>
+        </div>
+      </div>
+      <p class="impactNote">Illustrative estimate — Berkeley Earth cigarette-equivalence & AQLI-style life-expectancy coefficient, based on published air-quality epidemiology. Not a medical diagnosis.</p>
+    </div>
+  </div>
+
+  <div class="s12 reveal">
+    <div class="card">
+      <div class="eyebrow">Latest levels vs WHO 24-hour guidelines</div>
+      <div class="kpiStrip" id="kpis"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sectionHead reveal">
+  <div class="kicker">Trend</div>
+  <h1>How it's moved — and where it's heading</h1>
+</div>
+<div class="grid">
+  <div class="s8 reveal">
+    <div class="card">
+      <div class="eyebrow">90-day pollution trend <span class="tag">daily mean · 7-day rolling</span></div>
+      <div id="trendChart" style="height:320px"></div>
+    </div>
+  </div>
+  <div class="s4 reveal">
+    <div class="card">
+      <div class="eyebrow">⚡ NVIDIA acceleration</div>
+      <div class="bench">
+        <div class="big" id="speedup">—</div>
+        <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
+      </div>
+      <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
+    </div>
+  </div>
+</div>
+
+<div class="sectionHead reveal">
+  <div class="kicker">Ask</div>
+  <h1>Get a straight answer, not a spreadsheet</h1>
+</div>
+<div class="grid">
+  <div class="s12 reveal">
+    <div class="card">
+      <div class="eyebrow">🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span></div>
+      <div id="chat">
+        <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below — or ask anything.</div>
+      </div>
+      <div class="sugg">
+        <span onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</span>
+        <span onclick="preset(this)">Compare Delhi vs Mumbai air quality</span>
+        <span onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</span>
+      </div>
+      <div class="askrow">
+        <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
+        <button id="askBtn" onclick="ask()">Ask →</button>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="card s7 reveal">
-    <h2>Latest levels vs WHO 24-hour guidelines</h2>
-    <div class="kpis" id="kpis"></div>
-  </div>
-
-  <div class="card s8 reveal">
-    <h2>90-day pollution trend <span class="tag">daily mean + 7-day rolling</span></h2>
-    <div id="trendChart" style="height:330px"></div>
-  </div>
-
-  <div class="card s4 reveal">
-    <h2>⚡ NVIDIA acceleration</h2>
-    <div class="bench">
-      <div class="big" id="speedup">—</div>
-      <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
-    </div>
-    <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
-    <p style="color:var(--dim);font-size:12.5px;margin-top:10px">Faster pipeline → fresher insight → faster decisions for schools, clinics & wards.</p>
-  </div>
-
-  <div class="card s12 reveal">
-    <h2>🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">data analyst → health advisor</span></h2>
-    <div id="chat">
-      <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try one of the suggestions below — or ask anything.</div>
-    </div>
-    <div class="sugg">
-      <span onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</span>
-      <span onclick="preset(this)">Compare Delhi vs Mumbai air quality</span>
-      <span onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</span>
-    </div>
-    <div class="askrow">
-      <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
-      <button id="askBtn" onclick="ask()">Ask →</button>
-    </div>
-  </div>
-
-  <div class="foot s12">
-    Data: OpenAQ archive (AWS Open Data) · GPU: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini ·
-    Built solo by <b>Anshul Jain</b> · Team BloodWyrm
-  </div>
+<div class="foot">
+  Data: OpenAQ archive (AWS Open Data) · GPU: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini ·
+  Built solo by <b>Anshul Jain</b> · Team BloodWyrm
 </div>
 </div>
 
@@ -179,20 +239,18 @@
 const $ = id => document.getElementById(id);
 let CITY='Delhi';
 
-/* aurora + haze (same immersive system as landing) */
 const aurora=$('aurora');
 addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
 const cv=$('haze'),ctx=cv.getContext('2d');let W,H,parts=[],mouse={x:-999,y:-999};
 function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight} rs();addEventListener('resize',rs);
 addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
-for(let i=0;i<90;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.18,o:Math.random()*.3+.07});
+for(let i=0;i<80;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.16,o:Math.random()*.26+.06});
 (function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
-if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.55;p.vy+=dy/Math.sqrt(d2+1)*f*.55}
+if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
 p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
 if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
-ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(160,185,235,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(196,212,245,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
 
-/* reveals */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
@@ -204,7 +262,6 @@ async function loadCities(){
 }
 
 function scoreFrom(pollutants){
-  // simple transparent formula: penalize by worst pollutant's multiple of WHO limit
   let worst=0, worstName='';
   for(const [k,v] of Object.entries(pollutants)){
     if(v.times_who_limit && v.times_who_limit>worst){worst=v.times_who_limit;worstName=k.toUpperCase()}
@@ -218,26 +275,34 @@ async function refresh(){
   const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
   if(t.series){
     Plotly.newPlot('trendChart',[
-      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#6aa8ff',width:1.4},fill:'tozeroy',fillcolor:'rgba(106,168,255,.06)'},
-      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffc76a',width:3}},
-    ],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a7b3d1',family:'Inter'},
-      margin:{t:10,r:10,b:40,l:45},legend:{orientation:'h'},xaxis:{gridcolor:'rgba(255,255,255,.05)'},yaxis:{gridcolor:'rgba(255,255,255,.05)'}},{displayModeBar:false});
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#9dc1ff',width:1.3},fill:'tozeroy',fillcolor:'rgba(157,193,255,.06)',hovertemplate:'%{x}<br>%{y:.1f} µg/m³<extra></extra>'},
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffce80',width:3},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (7d avg)<extra></extra>'},
+    ],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Inter',size:12},
+      margin:{t:6,r:10,b:36,l:42},legend:{orientation:'h',y:1.12},
+      xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:false},
+      yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'µg/m³'},
+      hovermode:'x unified'},{displayModeBar:false});
   }
   const s=await (await fetch(`/api/snapshot?city=${CITY}`)).json();
   if(s.pollutants){
     $('kpis').innerHTML=Object.entries(s.pollutants).map(([k,v])=>{
       const bad=v.times_who_limit&&v.times_who_limit>1;
       return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div><div class="v">${v.daily_mean}</div>
-        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO limit':'—'}</div></div>`}).join('');
+        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'—'}</div></div>`}).join('');
     const {score,worst,worstName}=scoreFrom(s.pollutants);
     $('scoreCity').textContent=CITY;
     $('scoreVal').textContent=score;
-    $('ringArc').style.strokeDashoffset=465-(465*score/100);
+    $('ringArc').style.strokeDashoffset=408-(408*score/100);
     const v=$('verdict');
     if(score>=70){v.textContent='🟢 Generally safe';v.style.color='var(--ok)';v.style.borderColor='var(--ok)'}
     else if(score>=40){v.textContent='🟡 Caution advised';v.style.color='var(--amber)';v.style.borderColor='var(--amber)'}
     else{v.textContent='🔴 Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
-    $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline. Ask the agent below for practical guidance.`:'No guideline exceedances detected.';
+    $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline.`:'No guideline exceedances detected.';
+  }
+  const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
+  if(imp.cigarettes_per_day_equivalent!==undefined){
+    $('impCig').innerHTML=`${imp.cigarettes_per_day_equivalent}<span> /day</span>`;
+    $('impYears').innerHTML=`${imp.estimated_life_expectancy_years_lost}<span> yrs</span>`;
   }
 }
 

@@ -15,7 +15,7 @@ import os
 from dotenv import load_dotenv
 from google.adk.agents import Agent, SequentialAgent
 
-from .tools import get_city_snapshot, get_trend, get_worst_stations, list_cities
+from .tools import get_city_snapshot, get_human_impact, get_trend, get_worst_stations, list_cities
 
 load_dotenv()
 MODEL = os.getenv("MODEL", "gemini-2.5-flash")
@@ -33,14 +33,17 @@ Use your tools to gather FACTS before answering:
 - get_city_snapshot(city) for the latest levels, trends vs WHO guidelines, anomalies
 - get_trend(city, parameter) when the question involves change over time
 - get_worst_stations(city) when location/hotspots matter
+- get_human_impact(city) whenever the question touches health, risk, or "how bad is
+  it really" — this converts PM2.5 into cigarette-equivalent exposure and an
+  illustrative life-expectancy impact, which is far more visceral than a raw AQI number
 - list_cities() if the requested city may not be covered
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
 24h guidelines (state the multiple, e.g. '6.2x the WHO limit'), 7-day trend
-direction, any anomaly days, and relevant hotspots. Do NOT give lifestyle advice —
-that is the advisor's job. Facts only.
+direction, any anomaly days, relevant hotspots, and the human-impact metrics when
+relevant. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
 """,
-    tools=[get_city_snapshot, get_trend, get_worst_stations, list_cities],
+    tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, list_cities],
     output_key="analysis",
 )
 

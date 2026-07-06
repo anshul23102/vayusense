@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0e1424; --bg2:#111a30; --txt:#eef2fb; --dim:#a7b3d1; --line:rgba(255,255,255,.09);
-    --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.09);
-    --blue:#6aa8ff; --violet:#a78bfa; --nv:#8ad12e; --amber:#ffc76a;
+    --bg:#0e1424; --bg2:#111a30; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
+    --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
+    --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --amber:#ffce80;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -18,7 +18,7 @@
   canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
   #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5;
     background:
-      radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(106,168,255,.35), transparent 60%),
+      radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(157,193,255,.35), transparent 60%),
       radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 70%, rgba(167,139,250,.28), transparent 60%),
       radial-gradient(24% 22% at 50% 100%, rgba(138,209,46,.14), transparent 60%);
     transition:background-position .3s ease-out}
@@ -30,13 +30,13 @@
     display:flex;align-items:center;gap:26px;padding:12px 20px;border-radius:18px;
     background:rgba(15,21,40,.55);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
   .logo{font-weight:800;font-size:18px;letter-spacing:.2px;display:flex;align-items:center;gap:10px}
-  .logo .dot{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,#6aa8ff,#a78bfa,#6aa8ff);
-    box-shadow:0 0 18px rgba(106,168,255,.55)}
+  .logo .dot{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,#9dc1ff,#b9a8fb,#9dc1ff);
+    box-shadow:0 0 18px rgba(157,193,255,.55)}
   .logo span{color:var(--blue)}
   nav a{color:var(--dim);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
   nav a:hover{color:var(--txt)}
-  nav .cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#8fc1ff,#6aa8ff);
-    padding:9px 18px;border-radius:12px;font-weight:700;box-shadow:0 6px 24px rgba(106,168,255,.35)}
+  nav .cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);
+    padding:9px 18px;border-radius:12px;font-weight:700;box-shadow:0 6px 24px rgba(157,193,255,.35)}
 
   .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
     text-align:center;padding:120px 6vw 60px}
@@ -46,15 +46,15 @@
   .chip .pulse{width:7px;height:7px;border-radius:50%;background:var(--nv);animation:pulse 1.8s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(138,209,46,.5)}70%{box-shadow:0 0 0 9px rgba(138,209,46,0)}100%{box-shadow:0 0 0 0 rgba(138,209,46,0)}}
   h1{font-size:clamp(44px,7.4vw,96px);line-height:1.04;font-weight:900;letter-spacing:-.02em;margin:26px 0 22px}
-  h1 .soft{background:linear-gradient(120deg,#cdd8f5 10%,#8fa4d9 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
-  h1 .blue{background:linear-gradient(120deg,#9ec5ff,#5f9dff 60%,#7fb0ff);-webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 0 60px rgba(106,168,255,.25)}
+  h1 .soft{background:linear-gradient(120deg,#eef3ff 10%,#c3d1f2 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  h1 .blue{background:linear-gradient(120deg,#f2f7ff,#bcd8ff 55%,#dcebff);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 70px rgba(190,220,255,.3)}
   .sub{max-width:640px;color:var(--dim);font-size:clamp(16px,2vw,20px);line-height:1.6}
   .heroBtns{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap;justify-content:center}
   .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:700;
     font-size:16px;text-decoration:none;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
   .btn:hover{transform:translateY(-2px)}
-  .btn.primary{color:#071023;background:linear-gradient(135deg,#a9cdff,#6aa8ff);box-shadow:0 10px 34px rgba(106,168,255,.4)}
+  .btn.primary{color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);box-shadow:0 10px 34px rgba(157,193,255,.4)}
   .btn.ghost{color:var(--txt);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
   .statRow{display:flex;gap:12px;margin-top:60px;flex-wrap:wrap;justify-content:center}
   .stat{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;font-size:14px;
@@ -76,7 +76,7 @@
     -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
   .card:hover{background:var(--glass2)}
   .card .ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    font-size:22px;margin-bottom:18px;background:rgba(106,168,255,.14);border:1px solid var(--line)}
+    font-size:22px;margin-bottom:18px;background:rgba(157,193,255,.14);border:1px solid var(--line)}
   .card h3{font-size:19px;margin-bottom:10px}
   .card p{color:var(--dim);font-size:14.5px;line-height:1.6}
   .big{font-size:clamp(40px,5.4vw,64px);font-weight:900}
@@ -111,31 +111,33 @@
 <div class="hero">
   <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b>5.9M real sensor readings</b></div>
   <h1><span class="soft reveal d1">Know when the</span><br><span class="blue reveal d2">air is safe.</span></h1>
-  <p class="sub reveal d3">VayuSense turns millions of raw air-quality readings across Indian cities into
-    one clear answer — for parents, schools, clinics and city officials. Analyzed <b style="color:var(--nv)">37.5× faster</b> on NVIDIA GPUs, explained by Google ADK agents.</p>
+  <p class="sub reveal d3">Every breath in Delhi carries a cost most dashboards never show you. VayuSense turns
+    millions of raw sensor readings into one honest answer — for a parent deciding on sports practice,
+    a clinic bracing for admissions, a city planner drafting tomorrow's advisory.</p>
   <div class="heroBtns reveal d4">
-    <a class="btn primary" href="/dashboard">Start exploring →</a>
-    <a class="btn ghost" href="#bench">⚡ See the 37.5× benchmark</a>
+    <a class="btn primary" href="/dashboard">See your city's air →</a>
+    <a class="btn ghost" href="#bench">⚡ 37.5× faster on GPU — see how</a>
   </div>
   <div class="statRow reveal d4">
-    <div class="stat">📡 <b>5,922,378</b> readings</div>
-    <div class="stat">⚡ <b>37.5×</b> faster on GPU</div>
+    <div class="stat">📡 <b>5,922,378</b> readings analyzed</div>
+    <div class="stat">⚡ <b>37.5×</b> faster with NVIDIA</div>
     <div class="stat">🏙️ <b>4</b> cities · <b>6</b> pollutants</div>
-    <div class="stat">🤖 <b>2</b> ADK agents</div>
+    <div class="stat">🤖 <b>2</b> reasoning agents</div>
   </div>
   <div class="scroll">SCROLL</div>
 </div>
 
 <section id="why">
-  <div class="kicker reveal">The problem</div>
-  <h2 class="reveal d1">Delhi's air is a daily, silent emergency.</h2>
-  <p class="lead reveal d2">On the worst days our data recorded, Delhi's PM2.5 crossed
-    <b style="color:var(--bad,#ff7a94)">15× the WHO safe limit</b> — yet schools still schedule outdoor sports and
-    clinics get surprised by respiratory surges. The data exists. It just isn't <i>decision-ready</i>.</p>
+  <div class="kicker reveal">The real number nobody shows you</div>
+  <h2 class="reveal d1">An AQI reading doesn't tell you what it costs.</h2>
+  <p class="lead reveal d2">"165 AQI — Poor" means nothing to a parent at 7 AM. So VayuSense translates raw
+    pollutant readings into stakes a person actually feels: cigarettes inhaled, years of life expectancy at stake.
+    On the days our data captured, Delhi's air carried the daily equivalent of <b style="color:var(--bad,#ff7a94)">4 cigarettes</b> —
+    every single day, for everyone breathing it.</p>
   <div class="cards">
-    <div class="card tilt reveal"><div class="ic">🫁</div><h3>233.9 µg/m³</h3><p>Delhi's PM2.5 daily mean at its recorded peak — 15.6× the WHO 24-hour guideline of 15 µg/m³.</p></div>
-    <div class="card tilt reveal d1"><div class="ic">🏫</div><h3>Decisions every day</h3><p>Sports practice, outdoor events, clinic staffing, ward advisories — all depend on air that changes by the hour.</p></div>
-    <div class="card tilt reveal d2"><div class="ic">📊</div><h3>Data ≠ insight</h3><p>Millions of readings across dozens of stations are useless to a parent at 7 AM. VayuSense closes that gap.</p></div>
+    <div class="card tilt reveal"><div class="ic">🚬</div><h3>4 cigarettes / day</h3><p>Delhi's sustained annual PM2.5 exposure, converted using Berkeley Earth's published cigarette-equivalence methodology.</p></div>
+    <div class="card tilt reveal d1"><div class="ic">⏳</div><h3>~8.2 years</h3><p>Illustrative life-expectancy impact using an AQLI-style epidemiological coefficient — a stat most air-quality tools never surface.</p></div>
+    <div class="card tilt reveal d2"><div class="ic">📊</div><h3>Data that just sits there</h3><p>Millions of readings across dozens of stations, and still no one tells you: is it safe to go outside <i>today</i>? VayuSense closes that gap.</p></div>
   </div>
 </section>
 
@@ -143,27 +145,28 @@
   <div class="kicker reveal">How it works</div>
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
-    <div class="card tilt reveal"><div class="ic">⚡</div><h3>NVIDIA-accelerated pipeline</h3>
-      <p>The full clean → aggregate → trend → anomaly pipeline over 5.9M OpenAQ readings runs in <b class="nvg">0.25s on GPU (cuDF)</b> vs 9.34s on CPU. Fresh insight, always.</p></div>
-    <div class="card tilt reveal d1"><div class="ic">🤖</div><h3>Google ADK multi-agent</h3>
-      <p>A sequential pipeline — <b>Data Analyst</b> pulls hard numbers with tools, <b>Health Advisor</b> converts them into WHO-guideline-aware recommendations via Gemini.</p></div>
-    <div class="card tilt reveal d2"><div class="ic">🎯</div><h3>Decision-ready output</h3>
-      <p>Trends, anomaly flags, hotspot stations, safety score and a plain-language verdict — a tool people actually use.</p></div>
+    <div class="card tilt reveal"><div class="ic">⚡</div><h3>Accelerated by NVIDIA</h3>
+      <p>Clean → aggregate → trend → anomaly-detect, over 5.9M OpenAQ readings — done in <b class="nvg">0.25s on GPU (cuDF)</b> instead of 9.34s on CPU. Fresh insight, every time you ask.</p></div>
+    <div class="card tilt reveal d1"><div class="ic">🤖</div><h3>Reasoned by Google ADK + Gemini</h3>
+      <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
+    <div class="card tilt reveal d2"><div class="ic">🎯</div><h3>Built to be used, not admired</h3>
+      <p>A safety score, a human-cost estimate, hotspot stations, and a straight answer to "is it safe today?" — not another chart nobody reads.</p></div>
   </div>
 </section>
 
 <section id="bench">
-  <div class="kicker reveal">The acceleration proof</div>
-  <h2 class="reveal d1"><span class="big nvg">37.5×</span> faster decisions.</h2>
-  <p class="lead reveal d2">Identical pipeline, identical data, timed honestly. This is what NVIDIA RAPIDS
-    acceleration means for a city that needs answers <i>now</i> — not after the morning smog has passed.</p>
+  <div class="kicker reveal">The acceleration, proven</div>
+  <h2 class="reveal d1"><span class="big nvg">37.5×</span> faster than pandas.</h2>
+  <p class="lead reveal d2">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
+    can shift by the hour, a 9-second wait isn't just slow — it's a stale answer. This is what NVIDIA RAPIDS
+    buys back: the moment between a question and a decision.</p>
   <div class="benchWrap">
     <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
     <div class="rows">
       <div class="row reveal"><span>Dataset</span><b>5,922,378 readings · 44 stations</b></div>
       <div class="row reveal d1"><span>pandas (CPU)</span><b>9.34 s</b></div>
       <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg">0.25 s</b></div>
-      <div class="row reveal d3"><span>Stack</span><b>BigQuery-ready · RAPIDS · ADK · Gemini</b></div>
+      <div class="row reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
     </div>
   </div>
   <div class="heroBtns reveal d3" style="justify-content:flex-start">

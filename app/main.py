@@ -60,6 +60,11 @@ def stations(city: str = "Delhi"):
     return json.loads(data_tools.get_worst_stations(city))
 
 
+@app.get("/api/impact")
+def impact(city: str = "Delhi"):
+    return json.loads(data_tools.get_human_impact(city))
+
+
 @app.get("/api/benchmark")
 def benchmark():
     f = ROOT / "benchmark" / "benchmark_results.json"
