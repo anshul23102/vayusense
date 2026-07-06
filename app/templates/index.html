@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VayuSense — Live Dashboard</title>
+<title>VayuSense: Live Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -130,7 +130,7 @@
 <div class="sectionHead reveal">
   <div class="kicker">Right now</div>
   <h1>What does today's air actually cost you?</h1>
-  <p>Not just a number — the real, lived stakes of breathing this city's air.</p>
+  <p>Not just a number: the real, lived stakes of breathing this city's air.</p>
 </div>
 
 <div class="grid">
@@ -170,7 +170,7 @@
           <div class="l">Est. life expectancy impact</div>
         </div>
       </div>
-      <p class="impactNote">Illustrative estimate — Berkeley Earth cigarette-equivalence & AQLI-style life-expectancy coefficient, based on published air-quality epidemiology. Not a medical diagnosis.</p>
+      <p class="impactNote">Illustrative estimate: Berkeley Earth cigarette-equivalence & AQLI-style life-expectancy coefficient, based on published air-quality epidemiology. Not a medical diagnosis.</p>
     </div>
   </div>
 
@@ -184,7 +184,7 @@
 
 <div class="sectionHead reveal">
   <div class="kicker">Trend</div>
-  <h1>How it's moved — and where it's heading</h1>
+  <h1>How it's moved, and where it's heading</h1>
 </div>
 <div class="grid">
   <div class="s8 reveal">
@@ -197,7 +197,7 @@
     <div class="card">
       <div class="eyebrow">⚡ NVIDIA acceleration</div>
       <div class="bench">
-        <div class="big" id="speedup">—</div>
+        <div class="big" id="speedup">-</div>
         <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
       </div>
       <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
@@ -214,7 +214,7 @@
     <div class="card">
       <div class="eyebrow">🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span></div>
       <div id="chat">
-        <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below — or ask anything.</div>
+        <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>
       </div>
       <div class="sugg">
         <span onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</span>
@@ -288,7 +288,7 @@ async function refresh(){
     $('kpis').innerHTML=Object.entries(s.pollutants).map(([k,v])=>{
       const bad=v.times_who_limit&&v.times_who_limit>1;
       return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div><div class="v">${v.daily_mean}</div>
-        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'—'}</div></div>`}).join('');
+        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'-'}</div></div>`}).join('');
     const {score,worst,worstName}=scoreFrom(s.pollutants);
     $('scoreCity').textContent=CITY;
     $('scoreVal').textContent=score;
