@@ -31,7 +31,12 @@ class AskBody(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse)
-def index():
+def landing():
+    return (ROOT / "app" / "templates" / "landing.html").read_text()
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard():
     return (ROOT / "app" / "templates" / "index.html").read_text()
 
 

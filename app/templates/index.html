@@ -3,157 +3,263 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VayuSense — AI Decision Intelligence for the Air We Breathe</title>
+<title>VayuSense — Live Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
-  :root { --bg:#0b1020; --card:#141b31; --line:#233052; --txt:#e8ecf6; --dim:#9aa7c7;
-          --accent:#4da3ff; --nv:#76b900; --bad:#ff5c7a; --ok:#3ddc97; }
-  * { box-sizing:border-box; margin:0; }
-  body { background:var(--bg); color:var(--txt); font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:26px 5vw 10px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
-  header h1 { font-size:26px; letter-spacing:.3px; }
-  header h1 span { color:var(--accent); }
-  header p { color:var(--dim); }
-  .wrap { padding:10px 5vw 60px; display:grid; gap:18px; grid-template-columns:repeat(12,1fr); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
-  .span4{grid-column:span 4} .span6{grid-column:span 6} .span8{grid-column:span 8} .span12{grid-column:span 12}
-  @media (max-width:900px){ .span4,.span6,.span8{grid-column:span 12} }
-  h2 { font-size:15px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
-  select { background:#0e1530; color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:15px; }
-  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
-  .kpi { background:#0e1530; border:1px solid var(--line); border-radius:10px; padding:12px; }
-  .kpi .v { font-size:24px; font-weight:700; }
-  .kpi .l { color:var(--dim); font-size:12px; text-transform:uppercase; }
-  .kpi .who { font-size:12px; margin-top:4px; }
+  :root{
+    --bg:#0e1424; --txt:#eef2fb; --dim:#a7b3d1; --line:rgba(255,255,255,.09);
+    --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.09);
+    --blue:#6aa8ff; --violet:#a78bfa; --nv:#8ad12e; --bad:#ff7a94; --ok:#43dfa5; --amber:#ffc76a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden}
+  canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
+  #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.45;
+    background:
+      radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(106,168,255,.32), transparent 60%),
+      radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(167,139,250,.24), transparent 60%)}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
+  .shell{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:100px 4vw 60px}
+
+  nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;width:min(1120px,94vw);
+    display:flex;align-items:center;gap:22px;padding:12px 20px;border-radius:18px;
+    background:rgba(15,21,40,.6);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .logo{font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
+  .logo .dot{width:24px;height:24px;border-radius:8px;background:conic-gradient(from 210deg,#6aa8ff,#a78bfa,#6aa8ff);box-shadow:0 0 16px rgba(106,168,255,.5)}
+  .logo span{color:var(--blue)}
+  nav .right{margin-left:auto;display:flex;gap:12px;align-items:center}
+  select{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);border-radius:12px;
+    padding:9px 14px;font-size:14px;font-family:inherit;backdrop-filter:blur(8px)}
+  select option{background:#141b31}
+
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
+  .card{position:relative;padding:22px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;transition:background .3s}
+  .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
+    background:linear-gradient(140deg,rgba(255,255,255,.22),transparent 40%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+  @media(max-width:940px){.s4,.s5,.s7,.s8{grid-column:span 12}}
+  h2{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:1.6px;margin-bottom:16px;font-weight:700}
+  .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin-left:6px;font-size:11px;color:var(--dim);letter-spacing:.4px}
+
+  .scoreWrap{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  .ring{position:relative;width:170px;height:170px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .val b{font-size:44px;font-weight:900;line-height:1}
+  .ring .val small{color:var(--dim);font-size:12px;margin-top:4px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:99px;font-weight:700;font-size:14px;border:1px solid}
+  .scoreTxt{color:var(--dim);font-size:14px;line-height:1.6;margin-top:12px;max-width:300px}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .kpi{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:14px;transition:transform .2s}
+  .kpi:hover{transform:translateY(-3px)}
+  .kpi .l{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+  .kpi .v{font-size:26px;font-weight:800;margin:4px 0}
+  .kpi .who{font-size:12px;font-weight:600}
   .who.bad{color:var(--bad)} .who.ok{color:var(--ok)}
-  .bench { display:flex; gap:18px; align-items:center; }
-  .bench .big { font-size:44px; font-weight:800; color:var(--nv); }
-  .bench small { color:var(--dim); display:block; }
-  #chat { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto; padding-right:4px; }
-  .msg { padding:10px 14px; border-radius:12px; max-width:85%; white-space:pre-wrap; }
-  .me { background:#1d2b52; align-self:flex-end; }
-  .bot { background:#0e1530; border:1px solid var(--line); align-self:flex-start; }
-  .askrow { display:flex; gap:10px; margin-top:12px; }
-  .askrow input { flex:1; background:#0e1530; color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:12px; font-size:15px; }
-  .askrow button { background:var(--accent); border:0; color:#04122b; font-weight:700; padding:0 22px; border-radius:10px; cursor:pointer; }
-  .askrow button:disabled{opacity:.5}
-  .foot { grid-column:span 12; color:var(--dim); font-size:13px; text-align:center; }
-  .tag { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:2px 10px; margin:2px; font-size:12px; color:var(--dim); }
+
+  .bench{display:flex;gap:20px;align-items:center}
+  .bench .big{font-size:46px;font-weight:900;color:var(--nv);text-shadow:0 0 30px rgba(138,209,46,.3)}
+  .bench small{color:var(--dim);display:block;font-size:12.5px;line-height:1.5}
+
+  #chat{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;padding-right:4px}
+  #chat::-webkit-scrollbar{width:6px} #chat::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  .msg{padding:12px 16px;border-radius:16px;max-width:85%;white-space:pre-wrap;font-size:14.5px;line-height:1.55;
+    animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}}
+  .me{background:linear-gradient(135deg,rgba(106,168,255,.25),rgba(167,139,250,.2));border:1px solid rgba(106,168,255,.25);align-self:flex-end}
+  .bot{background:rgba(255,255,255,.05);border:1px solid var(--line);align-self:flex-start}
+  .bot.thinking i{display:inline-block;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.2}}
+  .askrow{display:flex;gap:10px;margin-top:14px}
+  .askrow input{flex:1;background:rgba(255,255,255,.06);color:var(--txt);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;font-size:15px;font-family:inherit;outline:none;transition:border .2s}
+  .askrow input:focus{border-color:rgba(106,168,255,.5)}
+  .askrow button{background:linear-gradient(135deg,#a9cdff,#6aa8ff);border:0;color:#071023;font-weight:800;
+    padding:0 24px;border-radius:14px;cursor:pointer;font-size:15px;font-family:inherit;transition:transform .2s;box-shadow:0 6px 22px rgba(106,168,255,.35)}
+  .askrow button:hover{transform:translateY(-2px)} .askrow button:disabled{opacity:.5;transform:none}
+  .sugg{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .sugg span{font-size:12.5px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;transition:all .2s}
+  .sugg span:hover{color:var(--txt);background:var(--glass2)}
+
+  .foot{color:var(--dim);font-size:13px;text-align:center;margin-top:26px}
+  .reveal{opacity:0;transform:translateY(26px);filter:blur(6px);
+    transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s}
+  .reveal.on{opacity:1;transform:none;filter:none}
 </style>
 </head>
 <body>
-<header>
-  <h1>Vayu<span>Sense</span></h1>
-  <p>AI decision intelligence for the air we breathe — powered by NVIDIA-accelerated analytics + Google ADK agents</p>
-</header>
+<div id="aurora"></div>
+<canvas id="haze"></canvas>
+<div class="grain"></div>
 
-<div class="wrap">
-  <div class="card span8">
-    <h2>Pollution trend — <select id="citySel"></select> <select id="paramSel">
+<div class="shell">
+<nav>
+  <a class="logo" href="/"><div class="dot"></div>Vayu<span>Sense</span></a>
+  <div class="right">
+    <select id="citySel"></select>
+    <select id="paramSel">
       <option value="pm25">PM2.5</option><option value="pm10">PM10</option>
       <option value="no2">NO₂</option><option value="o3">O₃</option>
-    </select></h2>
-    <div id="trendChart" style="height:340px"></div>
+    </select>
   </div>
+</nav>
 
-  <div class="card span4">
-    <h2>⚡ GPU acceleration (NVIDIA cuDF)</h2>
-    <div class="bench">
-      <div class="big" id="speedup">—</div>
+<div class="grid">
+  <div class="card s5 reveal">
+    <h2>Air safety score <span class="tag" id="scoreCity">Delhi</span></h2>
+    <div class="scoreWrap">
+      <div class="ring">
+        <svg width="170" height="170" viewBox="0 0 170 170">
+          <circle cx="85" cy="85" r="74" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="13"/>
+          <circle id="ringArc" cx="85" cy="85" r="74" fill="none" stroke="url(#g1)" stroke-width="13"
+                  stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/>
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6aa8ff"/><stop offset="100%" stop-color="#a78bfa"/>
+          </linearGradient></defs>
+        </svg>
+        <div class="val"><b id="scoreVal">–</b><small>out of 100</small></div>
+      </div>
       <div>
-        <small id="benchRows">pipeline benchmark</small>
-        <small id="benchTimes"></small>
-        <small>NVIDIA T4 · RAPIDS cuDF vs pandas</small>
+        <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
+        <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
       </div>
     </div>
-    <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:12px;border-radius:10px"
-         onerror="this.style.display='none'">
-    <p style="color:var(--dim);font-size:13px;margin-top:8px">
-      Faster pipeline → fresher insight → faster decisions for schools, clinics & city wards.
-    </p>
   </div>
 
-  <div class="card span4">
-    <h2>Latest levels vs WHO guidelines</h2>
+  <div class="card s7 reveal">
+    <h2>Latest levels vs WHO 24-hour guidelines</h2>
     <div class="kpis" id="kpis"></div>
   </div>
 
-  <div class="card span8">
+  <div class="card s8 reveal">
+    <h2>90-day pollution trend <span class="tag">daily mean + 7-day rolling</span></h2>
+    <div id="trendChart" style="height:330px"></div>
+  </div>
+
+  <div class="card s4 reveal">
+    <h2>⚡ NVIDIA acceleration</h2>
+    <div class="bench">
+      <div class="big" id="speedup">—</div>
+      <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
+    </div>
+    <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
+    <p style="color:var(--dim);font-size:12.5px;margin-top:10px">Faster pipeline → fresher insight → faster decisions for schools, clinics & wards.</p>
+  </div>
+
+  <div class="card s12 reveal">
     <h2>🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">data analyst → health advisor</span></h2>
     <div id="chat">
-      <div class="msg bot">Namaste! Ask me anything — e.g. “Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?”</div>
+      <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try one of the suggestions below — or ask anything.</div>
+    </div>
+    <div class="sugg">
+      <span onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</span>
+      <span onclick="preset(this)">Compare Delhi vs Mumbai air quality</span>
+      <span onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</span>
     </div>
     <div class="askrow">
       <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
-      <button id="askBtn" onclick="ask()">Ask</button>
+      <button id="askBtn" onclick="ask()">Ask →</button>
     </div>
   </div>
 
-  <div class="foot">
-    Data: OpenAQ global archive (AWS Open Data) · Analytics: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini · Built solo by Anshul Jain (Team BloodWyrm)
+  <div class="foot s12">
+    Data: OpenAQ archive (AWS Open Data) · GPU: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini ·
+    Built solo by <b>Anshul Jain</b> · Team BloodWyrm
   </div>
+</div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-let CITY = 'Delhi';
+let CITY='Delhi';
+
+/* aurora + haze (same immersive system as landing) */
+const aurora=$('aurora');
+addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
+const cv=$('haze'),ctx=cv.getContext('2d');let W,H,parts=[],mouse={x:-999,y:-999};
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight} rs();addEventListener('resize',rs);
+addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
+for(let i=0;i<90;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.18,o:Math.random()*.3+.07});
+(function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.55;p.vy+=dy/Math.sqrt(d2+1)*f*.55}
+p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
+if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
+ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(160,185,235,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+
+/* reveals */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
 async function loadCities(){
-  const cities = await (await fetch('/api/cities')).json();
-  $('citySel').innerHTML = cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
-  $('citySel').onchange = () => { CITY = $('citySel').value; refresh(); };
-  $('paramSel').onchange = refresh;
+  const cities=await (await fetch('/api/cities')).json();
+  $('citySel').innerHTML=cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
+  $('citySel').onchange=()=>{CITY=$('citySel').value;refresh()};
+  $('paramSel').onchange=refresh;
+}
+
+function scoreFrom(pollutants){
+  // simple transparent formula: penalize by worst pollutant's multiple of WHO limit
+  let worst=0, worstName='';
+  for(const [k,v] of Object.entries(pollutants)){
+    if(v.times_who_limit && v.times_who_limit>worst){worst=v.times_who_limit;worstName=k.toUpperCase()}
+  }
+  const score=Math.max(3,Math.round(100-Math.min(97,worst*6)));
+  return {score,worst,worstName};
 }
 
 async function refresh(){
-  const p = $('paramSel').value;
-  const t = await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
+  const p=$('paramSel').value;
+  const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
   if(t.series){
-    Plotly.newPlot('trendChart', [
-      {x:t.series.map(d=>d.date), y:t.series.map(d=>d.mean), name:'daily mean', mode:'lines', line:{color:'#4da3ff',width:1.5}},
-      {x:t.series.map(d=>d.date), y:t.series.map(d=>d.roll7), name:'7-day trend', mode:'lines', line:{color:'#ffb44d',width:3}},
-    ], {paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#9aa7c7'},
-        margin:{t:10,r:10,b:40,l:45}, legend:{orientation:'h'}}, {displayModeBar:false});
+    Plotly.newPlot('trendChart',[
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#6aa8ff',width:1.4},fill:'tozeroy',fillcolor:'rgba(106,168,255,.06)'},
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffc76a',width:3}},
+    ],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a7b3d1',family:'Inter'},
+      margin:{t:10,r:10,b:40,l:45},legend:{orientation:'h'},xaxis:{gridcolor:'rgba(255,255,255,.05)'},yaxis:{gridcolor:'rgba(255,255,255,.05)'}},{displayModeBar:false});
   }
-  const s = await (await fetch(`/api/snapshot?city=${CITY}`)).json();
+  const s=await (await fetch(`/api/snapshot?city=${CITY}`)).json();
   if(s.pollutants){
-    $('kpis').innerHTML = Object.entries(s.pollutants).map(([k,v])=>{
-      const bad = v.times_who_limit && v.times_who_limit > 1;
-      return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div>
-        <div class="v">${v.daily_mean}</div>
-        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit ? v.times_who_limit+'× WHO limit' : '—'}</div></div>`;
-    }).join('');
+    $('kpis').innerHTML=Object.entries(s.pollutants).map(([k,v])=>{
+      const bad=v.times_who_limit&&v.times_who_limit>1;
+      return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div><div class="v">${v.daily_mean}</div>
+        <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO limit':'—'}</div></div>`}).join('');
+    const {score,worst,worstName}=scoreFrom(s.pollutants);
+    $('scoreCity').textContent=CITY;
+    $('scoreVal').textContent=score;
+    $('ringArc').style.strokeDashoffset=465-(465*score/100);
+    const v=$('verdict');
+    if(score>=70){v.textContent='🟢 Generally safe';v.style.color='var(--ok)';v.style.borderColor='var(--ok)'}
+    else if(score>=40){v.textContent='🟡 Caution advised';v.style.color='var(--amber)';v.style.borderColor='var(--amber)'}
+    else{v.textContent='🔴 Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
+    $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline. Ask the agent below for practical guidance.`:'No guideline exceedances detected.';
   }
 }
 
-async function loadBench(){
-  try{
-    const b = await (await fetch('/api/benchmark')).json();
-    if(b.speedup){
-      $('speedup').textContent = b.speedup + '×';
-      $('benchRows').textContent = b.rows.toLocaleString() + ' sensor readings';
-      $('benchTimes').textContent = `pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`;
-    }
-  }catch(e){}
-}
+async function loadBench(){try{const b=await (await fetch('/api/benchmark')).json();
+  if(b.speedup){$('speedup').textContent=b.speedup+'×';$('benchRows').textContent=b.rows.toLocaleString()+' sensor readings';
+  $('benchTimes').textContent=`pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`}}catch(e){}}
 
+function preset(el){$('q').value=el.textContent;ask()}
 async function ask(){
-  const q = $('q').value.trim(); if(!q) return;
-  $('q').value=''; $('askBtn').disabled = true;
-  const chat = $('chat');
-  chat.insertAdjacentHTML('beforeend', `<div class="msg me"></div>`);
-  chat.lastElementChild.textContent = q;
-  chat.insertAdjacentHTML('beforeend', `<div class="msg bot">Analyzing data…</div>`);
-  chat.scrollTop = chat.scrollHeight;
-  try{
-    const r = await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
-    chat.lastElementChild.textContent = r.answer || 'No answer.';
-  }catch(e){ chat.lastElementChild.textContent = 'Error: '+e; }
-  $('askBtn').disabled = false;
-  chat.scrollTop = chat.scrollHeight;
+  const q=$('q').value.trim();if(!q)return;
+  $('q').value='';$('askBtn').disabled=true;
+  const chat=$('chat');
+  chat.insertAdjacentHTML('beforeend',`<div class="msg me"></div>`);chat.lastElementChild.textContent=q;
+  chat.insertAdjacentHTML('beforeend',`<div class="msg bot thinking">Analyst crunching data <i>●</i><i>●</i><i>●</i></div>`);
+  chat.scrollTop=chat.scrollHeight;
+  try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
+    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent=r.answer||'No answer.';
+  }catch(e){chat.lastElementChild.textContent='Error: '+e}
+  $('askBtn').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
-loadCities().then(refresh); loadBench();
+loadCities().then(refresh);loadBench();
 </script>
 </body>
 </html>
