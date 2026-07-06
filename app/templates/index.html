@@ -312,6 +312,8 @@ async function loadBench(){try{const b=await (await fetch('/api/benchmark')).jso
 
 let askBusy=false;
 function preset(el){if(askBusy)return;$('q').value=el.textContent;ask()}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function mdToHtml(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^\s*\*\s+/gm,'• ')}
 async function ask(){
   if(askBusy)return;
   const q=$('q').value.trim();if(!q)return;
@@ -322,7 +324,7 @@ async function ask(){
   chat.insertAdjacentHTML('beforeend',`<div class="msg bot thinking">Analyst crunching data <i>●</i><i>●</i><i>●</i></div>`);
   chat.scrollTop=chat.scrollHeight;
   try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
-    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent=r.error||r.answer||'No answer.';
+    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.');
   }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
