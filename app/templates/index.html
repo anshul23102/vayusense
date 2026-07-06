@@ -310,18 +310,21 @@ async function loadBench(){try{const b=await (await fetch('/api/benchmark')).jso
   if(b.speedup){$('speedup').textContent=b.speedup+'×';$('benchRows').textContent=b.rows.toLocaleString()+' sensor readings';
   $('benchTimes').textContent=`pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`}}catch(e){}}
 
-function preset(el){$('q').value=el.textContent;ask()}
+let askBusy=false;
+function preset(el){if(askBusy)return;$('q').value=el.textContent;ask()}
 async function ask(){
+  if(askBusy)return;
   const q=$('q').value.trim();if(!q)return;
-  $('q').value='';$('askBtn').disabled=true;
+  askBusy=true;
+  $('q').value='';$('askBtn').disabled=true;$('q').disabled=true;
   const chat=$('chat');
   chat.insertAdjacentHTML('beforeend',`<div class="msg me"></div>`);chat.lastElementChild.textContent=q;
   chat.insertAdjacentHTML('beforeend',`<div class="msg bot thinking">Analyst crunching data <i>●</i><i>●</i><i>●</i></div>`);
   chat.scrollTop=chat.scrollHeight;
   try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
-    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent=r.answer||'No answer.';
-  }catch(e){chat.lastElementChild.textContent='Error: '+e}
-  $('askBtn').disabled=false;chat.scrollTop=chat.scrollHeight;
+    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent=r.error||r.answer||'No answer.';
+  }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent='Connection error. Please try again.'}
+  askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
 loadCities().then(refresh);loadBench();

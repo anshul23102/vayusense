@@ -85,9 +85,12 @@
   @media(max-width:820px){.benchWrap{grid-template-columns:1fr}}
   .benchImg{border-radius:20px;border:1px solid var(--line);width:100%;background:#fff}
   .rows{display:flex;flex-direction:column;gap:14px;margin-top:22px}
-  .row{display:flex;justify-content:space-between;padding:14px 18px;border-radius:14px;background:var(--glass);
+  .row{display:flex;justify-content:space-between;gap:18px;padding:14px 18px;border-radius:14px;background:var(--glass);
     border:1px solid var(--line);font-size:15px}
-  .row b{font-variant-numeric:tabular-nums}
+  .row b{font-variant-numeric:tabular-nums;text-align:right}
+  .row.stack{flex-direction:column;align-items:flex-start;gap:8px}
+  .row.stack span{color:var(--dim);font-size:13px;text-transform:uppercase;letter-spacing:1px}
+  .row.stack b{text-align:left;line-height:1.5}
   footer{padding:60px 5vw;text-align:center;color:var(--dim);font-size:13.5px;border-top:1px solid var(--line)}
 
   .reveal{opacity:0;transform:translateY(34px);filter:blur(8px);
@@ -166,7 +169,7 @@
       <div class="row reveal"><span>Dataset</span><b>5,922,378 readings · 44 stations</b></div>
       <div class="row reveal d1"><span>pandas (CPU)</span><b>9.34 s</b></div>
       <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg">0.25 s</b></div>
-      <div class="row reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
+      <div class="row stack reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
     </div>
   </div>
   <div class="heroBtns reveal d3" style="justify-content:flex-start">

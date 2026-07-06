@@ -75,17 +75,36 @@ def benchmark():
 
 @app.post("/api/ask")
 async def ask(body: AskBody):
-    session = await runner.session_service.create_session(
-        app_name="vayusense", user_id="web", session_id=str(uuid.uuid4())
-    )
-    content = types.Content(role="user", parts=[types.Part.from_text(text=body.question)])
-    answer, analysis = "", ""
-    async for event in runner.run_async(
-        user_id="web", session_id=session.id, new_message=content
-    ):
-        if event.content and event.content.parts and event.content.parts[0].text:
-            if event.author == "data_analyst":
-                analysis = event.content.parts[0].text
-            else:
-                answer = event.content.parts[0].text
-    return {"answer": answer or analysis, "analysis": analysis}
+    question = body.question.strip()
+    if not question:
+        return JSONResponse({"error": "Please type a question first."}, status_code=400)
+    if len(question) > 500:
+        return JSONResponse({"error": "That question is too long. Try something shorter."}, status_code=400)
+
+    try:
+        session = await runner.session_service.create_session(
+            app_name="vayusense", user_id="web", session_id=str(uuid.uuid4())
+        )
+        content = types.Content(role="user", parts=[types.Part.from_text(text=question)])
+        answer, analysis = "", ""
+        async for event in runner.run_async(
+            user_id="web", session_id=session.id, new_message=content
+        ):
+            if event.content and event.content.parts and event.content.parts[0].text:
+                if event.author == "data_analyst":
+                    analysis = event.content.parts[0].text
+                else:
+                    answer = event.content.parts[0].text
+        if not (answer or analysis):
+            return JSONResponse(
+                {"error": "The agent didn't return an answer. Please try rephrasing your question."},
+                status_code=502,
+            )
+        return {"answer": answer or analysis, "analysis": analysis}
+    except Exception as e:
+        msg = str(e)
+        if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower():
+            friendly = "VayuSense is getting a lot of questions right now (API rate limit). Please wait a few seconds and try again."
+        else:
+            friendly = "Something went wrong answering that question. Please try again in a moment."
+        return JSONResponse({"error": friendly}, status_code=503)
