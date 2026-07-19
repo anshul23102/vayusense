@@ -15,7 +15,7 @@ import os
 from dotenv import load_dotenv
 from google.adk.agents import Agent, SequentialAgent
 
-from .tools import get_city_snapshot, get_human_impact, get_trend, get_worst_stations, list_cities
+from .tools import get_city_snapshot, get_forecast, get_human_impact, get_trend, get_worst_stations, list_cities
 
 load_dotenv()
 MODEL = os.getenv("MODEL", "gemini-2.5-flash")
@@ -43,14 +43,19 @@ Use your tools to gather FACTS before answering:
 - get_human_impact(city) whenever the question touches health, risk, or "how bad is
   it really" — this converts PM2.5 into cigarette-equivalent exposure and an
   illustrative life-expectancy impact, which is far more visceral than a raw AQI number
+- get_forecast(city, parameter, days) whenever the question is about tomorrow, the
+  next few days, or "will it get better/worse" — this is a short-term statistical
+  projection (not a meteorological forecast), so always relay it with that caveat
+  and never state a forecast value with the same confidence as a measured one
 - list_cities() if the requested city may not be covered
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
 24h guidelines (state the multiple, e.g. '6.2x the WHO limit'), 7-day trend
-direction, any anomaly days, relevant hotspots, and the human-impact metrics when
-relevant. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
+direction, any anomaly days, relevant hotspots, human-impact metrics when relevant,
+and forecast figures (clearly marked as a projection) when the user asked about
+upcoming days. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
 """,
-    tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, list_cities],
+    tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, get_forecast, list_cities],
     output_key="analysis",
 )
 
@@ -70,6 +75,10 @@ decision-ready guidance:
   sensitive groups: children, elderly, asthma/heart conditions).
 - Reference the numbers briefly (e.g. 'PM2.5 is ~6x the WHO 24-hour guideline').
 - Be honest about uncertainty; do not invent data the analyst did not provide.
+- If the analyst's report includes a forecast, present it with hedged language
+  ('likely', 'projected to', 'may') rather than stating it as a measured fact, and
+  keep the same weight of confidence the analyst gave it. Never let a projection
+  read as more certain than today's actual measured levels.
 Keep it under 180 words, warm but direct.
 """,
 )

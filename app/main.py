@@ -66,6 +66,11 @@ def impact(city: str = "Delhi"):
     return json.loads(data_tools.get_human_impact(city))
 
 
+@app.get("/api/forecast")
+def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
+    return json.loads(data_tools.get_forecast(city, parameter, days))
+
+
 @app.get("/api/benchmark")
 def benchmark():
     f = ROOT / "benchmark" / "benchmark_results.json"

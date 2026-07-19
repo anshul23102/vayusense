@@ -60,12 +60,16 @@ This is not a cosmetic optimization. A pipeline that takes 9 seconds instead of 
 
 VayuSense uses a **sequential two agent pipeline**, defined in `agents/agent.py`, that mirrors an analyst then advisor workflow:
 
-1. **`data_analyst_agent`** receives the user's question and is instructed to gather facts before saying anything. It has access to five tools (`agents/tools.py`): `get_city_snapshot`, `get_trend`, `get_worst_stations`, `get_human_impact`, and `list_cities`. It writes a compact, numbers first analysis: current pollutant levels versus WHO 24 hour guidelines, expressed as a multiple (for example, "6.2 times the WHO limit"), the 7 day trend direction, any anomaly days, relevant pollution hotspots, and human impact metrics when relevant. This agent is explicitly instructed not to give advice, only facts.
+1. **`data_analyst_agent`** receives the user's question and is instructed to gather facts before saying anything. It has access to six tools (`agents/tools.py`): `get_city_snapshot`, `get_trend`, `get_worst_stations`, `get_human_impact`, `get_forecast`, and `list_cities`. It writes a compact, numbers first analysis: current pollutant levels versus WHO 24 hour guidelines, expressed as a multiple (for example, "6.2 times the WHO limit"), the 7 day trend direction, any anomaly days, relevant pollution hotspots, human impact metrics, and a hedged short-term forecast when relevant. This agent is explicitly instructed not to give advice, only facts.
 2. **`health_advisor_agent`** receives the analyst's factual report through ADK's session state (`output_key="analysis"`) and turns it into practical, decision ready guidance: a one line verdict, two to four concrete recommendations (timing, N95 masks, indoor alternatives, extra caution for children, the elderly, and those with respiratory or heart conditions), and a brief reference back to the underlying numbers. It is instructed to stay grounded in the analyst's facts and never invent data.
 
 This separation of concerns, facts first and then advice, keeps the system's recommendations auditable and reduces the risk of a language model inventing numbers.
 
 The chat also carries conversational memory: each browser session keeps a stable `session_id` that both agents share across turns through ADK's session service, and the data analyst is explicitly instructed to resolve follow-up questions (`"what about Mumbai?"`, `"and tomorrow?"`) against the most recently discussed city, pollutant, or timeframe rather than asking the user to repeat context. A "New chat" control in the UI lets a user deliberately start a fresh session.
+
+## Forecast layer
+
+The dashboard's trend chart extends the measured 7-day rolling average with a short-term projection (`get_forecast` in `agents/tools.py`, served at `/api/forecast`): a damped-trend statistical method (Holt's damped trend, phi=0.85) applied to the rolling average, clamped to the city's historical range so it can't run away, with an uncertainty band that widens the further out the projection goes. It is deliberately a transparent statistical method rather than a black-box ML model, in keeping with the product's "facts before advice" principle — the chart renders it as a dotted line with a soft shaded band, reusing the same amber used for the measured trend rather than introducing a new color, so "projected" reads as a style difference, not a different kind of truth claim. The agent pipeline is instructed to relay any forecast with explicit hedged language ("likely", "projected to") and never state it with the same confidence as a measured reading.
 
 ## Human impact methodology
 
@@ -121,6 +125,7 @@ render.yaml       One click Render deployment blueprint (alternate deployment pa
 | `/api/trend?city=&parameter=&days=` | GET | Time series of daily and 7 day rolling values for one pollutant |
 | `/api/stations?city=` | GET | Worst pollution hotspots by monitoring station |
 | `/api/impact?city=` | GET | Cigarette equivalent and life expectancy impact estimates |
+| `/api/forecast?city=&parameter=&days=` | GET | Short-term damped-trend statistical projection, with uncertainty band |
 | `/api/benchmark` | GET | Recorded GPU vs CPU benchmark results |
 | `/api/ask` | POST | Natural language question, answered by the ADK agent pipeline |
 

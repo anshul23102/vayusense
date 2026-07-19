@@ -135,6 +135,8 @@ The palette is one deep night neutral, one cool primary accent, and two narrowly
 
 **The Status-Plus-Label Rule.** Alert Rose, Amber Caution, and Signal OK never carry meaning by hue alone; every status color ships with a text label or icon alongside it.
 
+**The Measured-vs-Projected Rule.** Forecasted/projected data is never given its own color. It reuses the existing hue for that series (e.g. Amber Caution for the 7-day trend line) and is distinguished only by line style: solid for measured, dotted/dashed for projected, with a soft fill band for uncertainty. Introducing a new color for "this is a guess" would imply it's a different kind of signal than it is — the honesty is in the line style, not a new token.
+
 ## 3. Typography
 
 **Display/Body Font:** Inter (with -apple-system, sans-serif fallback)

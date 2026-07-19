@@ -304,10 +304,26 @@ async function refresh(){
   const p=$('paramSel').value;
   const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
   if(t.series){
-    Plotly.newPlot('trendChart',[
+    const traces=[
       {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#9dc1ff',width:1.3},fill:'tozeroy',fillcolor:'rgba(157,193,255,.06)',hovertemplate:'%{x}<br>%{y:.1f} µg/m³<extra></extra>'},
       {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffce80',width:3},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (7d avg)<extra></extra>'},
-    ],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Inter',size:12},
+    ];
+    try{
+      const f=await (await fetch(`/api/forecast?city=${CITY}&parameter=${p}&days=4`)).json();
+      if(f.forecast&&t.series.length){
+        const last=t.series[t.series.length-1];
+        const fx=[last.date,...f.forecast.map(d=>d.date)];
+        const fy=[last.roll7,...f.forecast.map(d=>d.value)];
+        const fhigh=[last.roll7,...f.forecast.map(d=>d.high)];
+        const flow=[last.roll7,...f.forecast.map(d=>d.low)];
+        traces.push(
+          {x:fx,y:fhigh,mode:'lines',line:{width:0},showlegend:false,hoverinfo:'skip'},
+          {x:fx,y:flow,mode:'lines',line:{width:0},fill:'tonexty',fillcolor:'rgba(255,206,128,.10)',showlegend:false,hoverinfo:'skip'},
+          {x:fx,y:fy,name:'projected',mode:'lines',line:{color:'#ffce80',width:2,dash:'dot'},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (projected)<extra></extra>'}
+        );
+      }
+    }catch(e){}
+    Plotly.newPlot('trendChart',traces,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Inter',size:12},
       margin:{t:6,r:10,b:36,l:42},legend:{orientation:'h',y:1.12},
       xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:false},
       yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'µg/m³'},

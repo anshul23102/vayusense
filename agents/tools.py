@@ -85,6 +85,73 @@ def get_trend(city: str, parameter: str, days: int = 30) -> str:
     return json.dumps({"city": city, "parameter": parameter, "series": series})
 
 
+def get_forecast(city: str, parameter: str, days: int = 3) -> str:
+    """Project the next few days of a pollutant's daily mean using a damped-trend
+    statistical method (Holt's damped trend on the 7-day rolling average, phi=0.85),
+    clamped to the city's historical range. This is a short-term, transparent
+    statistical projection, NOT a meteorological or physics-based forecast, and its
+    accuracy degrades quickly beyond 3-5 days. Always present it with that caveat.
+
+    Args:
+        city: City name, e.g. "Delhi".
+        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
+        days: How many days ahead to project (default 3, max 7).
+    """
+    days = max(1, min(int(days), 7))
+    df = _daily()
+    d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date")
+    if len(d) < 14:
+        return json.dumps({"error": f"not enough {parameter} history for {city} to forecast"})
+
+    roll7 = d["roll7"].to_numpy()
+    last_date = d["date"].iloc[-1]
+    last_value = float(roll7[-1])
+
+    # Weekly trend: average daily change over the last 7 days (smoother than day-over-day noise).
+    slope = float(roll7[-1] - roll7[-8]) / 7.0
+
+    # Recent daily noise around the rolling average, for an honest uncertainty band.
+    recent = d.tail(21)
+    residual_std = float((recent["mean"] - recent["roll7"]).std()) if len(recent) >= 7 else last_value * 0.15
+    residual_std = max(residual_std, last_value * 0.05)
+
+    # Historical bounds for this city+parameter, so the projection can't run away.
+    hist_max = float(d["mean"].max())
+    hist_min = float(d["mean"].min())
+    clamp_hi = hist_max * 1.1
+    clamp_lo = max(0.0, hist_min * 0.5)
+
+    phi = 0.85  # damping factor: each further day trusts the trend less
+    forecast = []
+    cumulative_phi = 0.0
+    for t in range(1, days + 1):
+        cumulative_phi += phi ** t
+        projected = last_value + slope * cumulative_phi
+        projected = min(max(projected, clamp_lo), clamp_hi)
+        band = residual_std * (1 + 0.25 * t)  # widen the band a little further out
+        forecast.append({
+            "date": str((last_date + pd.Timedelta(days=t)).date()),
+            "value": round(projected, 1),
+            "low": round(max(0.0, projected - band), 1),
+            "high": round(projected + band, 1),
+        })
+
+    return json.dumps({
+        "city": city,
+        "parameter": parameter,
+        "last_date": str(last_date.date()),
+        "last_value": round(last_value, 1),
+        "trend_per_day": round(slope, 2),
+        "forecast": forecast,
+        "methodology": (
+            "Damped-trend statistical projection (Holt's damped trend, phi=0.85) applied to "
+            "the 7-day rolling average, clamped to the city's historical range. This is a "
+            "short-term illustrative projection based on recent trend only, not a "
+            "meteorological forecast, and grows less reliable beyond 3-5 days."
+        ),
+    })
+
+
 def get_worst_stations(city: str, top_n: int = 5) -> str:
     """Get the stations with the highest average PM2.5 in a city (pollution hotspots).
 
