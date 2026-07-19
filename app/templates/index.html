@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VayuSense: Live Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23cfe0ff'/%3E%3Cstop offset='100%25' stop-color='%23b9a8fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='7' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -99,6 +100,7 @@
   .bot{background:rgba(255,255,255,.045);border:1px solid var(--line);align-self:flex-start}
   .bot.thinking i{display:inline-block;animation:blink 1.2s infinite}
   @keyframes blink{50%{opacity:.2}}
+  .bot.error{background:rgba(255,138,163,.08);border-color:rgba(255,138,163,.35)}
   .askrow{display:flex;gap:10px;margin-top:14px}
   .askrow input{flex:1;background:rgba(255,255,255,.055);color:var(--txt);border:1px solid var(--line);border-radius:14px;
     padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
@@ -119,11 +121,17 @@
     transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s}
   .reveal.on{opacity:1;transform:none;filter:none}
 
+  .liveRegion{transition:opacity .25s ease}
+  .liveRegion.loading{opacity:.45}
+  @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
+  .kpi.skel .v,.kpi.skel .who{background:rgba(255,255,255,.08);border-radius:6px;color:transparent;animation:shimmer 1.3s ease-in-out infinite}
+
   @media (prefers-reduced-motion: reduce){
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
     .card,.kpi,.askrow button{transition-duration:.01s !important}
     .bot.thinking i{animation:none}
     #aurora{display:none}
+    .kpi.skel .v,.kpi.skel .who{animation:none}
   }
   .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
 </style>
@@ -175,7 +183,7 @@
           </svg>
           <div class="val"><b id="scoreVal">–</b><small>out of 100</small></div>
         </div>
-        <div>
+        <div class="liveRegion" id="scoreLive" aria-live="polite">
           <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
           <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
         </div>
@@ -217,6 +225,10 @@
     <div class="card">
       <div class="eyebrow">90-day pollution trend <span class="tag">daily mean · 7-day rolling</span></div>
       <div id="trendChart" style="height:320px"></div>
+      <details class="impactNote" id="forecastNote" style="display:none;margin-top:12px">
+        <summary style="cursor:pointer;color:var(--dim)">Dotted line = short-term statistical projection (not a measurement), with a widening uncertainty band. Methodology ▾</summary>
+        <p id="forecastMethod" style="margin-top:6px"></p>
+      </details>
     </div>
   </div>
   <div class="s4 reveal">
@@ -300,17 +312,24 @@ function scoreFrom(pollutants){
   return {score,worst,worstName};
 }
 
+let refreshToken=0;
 async function refresh(){
+  const myToken=++refreshToken;
   const p=$('paramSel').value;
+  $('kpis').querySelectorAll('.kpi').forEach(k=>k.classList.add('skel'));
+  $('scoreLive').classList.add('loading');
   const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
+  if(myToken!==refreshToken)return;
   if(t.series){
     const traces=[
       {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#9dc1ff',width:1.3},fill:'tozeroy',fillcolor:'rgba(157,193,255,.06)',hovertemplate:'%{x}<br>%{y:.1f} µg/m³<extra></extra>'},
       {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffce80',width:3},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (7d avg)<extra></extra>'},
     ];
+    let forecastMethod='';
     try{
       const f=await (await fetch(`/api/forecast?city=${CITY}&parameter=${p}&days=4`)).json();
       if(f.forecast&&t.series.length){
+        forecastMethod=f.methodology||'';
         const last=t.series[t.series.length-1];
         const fx=[last.date,...f.forecast.map(d=>d.date)];
         const fy=[last.roll7,...f.forecast.map(d=>d.value)];
@@ -323,13 +342,20 @@ async function refresh(){
         );
       }
     }catch(e){}
+    if(myToken!==refreshToken)return;
     Plotly.newPlot('trendChart',traces,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Inter',size:12},
       margin:{t:6,r:10,b:36,l:42},legend:{orientation:'h',y:1.12},
       xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:false},
       yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'µg/m³'},
       hovermode:'x unified'},{displayModeBar:false});
+    const note=$('forecastNote');
+    if(traces.length>2){
+      note.style.display='';
+      $('forecastMethod').textContent=forecastMethod;
+    }else note.style.display='none';
   }
   const s=await (await fetch(`/api/snapshot?city=${CITY}`)).json();
+  if(myToken!==refreshToken)return;
   if(s.pollutants){
     $('kpis').innerHTML=Object.entries(s.pollutants).map(([k,v])=>{
       const bad=v.times_who_limit&&v.times_who_limit>1;
@@ -346,7 +372,9 @@ async function refresh(){
     else{v.innerHTML=vdot+'Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
     $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline.`:'No guideline exceedances detected.';
   }
+  $('scoreLive').classList.remove('loading');
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
+  if(myToken!==refreshToken)return;
   if(imp.cigarettes_per_day_equivalent!==undefined){
     $('impCig').innerHTML=`${imp.cigarettes_per_day_equivalent}<span> /day</span>`;
     $('impYears').innerHTML=`${imp.estimated_life_expectancy_years_lost}<span> yrs</span>`;
@@ -377,8 +405,10 @@ async function ask(){
   chat.scrollTop=chat.scrollHeight;
   try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,session_id:SESSION_ID})})).json();
     if(r.session_id)SESSION_ID=r.session_id;
-    chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.');
-  }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent='Connection error. Please try again.'}
+    chat.lastElementChild.classList.remove('thinking');
+    if(r.error)chat.lastElementChild.classList.add('error');
+    chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.');
+  }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.classList.add('error');chat.lastElementChild.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
