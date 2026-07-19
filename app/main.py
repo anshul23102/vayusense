@@ -28,6 +28,7 @@ runner = InMemoryRunner(agent=root_agent, app_name="vayusense")
 
 class AskBody(BaseModel):
     question: str
+    session_id: str | None = None
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -82,9 +83,14 @@ async def ask(body: AskBody):
         return JSONResponse({"error": "That question is too long. Try something shorter."}, status_code=400)
 
     try:
-        session = await runner.session_service.create_session(
-            app_name="vayusense", user_id="web", session_id=str(uuid.uuid4())
+        session_id = body.session_id or str(uuid.uuid4())
+        session = await runner.session_service.get_session(
+            app_name="vayusense", user_id="web", session_id=session_id
         )
+        if session is None:
+            session = await runner.session_service.create_session(
+                app_name="vayusense", user_id="web", session_id=session_id
+            )
         content = types.Content(role="user", parts=[types.Part.from_text(text=question)])
         answer, analysis = "", ""
         async for event in runner.run_async(
@@ -100,7 +106,7 @@ async def ask(body: AskBody):
                 {"error": "The agent didn't return an answer. Please try rephrasing your question."},
                 status_code=502,
             )
-        return {"answer": answer or analysis, "analysis": analysis}
+        return {"answer": answer or analysis, "analysis": analysis, "session_id": session.id}
     except Exception as e:
         msg = str(e)
         if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower():

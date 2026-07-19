@@ -238,7 +238,7 @@
 <div class="grid">
   <div class="s12 reveal">
     <div class="card">
-      <div class="eyebrow"><svg class="ic-i"><use href="#ic-chip"/></svg> Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span></div>
+      <div class="eyebrow"><svg class="ic-i"><use href="#ic-chip"/></svg> Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span><button type="button" id="newChatBtn" onclick="resetChat()" style="margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:99px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit">New chat</button></div>
       <div id="chat">
         <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>
       </div>
@@ -264,6 +264,7 @@
 <script>
 const $ = id => document.getElementById(id);
 let CITY='Delhi';
+let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if(!reduceMotion){
@@ -342,6 +343,11 @@ async function loadBench(){try{const b=await (await fetch('/api/benchmark')).jso
 
 let askBusy=false;
 function preset(el){if(askBusy)return;$('q').value=el.textContent;ask()}
+function resetChat(){
+  if(askBusy)return;
+  SESSION_ID=crypto.randomUUID();
+  $('chat').innerHTML='<div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>';
+}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function mdToHtml(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^\s*\*\s+/gm,'• ')}
 async function ask(){
@@ -353,7 +359,8 @@ async function ask(){
   chat.insertAdjacentHTML('beforeend',`<div class="msg me"></div>`);chat.lastElementChild.textContent=q;
   chat.insertAdjacentHTML('beforeend',`<div class="msg bot thinking">Analyst crunching data <i>●</i><i>●</i><i>●</i></div>`);
   chat.scrollTop=chat.scrollHeight;
-  try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})})).json();
+  try{const r=await (await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,session_id:SESSION_ID})})).json();
+    if(r.session_id)SESSION_ID=r.session_id;
     chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.');
   }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;

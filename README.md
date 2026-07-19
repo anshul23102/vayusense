@@ -65,6 +65,8 @@ VayuSense uses a **sequential two agent pipeline**, defined in `agents/agent.py`
 
 This separation of concerns, facts first and then advice, keeps the system's recommendations auditable and reduces the risk of a language model inventing numbers.
 
+The chat also carries conversational memory: each browser session keeps a stable `session_id` that both agents share across turns through ADK's session service, and the data analyst is explicitly instructed to resolve follow-up questions (`"what about Mumbai?"`, `"and tomorrow?"`) against the most recently discussed city, pollutant, or timeframe rather than asking the user to repeat context. A "New chat" control in the UI lets a user deliberately start a fresh session.
+
 ## Human impact methodology
 
 Raw AQI and PM2.5 numbers do not mean much to a non expert. `get_human_impact` (in `agents/tools.py`) converts a city's annual average PM2.5 concentration into two more visceral, decision relevant metrics:
