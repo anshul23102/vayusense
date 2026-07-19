@@ -7,3 +7,5 @@ data/raw/
 *.csv.gz
 .DS_Store
 .ipynb_checkpoints/
+.impeccable/hook.cache.json
+.impeccable/config.local.json

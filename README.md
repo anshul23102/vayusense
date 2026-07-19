@@ -1,6 +1,6 @@
 # VayuSense: AI Decision Intelligence for the Air We Breathe
 
-**Live demo:** https://vayusense-kggf.onrender.com
+**Live demo:** https://vayusense-663068003180.us-central1.run.app
 **Challenge:** AI for Better Living and Smarter Communities (Gen AI Academy APAC 2026, Cohort 2 Hackathon)
 **Team:** BloodWyrm (solo), Anshul Jain, IIIT Delhi
 
@@ -22,7 +22,7 @@ VayuSense closes that gap. It takes millions of raw sensor readings, processes t
 
 ## Why acceleration matters here
 
-The dataset behind VayuSense is 5,922,378 individual sensor readings pulled from the OpenAQ public archive (hosted on AWS Open Data), spanning multiple years, four Indian cities, and six pollutants (PM2.5, PM10, NO2, SO2, O3, CO). Turning that raw firehose into a usable daily snapshot requires cleaning, resampling to daily means per city and pollutant, computing 7 day rolling trends, and flagging anomaly days.
+The original GPU benchmark ran on 5,922,378 individual sensor readings pulled from the OpenAQ public archive (hosted on AWS Open Data), spanning multiple years, four Indian cities, and six pollutants (PM2.5, PM10, NO2, SO2, O3, CO). That fixed benchmark result is the honest, reproducible proof of the speedup and is not regenerated as the app grows. The live dataset has since expanded well beyond that proof of concept: it now spans ten Indian cities (Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Pune, Ahmedabad, Lucknow, and Patna), all six pollutants, and close to 13 million combined raw sensor readings across both ingestion runs. Turning that raw firehose into a usable daily snapshot requires cleaning, resampling to daily means per city and pollutant, computing 7 day rolling trends, and flagging anomaly days.
 
 Run on pandas (CPU), that pipeline takes **9.34 seconds**. Run on NVIDIA cuDF and RAPIDS on a T4 GPU (Google Colab), the identical pipeline takes **0.249 seconds**, a **37.5x speedup**. The benchmark notebook and its raw output are in `benchmark/vayusense_gpu_benchmark.ipynb`, with the recorded result in `benchmark/benchmark_results.json` and displayed live at `/api/benchmark` on the deployed app.
 
@@ -53,7 +53,7 @@ This is not a cosmetic optimization. A pipeline that takes 9 seconds instead of 
             dashboard UI + REST API + "Ask VayuSense" chat endpoint
                                 |
                                 v
-              Deployed container (Docker, Render / Cloud Run)
+              Deployed container (Docker, Cloud Run / Render)
 ```
 
 ## Multi agent design (Google ADK + Gemini)
@@ -90,7 +90,7 @@ Both metrics are clearly labeled in the API response as illustrative, decision s
 - Jinja2 templated HTML, vanilla JavaScript, and Plotly style charts on the frontend, no heavy frontend framework
 - pandas and PyArrow for local data access in the served application
 - Pydantic for request validation
-- Docker for containerized deployment, deployed publicly on Render
+- Docker for containerized deployment, deployed publicly on Google Cloud Run (Vertex AI mode for Gemini access, backed by real Cloud Billing quota)
 
 **Data source**
 - OpenAQ, a global, public, open air quality data archive, accessed via its AWS Open Data S3 bucket
@@ -105,7 +105,7 @@ app/              FastAPI application: routes, templates, static assets
 data/             Raw and GPU processed datasets (parquet)
 deploy/           Dockerfile and deployment configuration
 docs/             Pitch deck, architecture diagrams, and submission assets
-render.yaml       One click Render deployment blueprint
+render.yaml       One click Render deployment blueprint (alternate deployment path)
 ```
 
 ## API reference
@@ -141,7 +141,7 @@ Then open `http://localhost:8090` for the landing page or `http://localhost:8090
 
 ## Deployment
 
-VayuSense ships as a single Docker container (`deploy/Dockerfile`) and is deployed publicly on Render using the included `render.yaml` blueprint, which is also compatible with Google Cloud Run. The GPU benchmark itself is run separately, offline, on a Colab T4 instance, since the production web application serves already processed data and does not require live GPU access at request time.
+VayuSense ships as a single Docker container (`deploy/Dockerfile`) and is deployed publicly on Google Cloud Run, using Vertex AI mode for Gemini access so the agent pipeline draws on real Cloud Billing quota instead of a rate limited API key. The same image also deploys cleanly to Render via the included `render.yaml` blueprint as an alternate path. The GPU benchmark itself is run separately, offline, on a Colab T4 instance, since the production web application serves already processed data and does not require live GPU access at request time.
 
 ## Credits
 

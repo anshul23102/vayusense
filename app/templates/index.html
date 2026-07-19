@@ -12,8 +12,11 @@
     --bg:#0e1424; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
     --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
     --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --bad:#ff8aa3; --ok:#4fe3ac; --amber:#ffce80;
+    --shadow-rest:0 8px 28px rgba(6,10,25,.35); --shadow-hover:0 14px 40px rgba(6,10,25,.45);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  .srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0}
   body{background:var(--bg);color:var(--txt);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden}
   canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
   #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(95px);opacity:.4;
@@ -38,12 +41,14 @@
   .sectionHead{margin:52px 0 20px}
   .sectionHead:first-child{margin-top:0}
   .kicker{color:var(--blueSolid);font-size:11.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
-  .sectionHead h1{font-size:23px;font-weight:650;letter-spacing:-.01em}
+  .sectionHead h1,.sectionHead h2{font-size:23px;font-weight:650;letter-spacing:-.01em}
   .sectionHead p{color:var(--dim);font-size:14px;margin-top:4px;max-width:520px}
 
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
   .card{position:relative;padding:24px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
-    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;transition:background .3s}
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;
+    box-shadow:var(--shadow-rest);transition:background .2s,box-shadow .2s,transform .2s cubic-bezier(.2,.8,.2,1)}
+  .card:hover{background:var(--glass2);box-shadow:var(--shadow-hover);transform:translateY(-2px)}
   .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
     background:linear-gradient(140deg,rgba(255,255,255,.2),transparent 40%);
     -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
@@ -62,6 +67,7 @@
   .ring .val b{font-size:40px;font-weight:700;line-height:1}
   .ring .val small{color:var(--dim);font-size:11px;margin-top:3px}
   .verdict{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;font-weight:600;font-size:13px;border:1px solid;margin-bottom:10px}
+  .vdot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
   .scoreTxt{color:var(--dim);font-size:13.5px;line-height:1.6;max-width:280px}
 
   .impactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px}
@@ -98,19 +104,36 @@
     padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
   .askrow input:focus{border-color:rgba(157,193,255,.5)}
   .askrow button{background:linear-gradient(135deg,#e3ecff,#9dc1ff);border:0;color:#0b1226;font-weight:650;
-    padding:0 22px;border-radius:14px;cursor:pointer;font-size:14.5px;font-family:inherit;transition:transform .2s;box-shadow:0 6px 20px rgba(157,193,255,.3)}
-  .askrow button:hover{transform:translateY(-2px)} .askrow button:disabled{opacity:.5;transform:none}
+    padding:0 22px;border-radius:14px;cursor:pointer;font-size:14.5px;font-family:inherit;
+    transition:transform .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(157,193,255,.3)}
+  .askrow button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover),0 6px 20px rgba(157,193,255,.4)}
+  .askrow button:disabled{opacity:.5;transform:none;box-shadow:0 6px 20px rgba(157,193,255,.3)}
   .sugg{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .sugg span{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;transition:all .2s}
-  .sugg span:hover{color:var(--txt);background:var(--glass2)}
+  .sugg button{font:inherit;font-size:12px;color:var(--dim);background:transparent;border:1px solid var(--line);
+    border-radius:99px;padding:8px 14px;cursor:pointer;transition:all .2s;min-height:36px}
+  .sugg button:hover{color:var(--txt);background:var(--glass2)}
+  .sugg button:focus-visible{outline:2px solid var(--blueSolid);outline-offset:2px}
 
   .foot{color:var(--dim);font-size:12.5px;text-align:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
   .reveal{opacity:0;transform:translateY(22px);filter:blur(6px);
     transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s}
   .reveal.on{opacity:1;transform:none;filter:none}
+
+  @media (prefers-reduced-motion: reduce){
+    .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
+    .card,.kpi,.askrow button{transition-duration:.01s !important}
+    .bot.thinking i{animation:none}
+    #aurora{display:none}
+  }
+  .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-lungs" viewBox="0 0 24 24"><path d="M12 3v7M12 10c-1 -3 -4 -3 -5 -1c-2 3 -2 9 0 11c2 1.5 4 -0.5 5 -3M12 10c1 -3 4 -3 5 -1c2 3 2 9 0 11c-2 1.5 -4 -0.5 -5 -3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
 <div id="aurora"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
@@ -119,10 +142,13 @@
 <nav>
   <a class="logo" href="/"><div class="dot"></div>Vayu<span>Sense</span></a>
   <div class="right">
-    <select id="citySel"></select>
-    <select id="paramSel">
+    <label class="srOnly" for="citySel">City</label>
+    <select id="citySel" aria-label="City"></select>
+    <label class="srOnly" for="paramSel">Pollutant</label>
+    <select id="paramSel" aria-label="Pollutant">
       <option value="pm25">PM2.5</option><option value="pm10">PM10</option>
       <option value="no2">NO₂</option><option value="o3">O₃</option>
+      <option value="so2">SO₂</option><option value="co">CO</option>
     </select>
   </div>
 </nav>
@@ -159,7 +185,7 @@
 
   <div class="s6 reveal">
     <div class="card">
-      <div class="eyebrow">🫁 Human impact <span class="tag">beyond AQI</span></div>
+      <div class="eyebrow"><svg class="ic-i"><use href="#ic-lungs"/></svg> Human impact <span class="tag">beyond AQI</span></div>
       <div class="impactGrid">
         <div class="impactStat">
           <div class="n" id="impCig">–<span> /day</span></div>
@@ -184,7 +210,7 @@
 
 <div class="sectionHead reveal">
   <div class="kicker">Trend</div>
-  <h1>How it's moved, and where it's heading</h1>
+  <h2>How it's moved, and where it's heading</h2>
 </div>
 <div class="grid">
   <div class="s8 reveal">
@@ -195,31 +221,31 @@
   </div>
   <div class="s4 reveal">
     <div class="card">
-      <div class="eyebrow">⚡ NVIDIA acceleration</div>
+      <div class="eyebrow"><svg class="ic-i"><use href="#ic-bolt"/></svg> NVIDIA acceleration</div>
       <div class="bench">
         <div class="big" id="speedup">-</div>
         <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
       </div>
-      <img src="/static/benchmark.png" alt="benchmark" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
+      <img src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time: pandas on CPU took 9.34 seconds versus cuDF on an NVIDIA T4 GPU at 0.25 seconds, a 37.5 times speedup" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
     </div>
   </div>
 </div>
 
 <div class="sectionHead reveal">
   <div class="kicker">Ask</div>
-  <h1>Get a straight answer, not a spreadsheet</h1>
+  <h2>Get a straight answer, not a spreadsheet</h2>
 </div>
 <div class="grid">
   <div class="s12 reveal">
     <div class="card">
-      <div class="eyebrow">🤖 Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span></div>
+      <div class="eyebrow"><svg class="ic-i"><use href="#ic-chip"/></svg> Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span></div>
       <div id="chat">
         <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>
       </div>
       <div class="sugg">
-        <span onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</span>
-        <span onclick="preset(this)">Compare Delhi vs Mumbai air quality</span>
-        <span onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</span>
+        <button type="button" onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</button>
+        <button type="button" onclick="preset(this)">Compare Delhi vs Mumbai air quality</button>
+        <button type="button" onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</button>
       </div>
       <div class="askrow">
         <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
@@ -238,18 +264,21 @@
 <script>
 const $ = id => document.getElementById(id);
 let CITY='Delhi';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const aurora=$('aurora');
-addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
-const cv=$('haze'),ctx=cv.getContext('2d');let W,H,parts=[],mouse={x:-999,y:-999};
-function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight} rs();addEventListener('resize',rs);
-addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
-for(let i=0;i<80;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.16,o:Math.random()*.26+.06});
-(function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
-if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
-p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
-if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
-ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(196,212,245,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+if(!reduceMotion){
+  const aurora=$('aurora');
+  addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
+  const cv=$('haze'),ctx=cv.getContext('2d');let W,H,parts=[],mouse={x:-999,y:-999};
+  function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight} rs();addEventListener('resize',rs);
+  addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
+  for(let i=0;i<80;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.16,o:Math.random()*.26+.06});
+  (function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+  if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
+  p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
+  if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
+  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(196,212,245,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+}
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
@@ -294,9 +323,10 @@ async function refresh(){
     $('scoreVal').textContent=score;
     $('ringArc').style.strokeDashoffset=408-(408*score/100);
     const v=$('verdict');
-    if(score>=70){v.textContent='🟢 Generally safe';v.style.color='var(--ok)';v.style.borderColor='var(--ok)'}
-    else if(score>=40){v.textContent='🟡 Caution advised';v.style.color='var(--amber)';v.style.borderColor='var(--amber)'}
-    else{v.textContent='🔴 Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
+    const vdot='<span class="vdot"></span>';
+    if(score>=70){v.innerHTML=vdot+'Generally safe';v.style.color='var(--ok)';v.style.borderColor='var(--ok)'}
+    else if(score>=40){v.innerHTML=vdot+'Caution advised';v.style.color='var(--amber)';v.style.borderColor='var(--amber)'}
+    else{v.innerHTML=vdot+'Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
     $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline.`:'No guideline exceedances detected.';
   }
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();

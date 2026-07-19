@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-18T00:00:00.000Z",
+  "title": "Design System: VayuSense",
+  "extensions": {
+    "colorMeta": {
+      "night-bg": { "role": "neutral", "displayName": "Night BG", "canonical": "#0e1424", "tonalRamp": ["#151f37", "#283967", "#395293", "#4f6cba", "#7b91cc", "#a7b6dd", "#ccd4eb", "#edf0f8"] },
+      "night-bg-deep": { "role": "neutral", "displayName": "Night BG Deep", "canonical": "#111a30", "tonalRamp": ["#141f38", "#253969", "#355297", "#4a6cbf", "#7791cf", "#a5b6df", "#cad4ec", "#ecf0f8"] },
+      "ice": { "role": "primary", "displayName": "Ice", "canonical": "#cfe0ff", "tonalRamp": ["#001b4c", "#00338f", "#0048cc", "#0a61ff", "#4788ff", "#85b0ff", "#b8d1ff", "#e5efff"] },
+      "ice-solid": { "role": "primary", "displayName": "Ice Solid", "canonical": "#9dc1ff", "tonalRamp": ["#001c4c", "#00348f", "#004bcc", "#0a64ff", "#478bff", "#85b2ff", "#b8d2ff", "#e5efff"] },
+      "ultraviolet": { "role": "secondary", "displayName": "Ultraviolet", "canonical": "#b9a8fb", "tonalRamp": ["#120349", "#210689", "#2f09c3", "#4315f4", "#724ff7", "#a18afa", "#c8bbfc", "#ebe7fe"] },
+      "photon-green": { "role": "secondary", "displayName": "Photon Green", "canonical": "#9adb3f", "tonalRamp": ["#2b400c", "#507817", "#72ac20", "#93d831", "#aee264", "#c9ec98", "#dff4c3", "#f4fbea"] },
+      "signal-ok": { "role": "tertiary", "displayName": "Signal OK", "canonical": "#4fe3ac", "tonalRamp": ["#0b422d", "#147b55", "#1cb079", "#2cdd9b", "#61e6b4", "#95eecd", "#c1f5e2", "#e9fbf5"] },
+      "alert-rose": { "role": "tertiary", "displayName": "Alert Rose", "canonical": "#ff8aa3", "tonalRamp": ["#4c0010", "#8f001f", "#cc002c", "#ff0a3f", "#ff476f", "#ff859f", "#ffb8c7", "#ffe5eb"] },
+      "amber-caution": { "role": "tertiary", "displayName": "Amber Caution", "canonical": "#ffce80", "tonalRamp": ["#4c2f00", "#8f5800", "#cc7d00", "#ffa10a", "#ffb847", "#ffd085", "#ffe3b8", "#fff5e5"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#f3f6fd", "tonalRamp": ["#0b1b42", "#14337a", "#1d49af", "#2d62dc", "#6289e5", "#96b0ee", "#c2d1f5", "#e9effb"] },
+      "mist": { "role": "neutral", "displayName": "Mist", "canonical": "#a9b4d0", "tonalRamp": ["#1b2131", "#323e5c", "#485984", "#6175a8", "#8897be", "#b0bad4", "#d1d7e6", "#eff1f6"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(255,255,255,0.09)" },
+      "glass": { "role": "neutral", "displayName": "Glass", "canonical": "rgba(255,255,255,0.05)" },
+      "glass-deep": { "role": "neutral", "displayName": "Glass Deep", "canonical": "rgba(255,255,255,0.085)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing hero headline only. Appears once per page." },
+      "headline": { "displayName": "Headline", "purpose": "Landing page section titles." },
+      "title": { "displayName": "Title", "purpose": "Dashboard section headers, one notch quieter than a landing Headline." },
+      "body": { "displayName": "Body", "purpose": "Lead paragraphs and descriptive copy; dashboard body runs smaller for density." },
+      "label": { "displayName": "Label", "purpose": "Kickers, eyebrows, KPI captions, tag chips. The system's only uppercase-tracked text." }
+    },
+    "shadows": [
+      { "name": "ambient-rest", "value": "0 8px 28px rgba(6,10,25,0.35)", "purpose": "Default lift under every card and elevated panel at rest." },
+      { "name": "ambient-hover", "value": "0 14px 40px rgba(6,10,25,0.45)", "purpose": "Firmer, deeper lift on hover/focus, paired with a small translateY(-2px)." },
+      { "name": "glow-primary", "value": "0 10px 34px rgba(157,193,255,0.4)", "purpose": "Reserved for the primary CTA button only." },
+      { "name": "glow-accent", "value": "0 0 28px rgba(154,219,63,0.28)", "purpose": "Reserved for the NVIDIA benchmark number and other Photon Green moments." }
+    ],
+    "motion": [
+      { "name": "ease-reveal", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Scroll-reveal entrance easing: opacity + translateY + blur." },
+      { "name": "ease-lift", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "Hover-lift easing for buttons and interactive cards." },
+      { "name": "duration-reveal", "value": "0.9s", "purpose": "Scroll-reveal entrance duration on the landing page (0.8s on the dashboard)." },
+      { "name": "duration-hover", "value": "0.2s", "purpose": "Standard hover/focus state transition duration." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "820px" },
+      { "name": "md", "value": "940px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one CTA color in the system. Glows at rest, lightens and lifts on hover.",
+      "html": "<button class=\"ds-btn-primary\">See your city's air &rarr;</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:600;font-size:16px;font-family:Inter,-apple-system,sans-serif;border:0;cursor:pointer;color:#071023;background:#9dc1ff;box-shadow:0 10px 34px rgba(157,193,255,.4);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s}.ds-btn-primary:hover{background:#cfe0ff;transform:translateY(-2px);box-shadow:0 14px 40px rgba(6,10,25,.45),0 10px 34px rgba(157,193,255,.5)}.ds-btn-primary:focus-visible{outline:2px solid #9dc1ff;outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action: glass fill, hairline border, no glow at rest.",
+      "html": "<button class=\"ds-btn-ghost\">See how it works</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:600;font-size:16px;font-family:Inter,-apple-system,sans-serif;cursor:pointer;color:#f3f6fd;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(10px);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s}.ds-btn-ghost:hover{background:rgba(255,255,255,.085);transform:translateY(-2px);box-shadow:0 14px 40px rgba(6,10,25,.45)}.ds-btn-ghost:focus-visible{outline:2px solid #9dc1ff;outline-offset:2px}"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The system's signature surface: flat glass with a lit top-edge, lifted by ambient shadow on hover, never colored shadow.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-eyebrow\">Air Safety Score</div><div class=\"ds-card-title\">Delhi is Hazardous today</div></div>",
+      "css": ".ds-card{position:relative;padding:24px;border-radius:22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);box-shadow:0 8px 28px rgba(6,10,25,.35);transition:transform .2s cubic-bezier(.2,.8,.2,1),background .2s,box-shadow .2s;overflow:hidden}.ds-card::before{content:'';position:absolute;inset:0;border-radius:22px;padding:1px;background:linear-gradient(140deg,rgba(255,255,255,.25),transparent 40%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.ds-card:hover{background:rgba(255,255,255,.085);transform:translateY(-2px);box-shadow:0 14px 40px rgba(6,10,25,.45)}.ds-card-eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#a9b4d0;margin-bottom:8px}.ds-card-title{font-size:19px;font-weight:650;color:#f3f6fd;font-family:Inter,-apple-system,sans-serif}"
+    },
+    {
+      "name": "Live Status Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Glass pill with the system's one animated indicator, reserved for genuinely live data.",
+      "html": "<span class=\"ds-chip\"><span class=\"ds-chip-dot\"></span>GPU-accelerated &middot; live data</span>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:99px;font-size:13px;color:#a9b4d0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);font-family:Inter,-apple-system,sans-serif}.ds-chip-dot{width:7px;height:7px;border-radius:50%;background:#9adb3f;animation:ds-pulse 1.8s infinite}@keyframes ds-pulse{0%{box-shadow:0 0 0 0 rgba(154,219,63,.5)}70%{box-shadow:0 0 0 9px rgba(154,219,63,0)}100%{box-shadow:0 0 0 0 rgba(154,219,63,0)}}@media (prefers-reduced-motion: reduce){.ds-chip-dot{animation:none}}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Glass input, focus ring replaced by a border-color shift to stay in the restrained register.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Ask about air quality, health risk, timing, hotspots…\">",
+      "css": ".ds-input{width:100%;background:rgba(255,255,255,.055);color:#f3f6fd;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:13px 16px;font-size:14.5px;font-family:Inter,-apple-system,sans-serif;outline:none;transition:border-color .2s}.ds-input::placeholder{color:#a9b4d0}.ds-input:focus{border-color:rgba(157,193,255,.5)}"
+    },
+    {
+      "name": "Floating Nav",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "The signature centered glass pill nav bar with a conic-gradient logo mark.",
+      "html": "<nav class=\"ds-nav\"><div class=\"ds-nav-logo\"><span class=\"ds-nav-dot\"></span>Vayu<span class=\"ds-nav-brand\">Sense</span></div><a class=\"ds-nav-link\" href=\"#\">Why</a><a class=\"ds-nav-link\" href=\"#\">How it works</a><button class=\"ds-nav-cta\">Open Live Dashboard &rarr;</button></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:26px;padding:12px 20px;border-radius:18px;background:rgba(15,21,40,.55);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(18px);font-family:Inter,-apple-system,sans-serif}.ds-nav-logo{font-weight:650;font-size:18px;display:flex;align-items:center;gap:10px;color:#f3f6fd}.ds-nav-dot{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,#9dc1ff,#b9a8fb,#9dc1ff);box-shadow:0 0 18px rgba(157,193,255,.55);display:inline-block}.ds-nav-brand{color:#cfe0ff}.ds-nav-link{color:#a9b4d0;text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}.ds-nav-link:hover{color:#f3f6fd}.ds-nav-cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);padding:9px 18px;border-radius:12px;font-weight:600;border:0;cursor:pointer;box-shadow:0 6px 24px rgba(157,193,255,.35);font-family:inherit}"
+    },
+    {
+      "name": "Score Ring",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The product's one true hero metric: an animated SVG gauge, Ice-to-Ultraviolet gradient stroke.",
+      "html": "<div class=\"ds-ring\"><svg width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><circle cx=\"70\" cy=\"70\" r=\"60\" fill=\"none\" stroke=\"rgba(255,255,255,.09)\" stroke-width=\"11\"/><defs><linearGradient id=\"ds-ring-grad\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#9dc1ff\"/><stop offset=\"100%\" stop-color=\"#b9a8fb\"/></linearGradient></defs><circle cx=\"70\" cy=\"70\" r=\"60\" fill=\"none\" stroke=\"url(#ds-ring-grad)\" stroke-width=\"11\" stroke-linecap=\"round\" stroke-dasharray=\"377\" stroke-dashoffset=\"94\" transform=\"rotate(-90 70 70)\"/></svg><div class=\"ds-ring-val\"><b>75</b><small>out of 100</small></div></div>",
+      "css": ".ds-ring{position:relative;width:140px;height:140px}.ds-ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,-apple-system,sans-serif}.ds-ring-val b{font-size:38px;font-weight:700;color:#f3f6fd;line-height:1}.ds-ring-val small{color:#a9b4d0;font-size:11px;margin-top:3px}"
+    },
+    {
+      "name": "Chat Bubbles",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "User messages carry the AI-moment gradient tint; agent replies stay flat and neutral even for hazardous verdicts.",
+      "html": "<div class=\"ds-chat\"><div class=\"ds-msg-user\">Is it safe for outdoor sports today?</div><div class=\"ds-msg-agent\">Not safe. PM2.5 is 15.6&times; the WHO 24-hour guideline and rising.</div></div>",
+      "css": ".ds-chat{display:flex;flex-direction:column;gap:10px;font-family:Inter,-apple-system,sans-serif;font-size:14px;line-height:1.55}.ds-msg-user,.ds-msg-agent{padding:12px 16px;border-radius:16px;max-width:85%}.ds-msg-user{background:linear-gradient(135deg,rgba(157,193,255,.22),rgba(185,168,251,.18));border:1px solid rgba(157,193,255,.25);align-self:flex-end;color:#f3f6fd}.ds-msg-agent{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);align-self:flex-start;color:#f3f6fd}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Watch",
+    "overview": "VayuSense is a vigilant, quiet monitoring system, not a marketing dashboard. The whole surface reads as an instrument kept on through the night: a deep navy-black field, particles drifting like slow static, a soft aurora that answers the cursor rather than announcing itself, and a single glowing ring at the center that reports one number a person can trust. Nothing here performs urgency; the interface stays still and lets the data carry the weight. When a reading is hazardous, the number itself lands hard, not the chrome around it. This system explicitly rejects the generic SaaS dashboard: no hero-metric-card cliche, no gradient text as decoration, no side-stripe accent borders, no identical card grids repeated for their own sake, no cookie-cutter admin template layout.",
+    "keyCharacteristics": [
+      "Deep, near-black night backgrounds with drifting particulate haze and a cursor-reactive aurora glow",
+      "One primary accent (Ice) doing the CTA/focus work, Ultraviolet reserved for AI/agent moments, Photon Green reserved for the acceleration story",
+      "Flat glass surfaces at rest, lifted by soft ambient shadow and a firmer glow on interaction, never shadow-heavy by default",
+      "A single Inter type family carried across every size, weight doing the hierarchy work instead of font-mixing",
+      "Restrained motion: reveal-on-scroll, gentle hover lifts, a pulsing status dot; nothing choreographed or bouncy"
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Photon Green means acceleration and only acceleration. Ultraviolet means the AI is reasoning and only that. Reusing either color for an unrelated purpose breaks the vocabulary the whole product depends on.", "section": "colors" },
+      { "name": "The Status-Plus-Label Rule", "body": "Alert Rose, Amber Caution, and Signal OK never carry meaning by hue alone; every status color ships with a text label or icon alongside it.", "section": "colors" },
+      { "name": "The One Family Rule", "body": "Every weight and size on screen comes from Inter. Introducing a second family (even a \"just for headlines\" serif) breaks the calibrated-instrument read.", "section": "typography" },
+      { "name": "The Two-Vocabulary Rule", "body": "Ambient shadows convey structure (this thing is raised off the surface). Glows convey significance (this specific number matters). Never use a glow to fake structural depth, and never use an ambient shadow to try to draw attention to a value.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every screen to one dominant accent (Ice Solid) with Ultraviolet and Photon Green appearing only in their named contexts (agent moments, acceleration moments).",
+      "Do give cards real ambient lift (Ambient Rest/Hover) now that the system has moved past flat-only; keep that lift dark and diffuse, never colored.",
+      "Do pair every status color (Alert Rose, Amber Caution, Signal OK) with a text label or icon.",
+      "Do use Inter at every size; let weight and tracking carry hierarchy.",
+      "Do keep motion restrained: reveal-on-scroll, hover lifts, one pulsing status dot; always ship a prefers-reduced-motion alternative."
+    ],
+    "donts": [
+      "Don't ship a generic SaaS dashboard: no hero-metric-card cliche, no gradient text as decoration, no side-stripe colored borders on cards or callouts, no identical repeated card grids, no cookie-cutter admin template layout.",
+      "Don't make this look like a government/bureaucratic data portal: no dense unstyled tables, no default form-control chrome, no bureaucratic labeling.",
+      "Don't make this look like a consumer weather app: no cartoonish icons, no playful illustration style, no rounded-mascot AQI badges.",
+      "Don't use a glow to fake structural depth, or an ambient shadow to fake significance; the two vocabularies stay separate.",
+      "Don't introduce a second type family \"just for headlines\"; Inter carries the whole system.",
+      "Don't rely on color alone for hazardous/safe/caution states."
+    ]
+  }
+}

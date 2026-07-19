@@ -11,9 +11,11 @@
     --bg:#0e1424; --bg2:#111a30; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
     --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
     --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --amber:#ffce80;
+    --shadow-rest:0 8px 28px rgba(6,10,25,.35); --shadow-hover:0 14px 40px rgba(6,10,25,.45);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
+  .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
   body{background:var(--bg);color:var(--txt);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden}
   canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
   #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5;
@@ -52,10 +54,12 @@
   .sub{max-width:640px;color:var(--dim);font-size:clamp(16px,2vw,20px);line-height:1.6}
   .heroBtns{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap;justify-content:center}
   .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:600;
-    font-size:16px;text-decoration:none;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+    font-size:16px;text-decoration:none;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s}
   .btn:hover{transform:translateY(-2px)}
   .btn.primary{color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);box-shadow:0 10px 34px rgba(157,193,255,.4)}
+  .btn.primary:hover{background:linear-gradient(135deg,#f2f7ff,#cfe0ff);box-shadow:var(--shadow-hover),0 10px 34px rgba(157,193,255,.5)}
   .btn.ghost{color:var(--txt);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
+  .btn.ghost:hover{background:var(--glass2);box-shadow:var(--shadow-hover)}
   .statRow{display:flex;gap:12px;margin-top:60px;flex-wrap:wrap;justify-content:center}
   .stat{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;font-size:14px;
     background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px);color:var(--dim)}
@@ -70,13 +74,15 @@
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:44px}
   .card{position:relative;padding:28px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform-style:preserve-3d;
-    transition:transform .2s ease-out,background .3s;overflow:hidden}
+    box-shadow:var(--shadow-rest);
+    transition:transform .2s cubic-bezier(.2,.8,.2,1),background .2s,box-shadow .2s;overflow:hidden}
   .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
     background:linear-gradient(140deg,rgba(255,255,255,.25),transparent 40%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
-  .card:hover{background:var(--glass2)}
+  .card:hover{background:var(--glass2);box-shadow:var(--shadow-hover);transform:translateY(-2px)}
   .card .ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    font-size:22px;margin-bottom:18px;background:rgba(157,193,255,.14);border:1px solid var(--line)}
+    margin-bottom:18px;background:rgba(157,193,255,.14);border:1px solid var(--line);color:var(--blueSolid)}
+  .card .ic svg{width:22px;height:22px}
   .card h3{font-size:19px;margin-bottom:10px}
   .card p{color:var(--dim);font-size:14.5px;line-height:1.6}
   .big{font-size:clamp(40px,5.4vw,64px);font-weight:700}
@@ -97,9 +103,27 @@
     transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1),filter .9s}
   .reveal.on{opacity:1;transform:none;filter:none}
   .d1{transition-delay:.08s}.d2{transition-delay:.18s}.d3{transition-delay:.28s}.d4{transition-delay:.38s}
+
+  @media (prefers-reduced-motion: reduce){
+    .chip .pulse{animation:none}
+    .scroll{animation:none}
+    .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important;transition-delay:0s !important}
+    .card,.btn,.kpi{transition-duration:.01s !important}
+    #aurora{display:none}
+  }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-signal" viewBox="0 0 24 24"><circle cx="12" cy="19" r="1.3" fill="currentColor"/><path d="M8 15.5a5.5 5.5 0 0 1 8 0M5 12a9 9 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="ic-city" viewBox="0 0 24 24"><path d="M4 21V9l6-4v16M14 21V5l6 3v13M4 21h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="ic-cigarette" viewBox="0 0 24 24"><rect x="2" y="10.5" width="17" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="15" y1="10.5" x2="15" y2="13.5" stroke="currentColor" stroke-width="1.8"/><path d="M20 7.5c.8.8.8 2.2 0 3M22.5 6c1.3 1.3 1.3 3.7 0 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="ic-chart" viewBox="0 0 24 24"><path d="M4 20h16M6 20v-6M11 20v-11M16 20v-16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+  <symbol id="ic-hourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 4 6 5 8-1 2-5 3-5 8M17 3c0 5-4 6-5 8 1 2 5 3 5 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
 <div id="aurora"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
@@ -112,20 +136,20 @@
 </nav>
 
 <div class="hero">
-  <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b>5.9M real sensor readings</b></div>
+  <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b>12.8M real sensor readings</b></div>
   <h1><span class="soft reveal d1">Know when the</span><br><span class="blue reveal d2">air is safe.</span></h1>
   <p class="sub reveal d3">Every breath in Delhi carries a cost most dashboards never show you. VayuSense turns
     millions of raw sensor readings into one honest answer, for a parent deciding on sports practice,
     a clinic bracing for admissions, a city planner drafting tomorrow's advisory.</p>
   <div class="heroBtns reveal d4">
     <a class="btn primary" href="/dashboard">See your city's air →</a>
-    <a class="btn ghost" href="#bench">⚡ 37.5× faster on GPU: see how</a>
+    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> 37.5× faster on GPU: see how</a>
   </div>
   <div class="statRow reveal d4">
-    <div class="stat">📡 <b>5,922,378</b> readings analyzed</div>
-    <div class="stat">⚡ <b>37.5×</b> faster with NVIDIA</div>
-    <div class="stat">🏙️ <b>4</b> cities · <b>6</b> pollutants</div>
-    <div class="stat">🤖 <b>2</b> reasoning agents</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>12,831,315</b> readings analyzed</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b>37.5×</b> faster with NVIDIA</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>10</b> cities · <b>6</b> pollutants</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-chip"/></svg> <b>2</b> reasoning agents</div>
   </div>
   <div class="scroll">SCROLL</div>
 </div>
@@ -138,9 +162,9 @@
     On the days our data captured, Delhi's air carried the daily equivalent of <b style="color:var(--bad,#ff7a94)">4 cigarettes</b>:
     every single day, for everyone breathing it.</p>
   <div class="cards">
-    <div class="card tilt reveal"><div class="ic">🚬</div><h3>4 cigarettes / day</h3><p>Delhi's sustained annual PM2.5 exposure, converted using Berkeley Earth's published cigarette-equivalence methodology.</p></div>
-    <div class="card tilt reveal d1"><div class="ic">⏳</div><h3>~8.2 years</h3><p>Illustrative life-expectancy impact using an AQLI-style epidemiological coefficient: a stat most air-quality tools never surface.</p></div>
-    <div class="card tilt reveal d2"><div class="ic">📊</div><h3>Data that just sits there</h3><p>Millions of readings across dozens of stations, and still no one tells you: is it safe to go outside <i>today</i>? VayuSense closes that gap.</p></div>
+    <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-cigarette"/></svg></div><h3>4 cigarettes / day</h3><p>Delhi's sustained annual PM2.5 exposure, converted using Berkeley Earth's published cigarette-equivalence methodology.</p></div>
+    <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-hourglass"/></svg></div><h3>~8.2 years</h3><p>Illustrative life-expectancy impact using an AQLI-style epidemiological coefficient: a stat most air-quality tools never surface.</p></div>
+    <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-chart"/></svg></div><h3>Data that just sits there</h3><p>Millions of readings across dozens of stations, and still no one tells you: is it safe to go outside <i>today</i>? VayuSense closes that gap.</p></div>
   </div>
 </section>
 
@@ -148,11 +172,11 @@
   <div class="kicker reveal">How it works</div>
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
-    <div class="card tilt reveal"><div class="ic">⚡</div><h3>Accelerated by NVIDIA</h3>
+    <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-bolt"/></svg></div><h3>Accelerated by NVIDIA</h3>
       <p>Clean → aggregate → trend → anomaly-detect, over 5.9M OpenAQ readings, done in <b class="nvg">0.25s on GPU (cuDF)</b> instead of 9.34s on CPU. Fresh insight, every time you ask.</p></div>
-    <div class="card tilt reveal d1"><div class="ic">🤖</div><h3>Reasoned by Google ADK + Gemini</h3>
+    <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-chip"/></svg></div><h3>Reasoned by Google ADK + Gemini</h3>
       <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
-    <div class="card tilt reveal d2"><div class="ic">🎯</div><h3>Built to be used, not admired</h3>
+    <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-target"/></svg></div><h3>Built to be used, not admired</h3>
       <p>A safety score, a human-cost estimate, hotspot stations, and a straight answer to "is it safe today?": not another chart nobody reads.</p></div>
   </div>
 </section>
@@ -162,7 +186,8 @@
   <h2 class="reveal d1"><span class="big nvg">37.5×</span> faster than pandas.</h2>
   <p class="lead reveal d2">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
     can shift by the hour, a 9-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
-    buys back: the moment between a question and a decision.</p>
+    buys back: the moment between a question and a decision. This is the original proof run, on the first
+    4 cities; the live dataset has since grown to 10 cities and 12.8M readings without needing to re-earn that speedup.</p>
   <div class="benchWrap">
     <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
     <div class="rows">
@@ -184,46 +209,54 @@
 </div>
 
 <script>
-/* cursor aurora */
-const aurora = document.getElementById('aurora');
-addEventListener('mousemove', e => {
-  aurora.style.setProperty('--mx', (e.clientX/innerWidth*100)+'%');
-  aurora.style.setProperty('--my', (e.clientY/innerHeight*100)+'%');
-});
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* particulate haze — cursor acts as wind */
-const cv = document.getElementById('haze'), ctx = cv.getContext('2d');
-let W,H,parts=[],mouse={x:-999,y:-999};
-function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight}
-resize(); addEventListener('resize',resize);
-addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
-for(let i=0;i<110;i++) parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,
-  r:Math.random()*2.2+0.6,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.2,o:Math.random()*.35+.08});
-(function tick(){
-  ctx.clearRect(0,0,W,H);
-  for(const p of parts){
-    const dx=p.x-mouse.x, dy=p.y-mouse.y, d2=dx*dx+dy*dy;
-    if(d2<22000){const f=1-d2/22000; p.vx+=dx/Math.sqrt(d2+1)*f*.6; p.vy+=dy/Math.sqrt(d2+1)*f*.6;}
-    p.vx*=.985; p.vy*=.985; p.x+=p.vx; p.y+=p.vy;
-    if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20; if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7);
-    ctx.fillStyle=`rgba(160,185,235,${p.o})`; ctx.fill();
-  }
-  requestAnimationFrame(tick);
-})();
+/* cursor aurora — skipped entirely under reduced motion (element is display:none via CSS) */
+if(!reduceMotion){
+  const aurora = document.getElementById('aurora');
+  addEventListener('mousemove', e => {
+    aurora.style.setProperty('--mx', (e.clientX/innerWidth*100)+'%');
+    aurora.style.setProperty('--my', (e.clientY/innerHeight*100)+'%');
+  });
+}
 
-/* emerge-from-dark reveals */
+/* particulate haze — cursor acts as wind. Skipped entirely under reduced motion: no rAF loop, no drift. */
+if(!reduceMotion){
+  const cv = document.getElementById('haze'), ctx = cv.getContext('2d');
+  let W,H,parts=[],mouse={x:-999,y:-999};
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+  resize(); addEventListener('resize',resize);
+  addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
+  for(let i=0;i<110;i++) parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+    r:Math.random()*2.2+0.6,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.2,o:Math.random()*.35+.08});
+  (function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of parts){
+      const dx=p.x-mouse.x, dy=p.y-mouse.y, d2=dx*dx+dy*dy;
+      if(d2<22000){const f=1-d2/22000; p.vx+=dx/Math.sqrt(d2+1)*f*.6; p.vy+=dy/Math.sqrt(d2+1)*f*.6;}
+      p.vx*=.985; p.vy*=.985; p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20; if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7);
+      ctx.fillStyle=`rgba(160,185,235,${p.o})`; ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  })();
+}
+
+/* emerge-from-dark reveals — always attach; CSS handles the reduced-motion timing */
 const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-/* 3D tilt cards */
-document.querySelectorAll('.tilt').forEach(card=>{
-  card.addEventListener('mousemove',e=>{
-    const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-    card.style.transform=`perspective(800px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px)`;
+/* 3D tilt cards — skipped under reduced motion (parallax-style rotation) */
+if(!reduceMotion){
+  document.querySelectorAll('.tilt').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`perspective(800px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave',()=>card.style.transform='');
   });
-  card.addEventListener('mouseleave',()=>card.style.transform='');
-});
+}
 </script>
 </body>
 </html>
