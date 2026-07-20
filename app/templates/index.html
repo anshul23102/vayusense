@@ -235,6 +235,12 @@
 </div>
 </section>
 
+<section class="section reveal" id="pollutants">
+  <div class="sectionHead"><div class="kicker">Pollutants</div><h2>Major air pollutants</h2>
+  <p id="pollBasis" class="scoreTxt"></p></div>
+  <div class="grid" id="pollGrid"></div>
+</section>
+
 <section class="section reveal" id="trend">
 <div class="sectionHead">
   <div class="kicker">Trend</div>
@@ -306,6 +312,11 @@
 
 <script>
 const $ = id => document.getElementById(id);
+const RAMP={good:'#4fe3ac',moderate:'#ffce80',poor:'#ffab73',unhealthy:'#ff8aa3',severe:'#ef7ac8',hazardous:'#b04a63'};
+const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
+function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
+const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
+const POLL_UNITS={co:'mg/m³'};
 let CITY='Delhi';
 let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -413,6 +424,17 @@ async function refresh(){
         $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
         $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
+        $('pollBasis').textContent=`Sub-AQI per pollutant · ${a.basis}`;
+        $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub])=>{
+          const b=bandOf(sub); const sv=s.pollutants[p]||{};
+          const conc=a.concs&&a.concs[p]!==undefined?a.concs[p]:(sv.daily_mean!==undefined?sv.daily_mean:'–');
+          const unit=(a.units&&a.units[p])||POLL_UNITS[p]||'µg/m³';
+          return `<div class="s4"><button type="button" class="objCard" style="border-left:3px solid ${b.color};width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit"
+            onclick="$('paramSel').value='${p}';$('paramSel').dispatchEvent(new Event('change'));$('trend').scrollIntoView({behavior:'smooth'})">
+            <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">${POLL_NAMES[p]||p}</div>
+            <div class="num" style="font-size:26px;font-weight:600;margin:4px 0">${conc}<span style="font-size:13px;color:var(--dim);font-family:'IBM Plex Sans'"> ${unit}</span></div>
+            <div style="font-size:12px"><span style="color:${b.color}">● ${b.label}</span> · AQI ${sub}${sv.times_who_limit?` · ${sv.times_who_limit}× WHO (daily)`:''}</div>
+          </button></div>`}).join('');
       }
     }catch(e){}
   }

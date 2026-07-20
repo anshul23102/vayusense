@@ -109,6 +109,8 @@ def _city_aqi(city: str, allow_fetch: bool) -> dict | None:
         return None
     return {"city": city, "aqi": aqi, "category": aqi_category(aqi),
             "dominant": dominant, "sub_aqi": subs,
+            "concs": {p: round(float(v), 1) for p, v in concs.items()},
+            "units": units,
             "source": source, "last_updated": last_updated, "basis": basis}
 
 
