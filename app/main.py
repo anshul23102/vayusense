@@ -45,6 +45,16 @@ def dashboard():
     return (ROOT / "app" / "templates" / "index.html").read_text()
 
 
+@app.get("/city/{slug}", response_class=HTMLResponse)
+def city_page(slug: str):
+    cities = json.loads(data_tools.list_cities())
+    match = next((c for c in cities if c.lower() == slug.lower()), None)
+    if match is None:
+        return JSONResponse({"error": f"unknown city '{slug}'"}, status_code=404)
+    html = (ROOT / "app" / "templates" / "index.html").read_text()
+    return html.replace("let CITY='Delhi';", f"let CITY='{match}';")
+
+
 @app.get("/api/cities")
 def cities():
     return json.loads(data_tools.list_cities())
