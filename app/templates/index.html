@@ -172,6 +172,8 @@
   @keyframes puffRise{0%{transform:translate(-50%,0) scale(.4);opacity:0}
     30%{opacity:.7}100%{transform:translate(-50%,-24px) scale(1.3);opacity:0}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .cardIn{animation:cardIn .35s cubic-bezier(.2,.8,.2,1) both}
   .liveRegion{transition:opacity .25s ease}
   .liveRegion.loading{opacity:.45}
   @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
@@ -186,6 +188,7 @@
     .livePulse{animation:none}
     .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
+    .cardIn{animation:none !important;opacity:1 !important;transform:none !important}
     html{scroll-behavior:auto}
   }
   .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
@@ -535,7 +538,7 @@ async function refresh(){
         bc.style.display='';
         const ranked=Object.entries(fb.series.mae).sort((a,b)=>a[1]-b[1]);
         $('benchGrid').innerHTML=ranked.map(([m,v],i)=>
-          `<div class="objCard" style="flex:1;min-width:150px;${i===0?'border-color:rgba(157,193,255,.55)':''}">
+          `<div class="objCard cardIn" style="flex:1;min-width:150px;animation-delay:${i*40}ms;${i===0?'border-color:rgba(157,193,255,.55)':''}">
             <div class="l" style="color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px">${fb.methods[m]}</div>
             <div class="v num" style="font-size:22px;font-weight:650;margin:3px 0">${v}</div>
             <div class="who ${i===0?'ok':''}" style="font-size:11px;font-weight:600">${i===0?'serving · ':''}MAE µg/m³</div></div>`).join('');
@@ -567,9 +570,9 @@ async function refresh(){
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
         CURRENT_CATEGORY_KEY=a.category.key; renderHealthPanel();
         $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
-        $('citiesTable').innerHTML=a.ranking.map(r=>{
+        $('citiesTable').innerHTML=a.ranking.map((r,i)=>{
           const b=bandOf(r.aqi);
-          return `<div class="cityRow ${r.city===CITY?'current':''}" onclick="selectCity('${r.city}')">
+          return `<div class="cityRow cardIn ${r.city===CITY?'current':''}" style="animation-delay:${i*30}ms" onclick="selectCity('${r.city}')">
             <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
             <div class="cityName">${r.city}</div>
             <div class="cityAqi num">${r.aqi}</div>
@@ -578,11 +581,11 @@ async function refresh(){
           </div>`;
         }).join('');
         $('pollBasis').textContent=`Sub-AQI per pollutant · ${a.basis}`;
-        $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub])=>{
+        $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub],i)=>{
           const b=bandOf(sub); const sv=s.pollutants[p]||{};
           const conc=a.concs&&a.concs[p]!==undefined?a.concs[p]:(sv.daily_mean!==undefined?sv.daily_mean:'–');
           const unit=(a.units&&a.units[p])||POLL_UNITS[p]||'µg/m³';
-          return `<div class="s4"><button type="button" class="objCard" style="border-left:3px solid ${b.color};width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit"
+          return `<div class="s4"><button type="button" class="objCard cardIn" style="animation-delay:${i*40}ms;border-left:3px solid ${b.color};width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit"
             onclick="$('paramSel').value='${p}';$('paramSel').dispatchEvent(new Event('change'));$('trend').scrollIntoView({behavior:'smooth'})">
             <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">${POLL_NAMES[p]||p}</div>
             <div class="num" style="font-size:26px;font-weight:600;margin:4px 0">${conc}<span style="font-size:13px;color:var(--dim);font-family:'IBM Plex Sans'"> ${unit}</span></div>
