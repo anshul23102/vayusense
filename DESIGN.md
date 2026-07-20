@@ -138,6 +138,12 @@ The palette is one deep night neutral, one cool primary accent, and two narrowly
 
 **The Status-Plus-Label Rule.** Alert Rose, Amber Caution, and Signal OK never carry meaning by hue alone; every status color ships with a text label or icon alongside it.
 
+**Boxes are for objects, not sections.** Page sections (charts, calendars, tables,
+the hero) sit open on the night background, separated by hairline top rules and
+whitespace — never wrapped in cards. Cards exist only for true objects (a pollutant,
+a city, a forecast method, an impact stat): radius 14px, flat fill, no gradient
+border, with a 3px left severity edge-bar when the object has a severity.
+
 **The AQI Ramp.** The only sanctioned 6-step severity scale: Good=Signal OK,
 Moderate=Amber Caution, Poor=Ember, Unhealthy=Alert Rose, Severe=Magenta Signal,
 Hazardous=Oxblood. Ember, Magenta Signal, and Oxblood may appear ONLY inside

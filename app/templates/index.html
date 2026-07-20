@@ -50,13 +50,13 @@
   .sectionHead p{color:var(--dim);font-size:14px;margin-top:4px;max-width:520px}
 
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-  .card{position:relative;padding:24px;border-radius:22px;background:var(--glass);border:1px solid var(--line);
-    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;
-    box-shadow:var(--shadow-rest);transition:background .2s,box-shadow .2s,transform .2s cubic-bezier(.2,.8,.2,1)}
-  .card:hover{background:var(--glass2);box-shadow:var(--shadow-hover);transform:translateY(-2px)}
-  .card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
-    background:linear-gradient(140deg,rgba(255,255,255,.2),transparent 40%);
-    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
+  .objCard{position:relative;padding:16px;border-radius:14px;background:rgba(255,255,255,.035);
+    border:1px solid var(--line);transition:background .2s}
+  .objCard:hover{background:rgba(255,255,255,.06)}
+  .card{position:relative;padding:24px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);
+    transition:background .2s,box-shadow .2s}
+  .card:hover{background:rgba(255,255,255,.05)}
   .s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}
   @media(max-width:940px){.s4,.s6,.s8{grid-column:span 12}}
   .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -76,7 +76,7 @@
   .scoreTxt{color:var(--dim);font-size:13.5px;line-height:1.6;max-width:280px}
 
   .impactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px}
-  .impactStat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .impactStat{border-left:1px solid var(--line);border-radius:0;padding:6px 16px}
   .impactStat .n{font-size:30px;font-weight:700;line-height:1}
   .impactStat .n span{font-size:15px;font-weight:600;color:var(--dim)}
   .impactStat .l{color:var(--dim);font-size:12px;margin-top:5px}
@@ -84,8 +84,7 @@
 
   /* KPI strip */
   .kpiStrip{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
-  .kpi{flex:1;min-width:120px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:14px;padding:13px;transition:transform .2s}
-  .kpi:hover{transform:translateY(-2px)}
+  .kpi{flex:1;min-width:120px;border-left:1px solid var(--line);border-radius:0;padding:6px 16px}
   .kpi .l{color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px}
   .kpi .v{font-size:22px;font-weight:650;margin:3px 0}
   .kpi .who{font-size:11px;font-weight:600}
@@ -186,9 +185,9 @@
   <p>Not just a number: the real, lived stakes of breathing this city's air.</p>
 </div>
 
+<section class="section reveal" id="overview" style="border-top:none;padding-top:0">
 <div class="grid">
-  <div class="s6 reveal">
-    <div class="card">
+  <div class="s6">
       <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span></div>
       <div class="scoreWrap">
         <div class="ring">
@@ -212,11 +211,9 @@
         </div>
         <div class="aqiLabels"><span>Good</span><span>Moderate 51</span><span>Poor 101</span><span>Unhealthy 151</span><span>Severe 201</span><span>Hazardous 301+</span></div>
       </div>
-    </div>
   </div>
 
-  <div class="s6 reveal">
-    <div class="card">
+  <div class="s6">
       <div class="eyebrow"><svg class="ic-i"><use href="#ic-lungs"/></svg> Human impact <span class="tag">beyond AQI</span></div>
       <div class="impactGrid">
         <div class="impactStat">
@@ -229,34 +226,31 @@
         </div>
       </div>
       <p class="impactNote">Illustrative estimate: Berkeley Earth cigarette-equivalence & AQLI-style life-expectancy coefficient, based on published air-quality epidemiology. Not a medical diagnosis.</p>
-    </div>
   </div>
 
-  <div class="s12 reveal">
-    <div class="card">
+  <div class="s12">
       <div class="eyebrow">Latest levels vs WHO 24-hour guidelines</div>
       <div class="kpiStrip" id="kpis"></div>
-    </div>
   </div>
 </div>
+</section>
 
-<div class="sectionHead reveal">
+<section class="section reveal" id="trend">
+<div class="sectionHead">
   <div class="kicker">Trend</div>
   <h2>How it's moved, and where it's heading</h2>
 </div>
 <div class="grid">
-  <div class="s8 reveal">
-    <div class="card">
+  <div class="s8">
       <div class="eyebrow">90-day pollution trend <span class="tag">daily mean · 7-day rolling</span></div>
       <div id="trendChart" style="height:320px"></div>
       <details class="impactNote" id="forecastNote" style="display:none;margin-top:12px">
         <summary style="cursor:pointer;color:var(--dim)">Dotted line = short-term statistical projection (not a measurement), with a widening uncertainty band. Methodology ▾</summary>
         <p id="forecastMethod" style="margin-top:6px"></p>
       </details>
-    </div>
   </div>
-  <div class="s4 reveal">
-    <div class="card">
+  <div class="s4">
+    <div class="objCard">
       <div class="eyebrow"><svg class="ic-i"><use href="#ic-bolt"/></svg> NVIDIA acceleration</div>
       <div class="bench">
         <div class="big" id="speedup">-</div>
@@ -265,21 +259,26 @@
       <img src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time: pandas on CPU took 9.34 seconds versus cuDF on an NVIDIA T4 GPU at 0.25 seconds, a 37.5 times speedup" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
     </div>
   </div>
-  <div class="s12 reveal">
-    <div class="card" id="benchCard" style="display:none">
-      <div class="eyebrow">Forecast bench <span class="tag">4 methods · held-out backtest</span><span class="tag">lower MAE is better</span></div>
-      <div class="kpiStrip" id="benchGrid"></div>
-      <p class="impactNote" id="benchFoldNote"></p>
-    </div>
-  </div>
 </div>
+</section>
 
-<div class="sectionHead reveal">
+<section class="section reveal" id="bench" style="display:none">
+  <div class="sectionHead">
+    <div class="kicker">Forecast bench</div>
+    <h2>Four models compete on held-out data</h2>
+    <p>Lower MAE is better. The app serves whichever method wins for this city and pollutant.</p>
+  </div>
+  <div class="kpiStrip" id="benchGrid"></div>
+  <p class="impactNote" id="benchFoldNote"></p>
+</section>
+
+<section class="section reveal" id="ask">
+<div class="sectionHead">
   <div class="kicker">Ask</div>
   <h2>Get a straight answer, not a spreadsheet</h2>
 </div>
 <div class="grid">
-  <div class="s12 reveal">
+  <div class="s12">
     <div class="card">
       <div class="eyebrow"><svg class="ic-i"><use href="#ic-chip"/></svg> Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span><button type="button" id="newChatBtn" onclick="resetChat()" style="margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:99px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit">New chat</button></div>
       <div id="chat">
@@ -297,6 +296,7 @@
     </div>
   </div>
 </div>
+</section>
 
 <div class="foot">
   Data: OpenAQ archive (AWS Open Data) · GPU: NVIDIA cuDF/RAPIDS · Agents: Google ADK + Gemini ·
@@ -378,17 +378,18 @@ async function refresh(){
     try{
       const fb=await (await fetch(`/api/forecast_bench?city=${CITY}&parameter=${p}`)).json();
       if(myToken!==refreshToken)return;
-      const bc=$('benchCard');
+      const bc=$('bench');
       if(fb.series){
         bc.style.display='';
         const ranked=Object.entries(fb.series.mae).sort((a,b)=>a[1]-b[1]);
         $('benchGrid').innerHTML=ranked.map(([m,v],i)=>
-          `<div class="kpi" style="${i===0?'border-color:rgba(157,193,255,.55)':''}">
-            <div class="l">${fb.methods[m]}</div><div class="v">${v}</div>
-            <div class="who ${i===0?'ok':''}">${i===0?'serving · ':''}MAE µg/m³</div></div>`).join('');
+          `<div class="objCard" style="flex:1;min-width:150px;${i===0?'border-color:rgba(157,193,255,.55)':''}">
+            <div class="l" style="color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px">${fb.methods[m]}</div>
+            <div class="v num" style="font-size:22px;font-weight:650;margin:3px 0">${v}</div>
+            <div class="who ${i===0?'ok':''}" style="font-size:11px;font-weight:600">${i===0?'serving · ':''}MAE µg/m³</div></div>`).join('');
         $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves whichever method wins for this city and pollutant.`;
       }else bc.style.display='none';
-    }catch(e){$('benchCard').style.display='none'}
+    }catch(e){$('bench').style.display='none'}
   }
   const s=await (await fetch(`/api/snapshot?city=${CITY}`)).json();
   if(myToken!==refreshToken)return;
