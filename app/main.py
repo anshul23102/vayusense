@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -138,6 +139,64 @@ def city_aqi(city: str = "Delhi"):
     main_out["rank"] = next((i + 1 for i, r in enumerate(ranking)
                              if r["city"].lower() == city.lower()), None)
     return main_out
+
+
+@lru_cache(maxsize=32)
+def _daily_overall_cached(city_key: str) -> tuple:
+    df = data_tools._daily()
+    d = df[df["city"].str.lower() == city_key]
+    out = []
+    for date, grp in d.groupby("date"):
+        concs = dict(zip(grp["parameter"], grp["mean"].astype(float)))
+        try:
+            aqi, _dom, _subs = overall_aqi(concs, ARCHIVE_UNITS)
+        except ValueError:
+            continue
+        out.append({"date": str(date.date()), "aqi": aqi,
+                    "key": aqi_category(aqi)["key"]})
+    out.sort(key=lambda x: x["date"])
+    return tuple(tuple(sorted(o.items())) for o in out)
+
+
+def _daily_overall(city: str) -> list[dict]:
+    return [dict(t) for t in _daily_overall_cached(city.lower())]
+
+
+@app.get("/api/calendar")
+def calendar_api(city: str = "Delhi", year: int = 2025):
+    days = _daily_overall(city)
+    if not days:
+        return {"error": f"no data for city '{city}'"}
+    years = sorted({int(d["date"][:4]) for d in days})
+    sel = [d for d in days if d["date"].startswith(f"{year}-")]
+    return {"city": city, "year": year, "years_available": years,
+            "basis": "EPA-method daily AQI from the archive", "days": sel}
+
+
+@app.get("/api/monthly")
+def monthly_api(city: str = "Delhi"):
+    days = _daily_overall(city)
+    if not days:
+        return {"error": f"no data for city '{city}'"}
+    by_month: dict[str, list[int]] = {}
+    by_year: dict[int, list[int]] = {}
+    for d in days:
+        by_month.setdefault(d["date"][:7], []).append(d["aqi"])
+        by_year.setdefault(int(d["date"][:4]), []).append(d["aqi"])
+    months = [{"month": m, "avg_aqi": round(sum(v) / len(v)),
+               "key": aqi_category(round(sum(v) / len(v)))["key"]}
+              for m, v in sorted(by_month.items())]
+    most = max(months, key=lambda m: m["avg_aqi"])
+    least = min(months, key=lambda m: m["avg_aqi"])
+    annual = [{"year": y, "avg_aqi": round(sum(v) / len(v))}
+              for y, v in sorted(by_year.items())]
+    change = round((annual[-1]["avg_aqi"] - annual[0]["avg_aqi"])
+                   / annual[0]["avg_aqi"] * 100, 1) if len(annual) >= 2 else 0.0
+    return {"city": city, "basis": "EPA-method daily AQI from the archive",
+            "months": months,
+            "most_polluted": {"month": most["month"], "avg_aqi": most["avg_aqi"]},
+            "least_polluted": {"month": least["month"], "avg_aqi": least["avg_aqi"]},
+            "annual": annual, "annual_change_pct": change}
 
 
 @app.get("/api/benchmark")
