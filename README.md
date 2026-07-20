@@ -14,7 +14,7 @@ VayuSense closes that gap. It takes millions of raw sensor readings, processes t
 
 ## What it does
 
-**A live dashboard** shows, for each supported city, a real US EPA AQI (2024 PM2.5 table) with its category band on a graded severity scale, a LIVE badge when the number comes from request-time OpenAQ measurements (with an archive-stamped fallback that never breaks), a rank among the tracked cities, the latest reading for every tracked pollutant compared against WHO 24 hour guidelines, a 90 day pollution trend chart with a 7 day rolling average, the city's worst pollution hotspots by monitoring station, and a Human Impact panel that converts raw PM2.5 numbers into two visceral, non technical metrics: cigarette equivalent daily exposure and an estimated life expectancy impact.
+**A live dashboard** shows, for each supported city, a real US EPA AQI (2024 PM2.5 table) with its category band on a graded severity scale, a LIVE badge when the number comes from request-time OpenAQ measurements (with an archive-stamped fallback that never breaks), a rank among the tracked cities, a major-pollutants section of per-pollutant sub-AQI cards (click one to retarget the trend chart), a full Air Quality Calendar coloring every archived day by its daily AQI band across all available years, monthly and annual trend analytics with most/least-polluted-month callouts and a worded year-over-year change, the latest reading for every tracked pollutant compared against WHO 24 hour guidelines, a 90 day pollution trend chart with a 7 day rolling average, the city's worst pollution hotspots by monitoring station, and a Human Impact panel that converts raw PM2.5 numbers into two visceral, non technical metrics: cigarette equivalent daily exposure and an estimated life expectancy impact.
 
 **An "Ask VayuSense" chat** lets anyone type a plain language question, such as "is it safe for my kid's school to hold sports practice outdoors this week," and receive a grounded, data backed recommendation in seconds. This is powered by a two stage multi agent pipeline built on Google's Agent Development Kit (ADK) and Gemini, described below.
 
@@ -113,6 +113,7 @@ Both metrics are clearly labeled in the API response as illustrative, decision s
 **Application layer**
 - FastAPI for the backend API and server rendered dashboard
 - Jinja2 templated HTML, vanilla JavaScript, and Plotly style charts on the frontend, no heavy frontend framework
+- Typography: Space Grotesk for headlines and every stat numeral, IBM Plex Sans for body and UI copy
 - pandas and PyArrow for local data access in the served application
 - httpx for the request-time OpenAQ live layer (TTL-cached, graceful archive fallback)
 - Pydantic for request validation
@@ -143,6 +144,8 @@ render.yaml       One click Render deployment blueprint (alternate deployment pa
 | `/api/cities` | GET | List of cities available in the dataset |
 | `/api/snapshot?city=` | GET | Latest pollutant levels, trend, WHO comparison, and EPA-method AQI for a city |
 | `/api/aqi?city=` | GET | EPA-method AQI (live OpenAQ when fresh, archive fallback), category, per-pollutant sub-AQIs, 10-city ranking |
+| `/api/calendar?city=&year=` | GET | Per-day EPA-method AQI for every archived day of a year, with available years |
+| `/api/monthly?city=` | GET | Monthly/annual average AQI, most/least-polluted months, year-over-year change |
 | `/api/trend?city=&parameter=&days=` | GET | Time series of daily and 7 day rolling values for one pollutant |
 | `/api/stations?city=` | GET | Worst pollution hotspots by monitoring station |
 | `/api/impact?city=` | GET | Cigarette equivalent and life expectancy impact estimates |
