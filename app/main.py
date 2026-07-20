@@ -18,6 +18,8 @@ from pydantic import BaseModel
 
 from agents.agent import root_agent
 from agents import tools as data_tools
+from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
+from app import live
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
@@ -74,6 +76,66 @@ def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
 @app.get("/api/forecast_bench")
 def forecast_bench(city: str = "Delhi", parameter: str = "pm25"):
     return json.loads(data_tools.get_forecast_bench(city, parameter))
+
+
+def _archive_concs(city: str) -> tuple[dict, dict, str] | None:
+    df = data_tools._daily()
+    d = df[df["city"].str.lower() == city.lower()]
+    if d.empty:
+        return None
+    concs, latest = {}, None
+    for param, grp in d.groupby("parameter"):
+        row = grp.sort_values("date").iloc[-1]
+        concs[param] = float(row["mean"])
+        latest = row["date"] if latest is None or row["date"] > latest else latest
+    return concs, dict(ARCHIVE_UNITS), str(latest.date())
+
+
+def _city_aqi(city: str, allow_fetch: bool) -> dict | None:
+    lv = live.get_live_city(city) if allow_fetch else live.peek_live_city(city)
+    if lv:
+        concs = {p: m["value"] for p, m in lv["concs"].items()}
+        units = {p: m["unit"] for p, m in lv["concs"].items()}
+        source, last_updated, basis = "live", lv["last_updated"], "latest measurements"
+    else:
+        arch = _archive_concs(city)
+        if arch is None:
+            return None
+        concs, units, last_updated = arch
+        source, basis = "archive", "EPA-method AQI from daily averages"
+    try:
+        aqi, dominant, subs = overall_aqi(concs, units)
+    except ValueError:
+        return None
+    return {"city": city, "aqi": aqi, "category": aqi_category(aqi),
+            "dominant": dominant, "sub_aqi": subs,
+            "source": source, "last_updated": last_updated, "basis": basis}
+
+
+@app.get("/api/aqi")
+def city_aqi(city: str = "Delhi"):
+    main_out = _city_aqi(city, allow_fetch=True)
+    if main_out is None:
+        return JSONResponse({"error": f"no data for city '{city}'"}, status_code=404)
+    # Ranking compares all cities on the SAME basis (archive latest day) so a
+    # live number for one city is never ranked against stale numbers for others.
+    ranking = []
+    for c in json.loads(data_tools.list_cities()):
+        arch = _archive_concs(c)
+        if arch is None:
+            continue
+        try:
+            aqi, _dom, _subs = overall_aqi(arch[0], arch[1])
+        except ValueError:
+            continue
+        ranking.append({"city": c, "aqi": aqi, "category": aqi_category(aqi)["label"]})
+    ranking.sort(key=lambda x: -x["aqi"])
+    main_out["ranking"] = ranking
+    main_out["ranking_basis"] = "latest archive day, all cities"
+    main_out["of"] = len(ranking)
+    main_out["rank"] = next((i + 1 for i, r in enumerate(ranking)
+                             if r["city"].lower() == city.lower()), None)
+    return main_out
 
 
 @app.get("/api/benchmark")

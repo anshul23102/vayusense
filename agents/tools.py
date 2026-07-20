@@ -16,6 +16,8 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 # WHO 2021 24-hour guideline values (µg/m³ unless noted)
 WHO_24H = {"pm25": 15.0, "pm10": 45.0, "no2": 25.0, "so2": 40.0, "o3": 100.0}
 
+from .aqi import ARCHIVE_UNITS, category as _aqi_category, overall_aqi as _overall_aqi
+
 
 @lru_cache(maxsize=1)
 def _daily() -> pd.DataFrame:
@@ -73,6 +75,15 @@ def get_city_snapshot(city: str) -> str:
             "times_who_limit": round(float(last["mean"]) / who, 1) if who else None,
             "is_anomaly_day": bool(last["anomaly"]),
         }
+    concs = {p: v["daily_mean"] for p, v in out["pollutants"].items()}
+    try:
+        aqi_val, dominant, _subs = _overall_aqi(concs, ARCHIVE_UNITS)
+        out["aqi"] = aqi_val
+        out["aqi_category"] = _aqi_category(aqi_val)["label"]
+        out["aqi_dominant"] = dominant
+        out["aqi_basis"] = "EPA-method AQI from daily averages"
+    except ValueError:
+        pass
     return json.dumps(out)
 
 
