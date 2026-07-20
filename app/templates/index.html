@@ -121,6 +121,19 @@
     transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s}
   .reveal.on{opacity:1;transform:none;filter:none}
 
+  .aqiScale{margin-top:18px}
+  .aqiBar{position:relative;display:flex;height:8px;border-radius:99px;overflow:visible}
+  .aqiBar span{height:100%}
+  .aqiBar span:first-child{border-radius:99px 0 0 99px}
+  .aqiBar span:last-child{border-radius:0 99px 99px 0}
+  .sGood{background:#4fe3ac}.sMod{background:#ffce80}.sPoor{background:#ffab73}
+  .sUnh{background:#ff8aa3}.sSev{background:#ef7ac8}.sHaz{background:#b04a63}
+  .aqiPointer{position:absolute;top:-6px;left:0;width:0;height:0;transform:translateX(-5px);
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
+  .aqiLabels{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe3ac;margin-right:5px;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .liveRegion{transition:opacity .25s ease}
   .liveRegion.loading{opacity:.45}
   @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
@@ -132,6 +145,8 @@
     .bot.thinking i{animation:none}
     #aurora{display:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
+    .livePulse{animation:none}
+    .aqiPointer{transition:none}
   }
   .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
 </style>
@@ -170,23 +185,28 @@
 <div class="grid">
   <div class="s6 reveal">
     <div class="card">
-      <div class="eyebrow">Air safety score <span class="tag" id="scoreCity">Delhi</span></div>
+      <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span></div>
       <div class="scoreWrap">
         <div class="ring">
           <svg width="150" height="150" viewBox="0 0 150 150">
             <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
-            <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="url(#g1)" stroke-width="12"
-                    stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/>
-            <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#cfe0ff"/><stop offset="100%" stop-color="#b9a8fb"/>
-            </linearGradient></defs>
+            <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="#ffce80" stroke-width="12"
+                    stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1),stroke .4s"/>
           </svg>
-          <div class="val"><b id="scoreVal">–</b><small>out of 100</small></div>
+          <div class="val"><b id="aqiVal">–</b><small>AQI (US EPA)</small></div>
         </div>
         <div class="liveRegion" id="scoreLive" aria-live="polite">
           <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
           <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
+          <p class="scoreTxt" id="aqiMeta" style="font-size:11.5px;opacity:.8;margin-top:6px"></p>
         </div>
+      </div>
+      <div class="aqiScale" aria-hidden="true">
+        <div class="aqiBar">
+          <span style="flex:50" class="sGood"></span><span style="flex:50" class="sMod"></span><span style="flex:50" class="sPoor"></span><span style="flex:50" class="sUnh"></span><span style="flex:100" class="sSev"></span><span style="flex:199" class="sHaz"></span>
+          <div class="aqiPointer" id="aqiPointer"></div>
+        </div>
+        <div class="aqiLabels"><span>Good</span><span>Moderate 51</span><span>Poor 101</span><span>Unhealthy 151</span><span>Severe 201</span><span>Hazardous 301+</span></div>
       </div>
     </div>
   </div>
@@ -310,15 +330,6 @@ async function loadCities(){
   $('paramSel').onchange=refresh;
 }
 
-function scoreFrom(pollutants){
-  let worst=0, worstName='';
-  for(const [k,v] of Object.entries(pollutants)){
-    if(v.times_who_limit && v.times_who_limit>worst){worst=v.times_who_limit;worstName=k.toUpperCase()}
-  }
-  const score=Math.max(3,Math.round(100-Math.min(97,worst*6)));
-  return {score,worst,worstName};
-}
-
 let refreshToken=0;
 async function refresh(){
   const myToken=++refreshToken;
@@ -382,16 +393,23 @@ async function refresh(){
       const bad=v.times_who_limit&&v.times_who_limit>1;
       return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div><div class="v">${v.daily_mean}</div>
         <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'-'}</div></div>`}).join('');
-    const {score,worst,worstName}=scoreFrom(s.pollutants);
     $('scoreCity').textContent=CITY;
-    $('scoreVal').textContent=score;
-    $('ringArc').style.strokeDashoffset=408-(408*score/100);
-    const v=$('verdict');
-    const vdot='<span class="vdot"></span>';
-    if(score>=70){v.innerHTML=vdot+'Generally safe';v.style.color='var(--ok)';v.style.borderColor='var(--ok)'}
-    else if(score>=40){v.innerHTML=vdot+'Caution advised';v.style.color='var(--amber)';v.style.borderColor='var(--amber)'}
-    else{v.innerHTML=vdot+'Hazardous';v.style.color='var(--bad)';v.style.borderColor='var(--bad)'}
-    $('scoreTxt').textContent=worst?`Driven by ${worstName} at ${worst}× the WHO 24-hour guideline.`:'No guideline exceedances detected.';
+    try{
+      const a=await (await fetch(`/api/aqi?city=${CITY}`)).json();
+      if(myToken!==refreshToken)return;
+      if(a.aqi!==undefined){
+        $('aqiVal').textContent=a.aqi;
+        $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
+        $('ringArc').style.stroke=a.category.color;
+        const v=$('verdict');
+        v.innerHTML='<span class="vdot"></span>'+a.category.label;
+        v.style.color=a.category.color;v.style.borderColor=a.category.color;
+        $('scoreTxt').textContent=`Driven by ${a.dominant.toUpperCase()} · #${a.rank} most polluted of ${a.of} tracked cities (${a.ranking_basis}).`;
+        $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
+        $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
+        $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
+      }
+    }catch(e){}
   }
   $('scoreLive').classList.remove('loading');
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();

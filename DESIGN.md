@@ -120,6 +120,9 @@ The palette is one deep night neutral, one cool primary accent, and two narrowly
 - **Signal OK** (#4fe3ac): safe/healthy pollutant readings.
 - **Alert Rose** (#ff8aa3): hazardous readings, error states. Paired with an icon or label, never color alone, so meaning survives color blindness.
 - **Amber Caution** (#ffce80): borderline/caution readings and warning banners.
+- **Ember** (#ffab73): AQI ramp only — the "Poor" band.
+- **Magenta Signal** (#ef7ac8): AQI ramp only — the "Severe" band.
+- **Oxblood** (#b04a63): AQI ramp only — the "Hazardous" band.
 
 ### Neutral
 - **Night BG** (#0e1424): the base field for the dashboard and every deep surface.
@@ -134,6 +137,12 @@ The palette is one deep night neutral, one cool primary accent, and two narrowly
 **The One Signal Rule.** Photon Green means acceleration and only acceleration. Ultraviolet means the AI is reasoning and only that. Reusing either color for an unrelated purpose breaks the vocabulary the whole product depends on.
 
 **The Status-Plus-Label Rule.** Alert Rose, Amber Caution, and Signal OK never carry meaning by hue alone; every status color ships with a text label or icon alongside it.
+
+**The AQI Ramp.** The only sanctioned 6-step severity scale: Good=Signal OK,
+Moderate=Amber Caution, Poor=Ember, Unhealthy=Alert Rose, Severe=Magenta Signal,
+Hazardous=Oxblood. Ember, Magenta Signal, and Oxblood may appear ONLY inside
+AQI-severity visualizations (scale bar, calendar, rankings, charts), always with the
+band label present. Ultraviolet and Photon Green are not part of the ramp.
 
 **The Measured-vs-Projected Rule.** Forecasted/projected data is never given its own color. It reuses the existing hue for that series (e.g. Amber Caution for the 7-day trend line) and is distinguished only by line style: solid for measured, dotted/dashed for projected, with a soft fill band for uncertainty. Introducing a new color for "this is a guess" would imply it's a different kind of signal than it is — the honesty is in the line style, not a new token.
 
