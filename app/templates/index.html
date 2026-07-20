@@ -408,6 +408,19 @@ const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chenna
   Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
   Lucknow:'ic-lucknow',Patna:'ic-patna'};
 function cityIcon(c){return CITY_ICON[c]||'ic-generic'}
+function syncCityUrl(c){
+  document.title = `VayuSense — ${c} Air Quality`;
+  const path = '/city/' + c.toLowerCase();
+  if(location.pathname !== path) history.pushState({city:c}, '', path);
+}
+addEventListener('popstate', ()=>{
+  const m = location.pathname.match(/^\/city\/([^/]+)$/i);
+  if(!m) return;
+  const slug = m[1].toLowerCase();
+  const opts = [...$('citySel').options].map(o=>o.value);
+  const match = opts.find(c=>c.toLowerCase()===slug);
+  if(match){ CITY=match; $('citySel').value=match; document.title=`VayuSense — ${match} Air Quality`; refresh(); renderCalendar(); renderTrends(); }
+});
 const HEALTH_ICON={general:'ic-lungs',children:'ic-child',elderly:'ic-elder',asthma:'ic-asthma',heart:'ic-heart',outdoor_workers:'ic-worker'};
 let HEALTH_DATA=null, ACTIVE_CONDITION='general', CURRENT_CATEGORY_KEY='moderate';
 async function loadHealthGuidance(){
@@ -423,7 +436,7 @@ function renderHealthPanel(){
   $('healthCitation').textContent=HEALTH_DATA.citation;
 }
 function selectCity(c){
-  CITY=c;$('citySel').value=c;refresh();renderCalendar();renderTrends();
+  CITY=c;$('citySel').value=c;syncCityUrl(c);refresh();renderCalendar();renderTrends();
   $('overview').scrollIntoView({behavior:'smooth'});
 }
 let CITY='Delhi';
@@ -469,7 +482,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 async function loadCities(){
   const cities=await (await fetch('/api/cities')).json();
   $('citySel').innerHTML=cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
-  $('citySel').onchange=()=>{CITY=$('citySel').value;refresh();renderCalendar();renderTrends()};
+  $('citySel').onchange=()=>{CITY=$('citySel').value;syncCityUrl(CITY);refresh();renderCalendar();renderTrends()};
   $('paramSel').onchange=refresh;
 }
 
