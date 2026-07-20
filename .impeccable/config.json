@@ -4,13 +4,6 @@
     "ignoreFiles": [
       "app/templates/landing.html"
     ],
-    "ignoreValues": [
-      {
-        "rule": "overused-font",
-        "value": "inter",
-        "reason": "User confirmed Inter is intentional during the DESIGN.md interview (The One Family Rule)",
-        "createdAt": "2026-07-18T17:22:02.051Z"
-      }
-    ]
+    "ignoreValues": []
   }
 }

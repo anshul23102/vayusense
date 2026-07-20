@@ -18,30 +18,30 @@ colors:
   glass-deep: "#ffffff16"
 typography:
   display:
-    fontFamily: "Inter, -apple-system, sans-serif"
+    fontFamily: "Space Grotesk, sans-serif"
     fontSize: "clamp(2.75rem, 7.4vw, 6rem)"
     fontWeight: 700
     lineHeight: 1.04
     letterSpacing: "-0.02em"
   headline:
-    fontFamily: "Inter, -apple-system, sans-serif"
+    fontFamily: "Space Grotesk, sans-serif"
     fontSize: "clamp(1.875rem, 4vw, 2.75rem)"
     fontWeight: 650
     lineHeight: 1.15
     letterSpacing: "-0.01em"
   title:
-    fontFamily: "Inter, -apple-system, sans-serif"
+    fontFamily: "Space Grotesk, sans-serif"
     fontSize: "23px"
     fontWeight: 650
     lineHeight: 1.2
     letterSpacing: "-0.01em"
   body:
-    fontFamily: "Inter, -apple-system, sans-serif"
+    fontFamily: "IBM Plex Sans, -apple-system, sans-serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: "Inter, -apple-system, sans-serif"
+    fontFamily: "IBM Plex Sans, -apple-system, sans-serif"
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 1.4
@@ -101,7 +101,7 @@ This system explicitly rejects the generic SaaS dashboard: no hero-metric-card c
 - Deep, near-black night backgrounds with drifting particulate haze and a cursor-reactive aurora glow
 - One primary accent (Ice) doing the CTA/focus work, Ultraviolet reserved for AI/agent moments, Photon Green reserved for the acceleration story
 - Flat glass surfaces at rest, lifted by soft ambient shadow and a firmer glow on interaction, never shadow-heavy by default
-- A single Inter type family carried across every size, weight doing the hierarchy work instead of font-mixing
+- A strict two-family pairing: Space Grotesk for display and data numerals, IBM Plex Sans for everything else — never a third
 - Restrained motion: reveal-on-scroll, gentle hover lifts, a pulsing status dot; nothing choreographed or bouncy
 
 ## 2. Colors
@@ -148,9 +148,10 @@ band label present. Ultraviolet and Photon Green are not part of the ramp.
 
 ## 3. Typography
 
-**Display/Body Font:** Inter (with -apple-system, sans-serif fallback)
+**Display Font:** Space Grotesk (headlines, section titles, and every stat numeral — always with `font-variant-numeric: tabular-nums` on numbers)
+**Body Font:** IBM Plex Sans (body copy, labels, buttons, chat, captions; -apple-system, sans-serif fallback)
 
-**Character:** One family, no pairing. Hierarchy comes entirely from size, weight, and letter-spacing, which keeps the instrument-panel feel: a single calibrated typeface, not a stack of decorative fonts competing for attention.
+**Character:** A two-family instrument pairing. Space Grotesk's slightly quirky geometric terminals give the big numbers a "scientific instrument" voice; IBM Plex Sans keeps running text engineered and neutral. The pairing rule is strict: if it's a headline or a number the user reads as data, it's Space Grotesk; everything else is Plex. No third family, ever.
 
 ### Hierarchy
 - **Display** (700, `clamp(2.75rem, 7.4vw, 6rem)`, 1.04 line-height, -0.02em tracking): the landing hero headline only. Appears once per page.
@@ -160,7 +161,7 @@ band label present. Ultraviolet and Photon Green are not part of the ramp.
 - **Label** (600, 12px, uppercase, 0.14em tracking): kickers, eyebrows, KPI captions, tag chips. The system's only uppercase-tracked text; reserve it for true labels, not for emphasis.
 
 ### Named Rules
-**The One Family Rule.** Every weight and size on screen comes from Inter. Introducing a second family (even a "just for headlines" serif) breaks the calibrated-instrument read.
+**The Two Voices Rule.** Space Grotesk speaks headlines and data numbers; IBM Plex Sans speaks everything else. A third family — or swapping their roles — breaks the calibrated-instrument read.
 
 ## 4. Elevation
 
@@ -215,7 +216,7 @@ The Night Watch uses two elevation vocabularies, kept strictly separate: a neutr
 - **Do** keep every screen to one dominant accent (Ice Solid) with Ultraviolet and Photon Green appearing only in their named contexts (agent moments, acceleration moments).
 - **Do** give cards real ambient lift (Ambient Rest/Hover) now that the system has moved past flat-only; keep that lift dark and diffuse, never colored.
 - **Do** pair every status color (Alert Rose, Amber Caution, Signal OK) with a text label or icon.
-- **Do** use Inter at every size; let weight and tracking carry hierarchy.
+- **Do** keep the pairing strict: Space Grotesk for display/numbers, IBM Plex Sans for text; let weight and tracking carry hierarchy within each.
 - **Do** keep motion restrained: reveal-on-scroll, hover lifts, one pulsing status dot; always ship a prefers-reduced-motion alternative.
 
 ### Don't:
@@ -223,5 +224,5 @@ The Night Watch uses two elevation vocabularies, kept strictly separate: a neutr
 - **Don't** make this look like a government/bureaucratic data portal: no dense unstyled tables, no default form-control chrome, no bureaucratic labeling.
 - **Don't** make this look like a consumer weather app: no cartoonish icons, no playful illustration style, no rounded-mascot AQI badges.
 - **Don't** use a glow to fake structural depth, or an ambient shadow to fake significance; the two vocabularies stay separate.
-- **Don't** introduce a second type family "just for headlines"; Inter carries the whole system.
+- **Don't** introduce a third type family, and don't set body copy in Space Grotesk or headlines in Plex.
 - **Don't** rely on color alone for hazardous/safe/caution states.

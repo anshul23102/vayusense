@@ -6,7 +6,7 @@
 <title>VayuSense: Live Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23cfe0ff'/%3E%3Cstop offset='100%25' stop-color='%23b9a8fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='7' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
   :root{
@@ -14,11 +14,15 @@
     --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
     --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --bad:#ff8aa3; --ok:#4fe3ac; --amber:#ffce80;
     --shadow-rest:0 8px 28px rgba(6,10,25,.35); --shadow-hover:0 14px 40px rgba(6,10,25,.45);
+    --disp:'Space Grotesk',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   .srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
     clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  body{background:var(--bg);color:var(--txt);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden}
+  body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',-apple-system,sans-serif;overflow-x:hidden}
+  h1,h2,h3,.sectionHead h1,.sectionHead h2{font-family:var(--disp)}
+  .num{font-family:var(--disp);font-variant-numeric:tabular-nums}
+  .ring .val b,.kpi .v,.impactStat .n,.bench .big,#aqiVal{font-family:var(--disp);font-variant-numeric:tabular-nums}
   canvas#haze{position:fixed;inset:0;z-index:0;pointer-events:none}
   #aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(95px);opacity:.4;
     background:
@@ -361,7 +365,7 @@ async function refresh(){
       }
     }catch(e){}
     if(myToken!==refreshToken)return;
-    Plotly.newPlot('trendChart',traces,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Inter',size:12},
+    Plotly.newPlot('trendChart',traces,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'IBM Plex Sans',size:12},
       margin:{t:6,r:10,b:36,l:42},legend:{orientation:'h',y:1.12},
       xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:false},
       yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'µg/m³'},
