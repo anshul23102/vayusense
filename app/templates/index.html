@@ -159,6 +159,10 @@
   .yearChip{font:inherit;font-size:12.5px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);
     background:transparent;color:var(--dim);cursor:pointer}
   .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
+  .healthTab{display:flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;padding:8px 14px;
+    border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
+  .healthTab svg{width:15px;height:15px}
+  .healthTab.on{color:var(--txt);border-color:rgba(157,193,255,.5);background:rgba(157,193,255,.08)}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe3ac;margin-right:5px;animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .liveRegion{transition:opacity .25s ease}
@@ -195,6 +199,11 @@
   <symbol id="ic-lucknow" viewBox="0 0 24 24"><path d="M12 3.5c-2.2 2-3.5 4.3-3.5 7c0 2.5 1.6 4 3.5 4s3.5-1.5 3.5-4c0-2.7-1.3-5-3.5-7zM6 20v-6M18 20v-6M4 20h16M9 20v-3M15 20v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-patna" viewBox="0 0 24 24"><path d="M12 4c-3 2-5 5-5 8.5a5 5 0 0 0 10 0C17 9 15 6 12 4zM9 20v-6.5M15 20v-6.5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-generic" viewBox="0 0 24 24"><path d="M4 20V11l4-3 4 3v9M12 20v-6l4-3 4 3v6M4 20h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-child" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 8.5v6M8 12h8M9 20l1.5-5.5M15 20l-1.5-5.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-elder" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 20l1-6-2-2 1-4h6l1 4-2 2 1 6M10 13h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-asthma" viewBox="0 0 24 24"><path d="M9 3v5M9 8c-2 0-3.5 1.6-3.5 3.5S7 15 9 15h6c2 0 3.5-1.6 3.5-3.5S17 8 15 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 15v3a2 2 0 1 1-4 0M15 15v3a2 2 0 1 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9c-1.4-3.3 1-6 4-6c2 0 3.6 1.4 5 3.4C13.4 6.4 15 5 17 5c3 0 5.4 2.7 4 6c-2 4.6-9 9-9 9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12h2l1.5-3 2 5 1.5-3H17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-worker" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4M6 9v9M18 9v9M6 20h12M9 13h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 <div id="aurora"></div>
 <canvas id="haze"></canvas>
@@ -204,7 +213,7 @@
 <nav>
   <a class="logo" href="/"><div class="dot"></div>Vayu<span>Sense</span></a>
   <div class="subnav">
-    <a href="#overview">Overview</a><a href="#pollutants">Pollutants</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
+    <a href="#overview">Overview</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
   <div class="right">
     <label class="srOnly" for="citySel">City</label>
@@ -284,6 +293,13 @@
   <div class="sectionHead"><div class="kicker">Pollutants</div><h2>Major air pollutants</h2>
   <p id="pollBasis" class="scoreTxt"></p></div>
   <div class="grid" id="pollGrid"></div>
+</section>
+
+<section class="section reveal" id="health">
+  <div class="sectionHead"><div class="kicker">Health</div><h2>Guidance by condition</h2>
+    <p id="healthCitation" class="scoreTxt"></p></div>
+  <div id="healthTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+  <div class="objCard" id="healthPanel" style="min-height:70px"></div>
 </section>
 
 <section class="section reveal" id="trend">
@@ -384,6 +400,20 @@ const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chenna
   Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
   Lucknow:'ic-lucknow',Patna:'ic-patna'};
 function cityIcon(c){return CITY_ICON[c]||'ic-generic'}
+const HEALTH_ICON={general:'ic-lungs',children:'ic-child',elderly:'ic-elder',asthma:'ic-asthma',heart:'ic-heart',outdoor_workers:'ic-worker'};
+let HEALTH_DATA=null, ACTIVE_CONDITION='general', CURRENT_CATEGORY_KEY='moderate';
+async function loadHealthGuidance(){
+  try{ HEALTH_DATA=await (await fetch('/api/health_guidance')).json(); renderHealthPanel(); }catch(e){}
+}
+function selectHealthTab(c){ ACTIVE_CONDITION=c; renderHealthPanel(); }
+function renderHealthPanel(){
+  if(!HEALTH_DATA)return;
+  $('healthTabs').innerHTML=HEALTH_DATA.conditions.map(c=>
+    `<button type="button" class="healthTab ${c===ACTIVE_CONDITION?'on':''}" onclick="selectHealthTab('${c}')">
+      <svg><use href="#${HEALTH_ICON[c]||'ic-lungs'}"/></svg>${HEALTH_DATA.labels[c]}</button>`).join('');
+  $('healthPanel').innerHTML=`<p style="font-size:14.5px;line-height:1.6">${HEALTH_DATA.guidance[ACTIVE_CONDITION][CURRENT_CATEGORY_KEY]}</p>`;
+  $('healthCitation').textContent=HEALTH_DATA.citation;
+}
 function selectCity(c){
   CITY=c;$('citySel').value=c;refresh();renderCalendar();renderTrends();
   $('overview').scrollIntoView({behavior:'smooth'});
@@ -495,6 +525,7 @@ async function refresh(){
         $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
         $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
+        CURRENT_CATEGORY_KEY=a.category.key; renderHealthPanel();
         $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
         $('citiesTable').innerHTML=a.ranking.map(r=>{
           const b=bandOf(r.aqi);
@@ -617,7 +648,7 @@ async function ask(){
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
-loadCities().then(()=>{refresh();renderCalendar();renderTrends()});loadBench();
+loadCities().then(()=>{refresh();renderCalendar();renderTrends()});loadBench();loadHealthGuidance();
 </script>
 </body>
 </html>
