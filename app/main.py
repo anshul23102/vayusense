@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from agents.agent import root_agent
 from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
+from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from app import live
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -199,6 +200,12 @@ def monthly_api(city: str = "Delhi"):
             "most_polluted": {"month": most["month"], "avg_aqi": most["avg_aqi"]},
             "least_polluted": {"month": least["month"], "avg_aqi": least["avg_aqi"]},
             "annual": annual, "annual_change_pct": change}
+
+
+@app.get("/api/health_guidance")
+def health_guidance_api():
+    return {"conditions": CONDITIONS, "labels": CONDITION_LABELS,
+            "guidance": GUIDANCE, "citation": health_citation()}
 
 
 @app.get("/api/benchmark")
