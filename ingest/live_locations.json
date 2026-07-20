@@ -1,0 +1,1868 @@
+{
+ "Delhi": [
+  {
+   "location_id": 13,
+   "sensors": {
+    "13866": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "24": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13864": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 15,
+   "sensors": {
+    "27": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "28": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "29": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "26": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "30": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 16,
+   "sensors": {
+    "33": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "32": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "31": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "34": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 17,
+   "sensors": {
+    "12234782": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "392": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "36": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234784": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "394": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234785": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "399": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234786": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234787": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234789": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "393": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 50,
+   "sensors": {
+    "398": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234791": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "400": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234793": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12234794": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "71": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "395": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234795": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "396": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234796": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234798": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "397": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Mumbai": [
+  {
+   "location_id": 2598,
+   "sensors": {
+    "5400": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5408": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5404": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13523": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5593,
+   "sensors": {
+    "14830": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14802": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15198": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14801": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14806": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14804": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 6927,
+   "sensors": {
+    "20137": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235921": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "19892": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235923": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "20139": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235924": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235925": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20142": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20143": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235926": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20144": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235928": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 6943,
+   "sensors": {
+    "20128": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235900": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "20069": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235902": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12235903": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19961": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20068": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235904": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20046": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235905": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20023": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235907": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 6945,
+   "sensors": {
+    "12235829": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "19993": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20076": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235831": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "19968": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235832": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19975": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235833": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19978": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235834": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12289836": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "19987": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Kolkata": [
+  {
+   "location_id": 716,
+   "sensors": {
+    "5504": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5505": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5502": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5503": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1242": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1241": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 910,
+   "sensors": {
+    "1668": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1670": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1667": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1669": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13556": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13559": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2460,
+   "sensors": {
+    "4724": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5614,
+   "sensors": {
+    "14870": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234970": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "14875": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234972": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12234973": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14876": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234974": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14882": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234975": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14883": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12234977": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "14885": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 6310,
+   "sensors": {
+    "17541": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "17543": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "17544": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "17540": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1715600": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "17542": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Chennai": [
+  {
+   "location_id": 378,
+   "sensors": {
+    "661": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5374": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5352": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14304": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14305": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2461,
+   "sensors": {
+    "4725": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2549,
+   "sensors": {
+    "5141": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5142": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5144": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14320": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14313": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2586,
+   "sensors": {
+    "5339": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235648": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "5340": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235650": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "1305375": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235651": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235652": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1305374": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235653": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14319": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235655": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "14311": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5655,
+   "sensors": {
+    "15110": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235526": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "15117": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235528": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12235529": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15132": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1305376": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235530": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235531": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15136": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235533": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "15138": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Bengaluru": [
+  {
+   "location_id": 412,
+   "sensors": {
+    "722": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1518": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13852": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13853": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 594,
+   "sensors": {
+    "1048": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1427": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "4886": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13836": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13837": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 797,
+   "sensors": {
+    "1384": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1383": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1382": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14096": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2589,
+   "sensors": {
+    "5350": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5349": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5348": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14129": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2592,
+   "sensors": {
+    "5381": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5380": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5375": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13898": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "13888": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Hyderabad": [
+  {
+   "location_id": 407,
+   "sensors": {
+    "710": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235578": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "712": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235580": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12235581": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "711": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235582": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "715": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235583": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "714": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "713": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235585": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 2459,
+   "sensors": {
+    "4720": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2594,
+   "sensors": {
+    "5387": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5389": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "9127": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "9128": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5599,
+   "sensors": {
+    "14820": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235395": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "14842": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235397": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12235398": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14843": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14813": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235399": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15217": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235400": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235402": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "15221": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5623,
+   "sensors": {
+    "15193": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12242116": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "12242118": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "14918": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15034": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12242119": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12242120": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15046": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15178": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12242121": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12242123": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "15167": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Pune": [
+  {
+   "location_id": 2585,
+   "sensors": {
+    "5338": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5372": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5355": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5354": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14235": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5661,
+   "sensors": {
+    "12235535": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "15159": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15158": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235537": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "15157": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235538": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15156": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235539": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235540": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15154": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15152": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235542": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 11608,
+   "sensors": {
+    "39442": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39441": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39443": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39440": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39439": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 11609,
+   "sensors": {
+    "12236438": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "39447": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39446": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236440": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12236441": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39448": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39445": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236442": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "39444": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236443": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 11610,
+   "sensors": {
+    "12236452": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "12236454": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12236455": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236456": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236457": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Ahmedabad": [
+  {
+   "location_id": 5631,
+   "sensors": {
+    "14996": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235666": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "14991": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235668": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "14986": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235669": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35977": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235670": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235671": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14964": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235673": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "14963": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 6937,
+   "sensors": {
+    "19927": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235726": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "12235728": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "19924": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19923": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235729": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235730": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19951": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235731": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19949": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19942": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235733": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 6942,
+   "sensors": {
+    "20136": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235735": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "20140": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235737": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "19964": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235738": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235739": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "19959": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235740": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "20141": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235741": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "20138": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 227533,
+   "sensors": {
+    "1312464": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236535": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "12236537": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "1312466": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312453": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236538": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236539": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312468": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312460": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236540": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312467": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236542": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 227534,
+   "sensors": {
+    "12236526": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "1312455": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236528": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "1312469": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312472": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236529": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236530": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312470": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236531": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312452": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "1312462": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236533": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  }
+ ],
+ "Lucknow": [
+  {
+   "location_id": 354,
+   "sensors": {
+    "604": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "606": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "605": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14362": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14363": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2456,
+   "sensors": {
+    "12235569": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "4712": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5231": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235571": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "36695": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235572": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235573": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "36696": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235574": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14237": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235576": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "14238": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 2463,
+   "sensors": {
+    "4734": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "4731": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "4729": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "5326": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14364": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5604,
+   "sensors": {
+    "14896": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15139": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15078": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14845": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "14880": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 5657,
+   "sensors": {
+    "15129": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15130": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15135": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "34959": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15172": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15181": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  }
+ ],
+ "Patna": [
+  {
+   "location_id": 5652,
+   "sensors": {
+    "12235333": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "15084": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15085": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235335": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "15086": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235336": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15087": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235337": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "15089": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12235339": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 7495,
+   "sensors": {
+    "12236186": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "21729": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "21730": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236188": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12236189": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "21731": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236190": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "21732": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "21733": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236191": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "21734": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236193": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 10599,
+   "sensors": {
+    "35189": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236097": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "35204": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236099": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "35223": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236100": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35349": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236101": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35373": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236102": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35386": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236104": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  },
+  {
+   "location_id": 10630,
+   "sensors": {
+    "12236177": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "35360": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35350": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236179": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "12236180": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35348": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35341": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236181": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35337": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236182": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236184": {
+     "parameter": "so2",
+     "unit": "ppb"
+    },
+    "35336": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    }
+   }
+  },
+  {
+   "location_id": 10645,
+   "sensors": {
+    "12236195": {
+     "parameter": "co",
+     "unit": "ppb"
+    },
+    "35429": {
+     "parameter": "co",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236197": {
+     "parameter": "no2",
+     "unit": "ppb"
+    },
+    "35427": {
+     "parameter": "no2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35423": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236198": {
+     "parameter": "o3",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236199": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35417": {
+     "parameter": "pm10",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236200": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35413": {
+     "parameter": "pm25",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "35411": {
+     "parameter": "so2",
+     "unit": "\u00b5g/m\u00b3"
+    },
+    "12236202": {
+     "parameter": "so2",
+     "unit": "ppb"
+    }
+   }
+  }
+ ]
+}
