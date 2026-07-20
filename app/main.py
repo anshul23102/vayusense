@@ -71,6 +71,11 @@ def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
     return json.loads(data_tools.get_forecast(city, parameter, days))
 
 
+@app.get("/api/forecast_bench")
+def forecast_bench(city: str = "Delhi", parameter: str = "pm25"):
+    return json.loads(data_tools.get_forecast_bench(city, parameter))
+
+
 @app.get("/api/benchmark")
 def benchmark():
     f = ROOT / "benchmark" / "benchmark_results.json"

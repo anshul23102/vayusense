@@ -29,6 +29,17 @@ def _league() -> pd.DataFrame:
     return pd.read_parquet(DATA_DIR / "station_league.parquet")
 
 
+@lru_cache(maxsize=1)
+def _forecasts() -> pd.DataFrame:
+    return pd.read_parquet(DATA_DIR / "forecasts.parquet")
+
+
+@lru_cache(maxsize=1)
+def _bench() -> dict:
+    path = Path(__file__).resolve().parent.parent / "benchmark" / "forecast_bench.json"
+    return json.loads(path.read_text())
+
+
 def list_cities() -> str:
     """List the cities available in the VayuSense dataset."""
     return json.dumps(sorted(_daily()["city"].dropna().unique().tolist()))
@@ -85,24 +96,9 @@ def get_trend(city: str, parameter: str, days: int = 30) -> str:
     return json.dumps({"city": city, "parameter": parameter, "series": series})
 
 
-def get_forecast(city: str, parameter: str, days: int = 3) -> str:
-    """Project the next few days of a pollutant's daily mean using a damped-trend
-    statistical method (Holt's damped trend on the 7-day rolling average, phi=0.85),
-    clamped to the city's historical range. This is a short-term, transparent
-    statistical projection, NOT a meteorological or physics-based forecast, and its
-    accuracy degrades quickly beyond 3-5 days. Always present it with that caveat.
-
-    Args:
-        city: City name, e.g. "Delhi".
-        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
-        days: How many days ahead to project (default 3, max 7).
-    """
-    days = max(1, min(int(days), 7))
-    df = _daily()
-    d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date")
-    if len(d) < 14:
-        return json.dumps({"error": f"not enough {parameter} history for {city} to forecast"})
-
+def _damped_fallback(city: str, parameter: str, days: int, d: pd.DataFrame) -> str:
+    """In-process damped-trend projection: the zero-dependency fallback used when
+    the precomputed Forecast Bench artifacts are unavailable for this series."""
     roll7 = d["roll7"].to_numpy()
     last_date = d["date"].iloc[-1]
     last_value = float(roll7[-1])
@@ -142,6 +138,11 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
         "last_date": str(last_date.date()),
         "last_value": round(last_value, 1),
         "trend_per_day": round(slope, 2),
+        "method": "damped_trend",
+        "method_label": "Damped trend",
+        "backtest_mae": None,
+        "methods_compared": 1,
+        "fallback": True,
         "forecast": forecast,
         "methodology": (
             "Damped-trend statistical projection (Holt's damped trend, phi=0.85) applied to "
@@ -150,6 +151,81 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
             "meteorological forecast, and grows less reliable beyond 3-5 days."
         ),
     })
+
+
+def get_forecast(city: str, parameter: str, days: int = 3) -> str:
+    """Project the next few days of a pollutant's daily mean. Serves whichever of
+    four benchmarked methods (naive persistence, damped trend, gradient boosting,
+    BigQuery ML ARIMA_PLUS) won the held-out backtest for this city+pollutant,
+    and cites that method's measured historical error. A short-term statistical
+    projection, NOT a meteorological forecast; accuracy degrades beyond 3-5 days.
+
+    Args:
+        city: City name, e.g. "Delhi".
+        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
+        days: How many days ahead to project (default 3, max 7).
+    """
+    days = max(1, min(int(days), 7))
+    df = _daily()
+    d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date")
+    if len(d) < 14:
+        return json.dumps({"error": f"not enough {parameter} history for {city} to forecast"})
+    try:
+        bench = _bench()
+        entry = next(s for s in bench["series"]
+                     if s["city"].lower() == city.lower() and s["parameter"] == parameter)
+        winner = entry["winner"]
+        fc = _forecasts()
+        rows = fc[(fc["city"].str.lower() == city.lower())
+                  & (fc["parameter"] == parameter)
+                  & (fc["method"] == winner)].sort_values("date").head(days)
+        if rows.empty:
+            raise LookupError("no forecast rows for winner")
+        label = bench["methods"][winner]
+        mae_val = entry["mae"][winner]
+        return json.dumps({
+            "city": city, "parameter": parameter,
+            "last_date": str(d["date"].iloc[-1].date()),
+            "last_value": round(float(d["roll7"].iloc[-1]), 1),
+            "method": winner, "method_label": label,
+            "backtest_mae": float(mae_val),
+            "methods_compared": len(entry["mae"]),
+            "forecast": [
+                {"date": r.date, "value": float(r.value), "low": float(r.low), "high": float(r.high)}
+                for r in rows.itertuples()
+            ],
+            "methodology": (
+                f"Served by {label}, which beat {len(entry['mae']) - 1} competing methods "
+                f"on held-out backtests of real data (MAE {mae_val} ug/m3; "
+                f"{bench['fold_scheme']['note']}). A short-term statistical projection, "
+                "not a meteorological forecast; reliability drops beyond 3-5 days."
+            ),
+        })
+    except Exception:
+        return _damped_fallback(city, parameter, days, d)
+
+
+def get_forecast_bench(city: str, parameter: str) -> str:
+    """Get the forecast-bench scoreboard for one city+pollutant: each method's
+    backtest MAE on held-out data and which method currently wins (and is served).
+
+    Args:
+        city: City name, e.g. "Delhi".
+        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
+    """
+    try:
+        bench = _bench()
+        entry = next((s for s in bench["series"]
+                      if s["city"].lower() == city.lower() and s["parameter"] == parameter), None)
+        if entry is None:
+            return json.dumps({"error": f"no bench results for {city}/{parameter}"})
+        return json.dumps({
+            "city": entry["city"], "parameter": parameter,
+            "series": {"winner": entry["winner"], "mae": entry["mae"]},
+            "methods": bench["methods"], "fold_scheme": bench["fold_scheme"],
+        })
+    except FileNotFoundError:
+        return json.dumps({"error": "bench artifacts not generated yet"})
 
 
 def get_worst_stations(city: str, top_n: int = 5) -> str:
