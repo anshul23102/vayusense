@@ -141,6 +141,7 @@ render.yaml       One click Render deployment blueprint (alternate deployment pa
 |---|---|---|
 | `/` | GET | Public landing page |
 | `/dashboard` | GET | Main interactive dashboard |
+| `/city/<slug>` | GET | Dedicated, shareable per-city page (e.g. `/city/mumbai`) — the same dashboard pre-set to that city; in-page city switches keep the URL and tab title in sync via `history.pushState` |
 | `/api/cities` | GET | List of cities available in the dataset |
 | `/api/snapshot?city=` | GET | Latest pollutant levels, trend, WHO comparison, and EPA-method AQI for a city |
 | `/api/aqi?city=` | GET | EPA-method AQI (live OpenAQ when fresh, archive fallback), category, per-pollutant sub-AQIs, 10-city ranking with dominant pollutant and cache-aware live/archive source per city |
