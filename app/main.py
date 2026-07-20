@@ -128,10 +128,12 @@ def city_aqi(city: str = "Delhi"):
         if arch is None:
             continue
         try:
-            aqi, _dom, _subs = overall_aqi(arch[0], arch[1])
+            aqi, dominant, _subs = overall_aqi(arch[0], arch[1])
         except ValueError:
             continue
-        ranking.append({"city": c, "aqi": aqi, "category": aqi_category(aqi)["label"]})
+        row_source = "live" if live.peek_live_city(c) else "archive"
+        ranking.append({"city": c, "aqi": aqi, "category": aqi_category(aqi)["label"],
+                        "dominant": dominant, "source": row_source})
     ranking.sort(key=lambda x: -x["aqi"])
     main_out["ranking"] = ranking
     main_out["ranking_basis"] = "latest archive day, all cities"
