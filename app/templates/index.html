@@ -241,6 +241,13 @@
       <img src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time: pandas on CPU took 9.34 seconds versus cuDF on an NVIDIA T4 GPU at 0.25 seconds, a 37.5 times speedup" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
     </div>
   </div>
+  <div class="s12 reveal">
+    <div class="card" id="benchCard" style="display:none">
+      <div class="eyebrow">Forecast bench <span class="tag">4 methods · held-out backtest</span><span class="tag">lower MAE is better</span></div>
+      <div class="kpiStrip" id="benchGrid"></div>
+      <p class="impactNote" id="benchFoldNote"></p>
+    </div>
+  </div>
 </div>
 
 <div class="sectionHead reveal">
@@ -338,7 +345,7 @@ async function refresh(){
         traces.push(
           {x:fx,y:fhigh,mode:'lines',line:{width:0},showlegend:false,hoverinfo:'skip'},
           {x:fx,y:flow,mode:'lines',line:{width:0},fill:'tonexty',fillcolor:'rgba(255,206,128,.10)',showlegend:false,hoverinfo:'skip'},
-          {x:fx,y:fy,name:'projected',mode:'lines',line:{color:'#ffce80',width:2,dash:'dot'},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (projected)<extra></extra>'}
+          {x:fx,y:fy,name:`projected · ${f.method_label||'damped trend'}`,mode:'lines',line:{color:'#ffce80',width:2,dash:'dot'},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (projected)<extra></extra>'}
         );
       }
     }catch(e){}
@@ -353,6 +360,20 @@ async function refresh(){
       note.style.display='';
       $('forecastMethod').textContent=forecastMethod;
     }else note.style.display='none';
+    try{
+      const fb=await (await fetch(`/api/forecast_bench?city=${CITY}&parameter=${p}`)).json();
+      if(myToken!==refreshToken)return;
+      const bc=$('benchCard');
+      if(fb.series){
+        bc.style.display='';
+        const ranked=Object.entries(fb.series.mae).sort((a,b)=>a[1]-b[1]);
+        $('benchGrid').innerHTML=ranked.map(([m,v],i)=>
+          `<div class="kpi" style="${i===0?'border-color:rgba(157,193,255,.55)':''}">
+            <div class="l">${fb.methods[m]}</div><div class="v">${v}</div>
+            <div class="who ${i===0?'ok':''}">${i===0?'serving · ':''}MAE µg/m³</div></div>`).join('');
+        $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves whichever method wins for this city and pollutant.`;
+      }else bc.style.display='none';
+    }catch(e){$('benchCard').style.display='none'}
   }
   const s=await (await fetch(`/api/snapshot?city=${CITY}`)).json();
   if(myToken!==refreshToken)return;

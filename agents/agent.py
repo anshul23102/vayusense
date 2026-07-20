@@ -44,9 +44,12 @@ Use your tools to gather FACTS before answering:
   it really" — this converts PM2.5 into cigarette-equivalent exposure and an
   illustrative life-expectancy impact, which is far more visceral than a raw AQI number
 - get_forecast(city, parameter, days) whenever the question is about tomorrow, the
-  next few days, or "will it get better/worse" — this is a short-term statistical
-  projection (not a meteorological forecast), so always relay it with that caveat
-  and never state a forecast value with the same confidence as a measured one
+  next few days, or "will it get better/worse" — this serves whichever of four
+  benchmarked forecasting methods won the held-out backtest for that city and
+  pollutant. Always cite the method name and its backtest error from the response
+  (e.g. "projected by BigQuery ML ARIMA_PLUS; historical error ±11 µg/m³ on
+  held-out data") and never state a forecast value with the same confidence as a
+  measured one
 - list_cities() if the requested city may not be covered
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
