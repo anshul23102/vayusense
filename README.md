@@ -14,7 +14,7 @@ VayuSense closes that gap. It takes millions of raw sensor readings, processes t
 
 ## What it does
 
-**A live dashboard** shows, for each supported city, an Air Safety Score out of 100, a plain language verdict (safe, caution, hazardous), the latest reading for every tracked pollutant compared against WHO 24 hour guidelines, a 90 day pollution trend chart with a 7 day rolling average, the city's worst pollution hotspots by monitoring station, and a Human Impact panel that converts raw PM2.5 numbers into two visceral, non technical metrics: cigarette equivalent daily exposure and an estimated life expectancy impact.
+**A live dashboard** shows, for each supported city, a real US EPA AQI (2024 PM2.5 table) with its category band on a graded severity scale, a LIVE badge when the number comes from request-time OpenAQ measurements (with an archive-stamped fallback that never breaks), a rank among the tracked cities, the latest reading for every tracked pollutant compared against WHO 24 hour guidelines, a 90 day pollution trend chart with a 7 day rolling average, the city's worst pollution hotspots by monitoring station, and a Human Impact panel that converts raw PM2.5 numbers into two visceral, non technical metrics: cigarette equivalent daily exposure and an estimated life expectancy impact.
 
 **An "Ask VayuSense" chat** lets anyone type a plain language question, such as "is it safe for my kid's school to hold sports practice outdoors this week," and receive a grounded, data backed recommendation in seconds. This is powered by a two stage multi agent pipeline built on Google's Agent Development Kit (ADK) and Gemini, described below.
 
@@ -114,6 +114,7 @@ Both metrics are clearly labeled in the API response as illustrative, decision s
 - FastAPI for the backend API and server rendered dashboard
 - Jinja2 templated HTML, vanilla JavaScript, and Plotly style charts on the frontend, no heavy frontend framework
 - pandas and PyArrow for local data access in the served application
+- httpx for the request-time OpenAQ live layer (TTL-cached, graceful archive fallback)
 - Pydantic for request validation
 - Docker for containerized deployment, deployed publicly on Google Cloud Run (Vertex AI mode for Gemini access, backed by real Cloud Billing quota)
 
@@ -140,7 +141,8 @@ render.yaml       One click Render deployment blueprint (alternate deployment pa
 | `/` | GET | Public landing page |
 | `/dashboard` | GET | Main interactive dashboard |
 | `/api/cities` | GET | List of cities available in the dataset |
-| `/api/snapshot?city=` | GET | Latest pollutant levels, trend, and WHO comparison for a city |
+| `/api/snapshot?city=` | GET | Latest pollutant levels, trend, WHO comparison, and EPA-method AQI for a city |
+| `/api/aqi?city=` | GET | EPA-method AQI (live OpenAQ when fresh, archive fallback), category, per-pollutant sub-AQIs, 10-city ranking |
 | `/api/trend?city=&parameter=&days=` | GET | Time series of daily and 7 day rolling values for one pollutant |
 | `/api/stations?city=` | GET | Worst pollution hotspots by monitoring station |
 | `/api/impact?city=` | GET | Cigarette equivalent and life expectancy impact estimates |
