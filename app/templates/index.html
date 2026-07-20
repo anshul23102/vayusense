@@ -140,6 +140,16 @@
     border-left:5px solid transparent;border-right:5px solid transparent;
     border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
   .aqiLabels{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s}
+  .cityRow:first-child{border-top:none}
+  .cityRow:hover{background:rgba(255,255,255,.03)}
+  .cityRow.current{border-left:2px solid var(--blueSolid);padding-left:12px;margin-left:-14px}
+  .cityIconBadge{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+  .cityIconBadge svg{width:18px;height:18px}
+  .cityName{flex:1;min-width:90px;font-size:14px}
+  .cityAqi{width:52px;text-align:right;font-size:19px;font-weight:600}
+  .cityCat{width:110px;font-size:12px}
+  .cityDom{width:60px;text-align:right;color:var(--dim);font-size:11px;text-transform:uppercase}
   .calMonth h4{font-family:var(--disp);font-size:13px;margin-bottom:8px;font-weight:600}
   .calRow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
   .calHead span{font-size:9px;color:var(--dim);text-align:center}
@@ -264,6 +274,12 @@
 </div>
 </section>
 
+<section class="section reveal" id="cities">
+  <div class="sectionHead"><div class="kicker">Compare</div><h2>India's cities, ranked</h2>
+    <p id="citiesBasis" class="scoreTxt"></p></div>
+  <div id="citiesTable"></div>
+</section>
+
 <section class="section reveal" id="pollutants">
   <div class="sectionHead"><div class="kicker">Pollutants</div><h2>Major air pollutants</h2>
   <p id="pollBasis" class="scoreTxt"></p></div>
@@ -364,6 +380,14 @@ const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor'
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
 const POLL_UNITS={co:'mg/m³'};
+const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
+  Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
+  Lucknow:'ic-lucknow',Patna:'ic-patna'};
+function cityIcon(c){return CITY_ICON[c]||'ic-generic'}
+function selectCity(c){
+  CITY=c;$('citySel').value=c;refresh();renderCalendar();renderTrends();
+  $('overview').scrollIntoView({behavior:'smooth'});
+}
 let CITY='Delhi';
 let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -467,10 +491,21 @@ async function refresh(){
         const v=$('verdict');
         v.innerHTML='<span class="vdot"></span>'+a.category.label;
         v.style.color=a.category.color;v.style.borderColor=a.category.color;
-        $('scoreTxt').textContent=`Driven by ${a.dominant.toUpperCase()} · #${a.rank} most polluted of ${a.of} tracked cities (${a.ranking_basis}).`;
+        $('scoreTxt').innerHTML=`Driven by ${a.dominant.toUpperCase()} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
         $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
         $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
+        $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
+        $('citiesTable').innerHTML=a.ranking.map(r=>{
+          const b=bandOf(r.aqi);
+          return `<div class="cityRow ${r.city===CITY?'current':''}" onclick="selectCity('${r.city}')">
+            <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
+            <div class="cityName">${r.city}</div>
+            <div class="cityAqi num">${r.aqi}</div>
+            <div class="cityCat" style="color:${b.color}">● ${r.category}</div>
+            <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
+          </div>`;
+        }).join('');
         $('pollBasis').textContent=`Sub-AQI per pollutant · ${a.basis}`;
         $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub])=>{
           const b=bandOf(sub); const sv=s.pollutants[p]||{};
