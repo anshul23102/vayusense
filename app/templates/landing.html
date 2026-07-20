@@ -289,7 +289,7 @@ const HEALTH_ICON={general:'ic-lungs',children:'ic-child',elderly:'ic-elder',ast
 const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.15});
 
 const LANDING_DATA={cities:[],ranking:[],bench:null};
-function goToCity(name){ location.href=`/dashboard?city=${encodeURIComponent(name)}`; }
+function goToCity(name){ location.href=`/city/${encodeURIComponent(name.toLowerCase())}`; }
 async function loadLandingData(){
   try{
     const [cities, aqi, bench] = await Promise.all([
