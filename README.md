@@ -47,6 +47,9 @@ This is not a cosmetic optimization. A pipeline that takes 9 seconds instead of 
         Google Cloud layer: ADK multi agent pipeline (Gemini 2.5 Flash)
         data_analyst_agent  ->  health_advisor_agent
         (facts and figures)     (plain language, safety first guidance)
+                +
+        BigQuery ML: ARIMA_PLUS time-series models (SQL-trained,
+        one of four methods competing on the Forecast Bench)
                                 |
                                 v
             FastAPI web application (app/main.py)
@@ -67,9 +70,20 @@ This separation of concerns, facts first and then advice, keeps the system's rec
 
 The chat also carries conversational memory: each browser session keeps a stable `session_id` that both agents share across turns through ADK's session service, and the data analyst is explicitly instructed to resolve follow-up questions (`"what about Mumbai?"`, `"and tomorrow?"`) against the most recently discussed city, pollutant, or timeframe rather than asking the user to repeat context. A "New chat" control in the UI lets a user deliberately start a fresh session.
 
-## Forecast layer
+## The Forecast Bench
 
-The dashboard's trend chart extends the measured 7-day rolling average with a short-term projection (`get_forecast` in `agents/tools.py`, served at `/api/forecast`): a damped-trend statistical method (Holt's damped trend, phi=0.85) applied to the rolling average, clamped to the city's historical range so it can't run away, with an uncertainty band that widens the further out the projection goes. It is deliberately a transparent statistical method rather than a black-box ML model, in keeping with the product's "facts before advice" principle — the chart renders it as a dotted line with a soft shaded band, reusing the same amber used for the measured trend rather than introducing a new color, so "projected" reads as a style difference, not a different kind of truth claim. The agent pipeline is instructed to relay any forecast with explicit hedged language ("likely", "projected to") and never state it with the same confidence as a measured reading.
+Most projects add an ML forecast; VayuSense makes its forecasters **compete in public**. Four methods are evaluated per city and pollutant:
+
+1. **Naive persistence** — tomorrow equals today. The baseline every honest evaluation needs.
+2. **Damped trend** — Holt's damped-trend statistical method (phi=0.85) on the 7-day rolling average, clamped to historical range.
+3. **Gradient boosting** — scikit-learn HistGradientBoosting trained on lag, rolling-mean, and seasonality features.
+4. **BigQuery ML ARIMA_PLUS** — time-series models trained in SQL on Google Cloud, one model covering all sixty city×pollutant series.
+
+The three local methods are scored with a rolling-origin backtest: 8 held-out windows of 3 days each, every method scored on identical folds, mean absolute error (MAE) against what the air actually did. ARIMA_PLUS is scored on a single 24-day holdout and labeled as such on the scoreboard. The app then **serves whichever method won** for each series, and cites it everywhere: the dashboard shows the full ranked scoreboard (`/api/forecast_bench`), the trend chart's dotted projection names its model in the legend, and the chat agent is instructed to relay forecasts as "projected by [method]; historical error ±X µg/m³ on held-out data" — never with the confidence of a measured value.
+
+The results are honest, and that is the point: naive persistence wins 25 of 60 series, gradient boosting 14, damped trend 11, and ARIMA_PLUS 10 — daily air-quality data is genuinely hard to forecast, and the scoreboard says so instead of pretending otherwise.
+
+All training and backtesting runs offline (`ml/bench.py`, `ml/bq_arima.py`); the app only reads precomputed artifacts (`benchmark/forecast_bench.json`, `data/processed/forecasts.parquet`), so there is no runtime BigQuery dependency and no new failure mode at request time. If artifacts are missing, `get_forecast` falls back to the in-process damped-trend method, clearly labeled.
 
 ## Human impact methodology
 
@@ -85,7 +99,12 @@ Both metrics are clearly labeled in the API response as illustrative, decision s
 **Google Cloud**
 - Gemini 2.5 Flash as the underlying language model for both agents
 - Google Agent Development Kit (ADK) for the sequential multi agent orchestration and session state management
+- BigQuery ML: ARIMA_PLUS time-series models trained in SQL, competing on the Forecast Bench
 - Container deployment path compatible with Cloud Run (Dockerfile in `deploy/`)
+
+**ML bench (offline)**
+- scikit-learn (HistGradientBoosting) for the gradient-boosted forecaster
+- Rolling-origin backtesting with identical held-out folds per method (`ml/backtest.py`)
 
 **NVIDIA**
 - cuDF and RAPIDS for GPU accelerated dataframe processing (clean, resample, rolling trend, anomaly detection)
@@ -125,7 +144,8 @@ render.yaml       One click Render deployment blueprint (alternate deployment pa
 | `/api/trend?city=&parameter=&days=` | GET | Time series of daily and 7 day rolling values for one pollutant |
 | `/api/stations?city=` | GET | Worst pollution hotspots by monitoring station |
 | `/api/impact?city=` | GET | Cigarette equivalent and life expectancy impact estimates |
-| `/api/forecast?city=&parameter=&days=` | GET | Short-term damped-trend statistical projection, with uncertainty band |
+| `/api/forecast?city=&parameter=&days=` | GET | Short-term projection served by the bench-winning method, with cited backtest error and uncertainty band |
+| `/api/forecast_bench?city=&parameter=` | GET | Backtest scoreboard: each method's held-out MAE and the winner being served |
 | `/api/benchmark` | GET | Recorded GPU vs CPU benchmark results |
 | `/api/ask` | POST | Natural language question, answered by the ADK agent pipeline |
 
