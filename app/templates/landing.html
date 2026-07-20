@@ -102,7 +102,12 @@
   .searchItem{padding:10px 16px;font-size:13.5px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:10px}
   .searchItem:hover,.searchItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
   .searchItem svg{width:15px;height:15px}
-  .mapWrap{position:relative;max-width:420px;margin:24px auto 0}
+  .mapWrap{position:relative;max-width:420px;margin:24px auto 0;cursor:grab;
+    transition:transform .4s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+  .mapWrap.grabbing{cursor:grabbing}
+  .mapDot circle{transition:r .15s,filter .15s}
+  .mapDot:hover circle,.mapDot:focus circle{filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+  .mapDot:hover .mapLabel,.mapDot:focus .mapLabel{fill:var(--txt)}
   .mapDot{cursor:pointer;transition:r .15s}
   .mapDot:hover circle{r:8}
   .mapLabel{font-size:8px;fill:var(--dim);font-family:'IBM Plex Sans',sans-serif;pointer-events:none}
@@ -133,6 +138,7 @@
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important;transition-delay:0s !important}
     .card,.btn,.kpi{transition-duration:.01s !important}
     #aurora{display:none}
+    .mapWrap{transition:none !important;transform:none !important;cursor:default}
   }
 </style>
 </head>
@@ -376,6 +382,21 @@ function renderMap(){
       <text class="mapLabel" x="${x+9}" y="${y+3}">${r.city}</text>
     </g>`;
   }).join('');
+}
+if(!reduceMotion){
+  const mapWrap=document.querySelector('.mapWrap');
+  if(mapWrap){
+    let grabbing=false;
+    mapWrap.addEventListener('mousemove', e=>{
+      const r=mapWrap.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      const intensity=grabbing?16:10;
+      mapWrap.style.transform=`perspective(900px) rotateY(${x*intensity}deg) rotateX(${-y*intensity}deg)`;
+    });
+    mapWrap.addEventListener('mouseleave', ()=>{ mapWrap.style.transform=''; grabbing=false; mapWrap.classList.remove('grabbing'); });
+    mapWrap.addEventListener('mousedown', ()=>{ grabbing=true; mapWrap.classList.add('grabbing'); });
+    mapWrap.addEventListener('mouseup', ()=>{ grabbing=false; mapWrap.classList.remove('grabbing'); });
+  }
 }
 
 /* cursor aurora — skipped entirely under reduced motion (element is display:none via CSS) */
