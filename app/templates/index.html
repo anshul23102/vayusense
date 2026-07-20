@@ -135,6 +135,15 @@
     border-left:5px solid transparent;border-right:5px solid transparent;
     border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
   .aqiLabels{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  .calMonth h4{font-family:var(--disp);font-size:13px;margin-bottom:8px;font-weight:600}
+  .calRow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .calHead span{font-size:9px;color:var(--dim);text-align:center}
+  .calDay{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;
+    font-size:9.5px;font-family:var(--disp);font-variant-numeric:tabular-nums;color:#0b1226;font-weight:600}
+  .calDay.empty{background:rgba(255,255,255,.03);color:transparent}
+  .yearChip{font:inherit;font-size:12.5px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);
+    background:transparent;color:var(--dim);cursor:pointer}
+  .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe3ac;margin-right:5px;animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .liveRegion{transition:opacity .25s ease}
@@ -268,6 +277,24 @@
 </div>
 </section>
 
+<section class="section reveal" id="calendar">
+  <div class="sectionHead"><div class="kicker">Calendar</div><h2>Air quality calendar</h2>
+    <p>Every archive day, colored by its EPA-method daily AQI.</p></div>
+  <div id="calYears" style="display:flex;gap:8px;margin-bottom:16px"></div>
+  <div id="calGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px"></div>
+  <div id="calLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;color:var(--dim);font-size:11.5px"></div>
+</section>
+
+<section class="section reveal" id="trends">
+  <div class="sectionHead"><div class="kicker">Long view</div><h2>Monthly &amp; annual trends</h2></div>
+  <div id="monthlyChart" style="height:300px"></div>
+  <div class="grid" style="margin-top:18px">
+    <div class="s4"><div class="objCard num" id="mostMonth"></div></div>
+    <div class="s4"><div class="objCard num" id="leastMonth"></div></div>
+    <div class="s4"><div class="objCard num" id="annualCompare"></div></div>
+  </div>
+</section>
+
 <section class="section reveal" id="bench" style="display:none">
   <div class="sectionHead">
     <div class="kicker">Forecast bench</div>
@@ -341,7 +368,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 async function loadCities(){
   const cities=await (await fetch('/api/cities')).json();
   $('citySel').innerHTML=cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
-  $('citySel').onchange=()=>{CITY=$('citySel').value;refresh()};
+  $('citySel').onchange=()=>{CITY=$('citySel').value;refresh();renderCalendar();renderTrends()};
   $('paramSel').onchange=refresh;
 }
 
@@ -447,6 +474,63 @@ async function refresh(){
   }
 }
 
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let CAL_YEAR=null;
+async function renderCalendar(){
+  try{
+    const c=await (await fetch(`/api/calendar?city=${CITY}&year=${CAL_YEAR||2025}`)).json();
+    if(!c.days){$('calendar').style.display='none';return}
+    $('calendar').style.display='';
+    if(CAL_YEAR===null||!c.years_available.includes(CAL_YEAR))CAL_YEAR=c.years_available[c.years_available.length-1];
+    if(CAL_YEAR!==c.year){return renderCalendar()}
+    $('calYears').innerHTML=c.years_available.map(y=>`<button type="button" class="yearChip ${y===c.year?'on':''}" onclick="CAL_YEAR=${y};renderCalendar()">${y}</button>`).join('');
+    const byDate=Object.fromEntries(c.days.map(d=>[d.date,d]));
+    let html='';
+    for(let m=0;m<12;m++){
+      const first=new Date(Date.UTC(c.year,m,1)); const dim=new Date(Date.UTC(c.year,m+1,0)).getUTCDate();
+      let cells='<div class="calRow calHead">'+['S','M','T','W','T','F','S'].map(d=>`<span>${d}</span>`).join('')+'</div><div class="calRow">';
+      for(let i=0;i<first.getUTCDay();i++)cells+='<div></div>';
+      for(let day=1;day<=dim;day++){
+        const key=`${c.year}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const d=byDate[key];
+        cells+=d?`<div class="calDay" style="background:${RAMP[d.key]}" title="${key}: AQI ${d.aqi} (${bandOf(d.aqi).label})">${d.aqi}</div>`
+               :`<div class="calDay empty">·</div>`;
+      }
+      cells+='</div>';
+      html+=`<div class="calMonth"><h4>${MONTHS[m]}</h4>${cells}</div>`;
+    }
+    $('calGrid').innerHTML=html;
+    $('calLegend').innerHTML=BANDS.map(([lo,hi,k,l])=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${RAMP[k]};vertical-align:-1px"></span> ${l} ${lo}${hi<9999?'–'+hi:'+'}</span>`).join('');
+  }catch(e){}
+}
+
+async function renderTrends(){
+  try{
+    const t=await (await fetch(`/api/monthly?city=${CITY}`)).json();
+    if(!t.months){$('trends').style.display='none';return}
+    $('trends').style.display='';
+    Plotly.newPlot('monthlyChart',[{x:t.months.map(m=>m.month),y:t.months.map(m=>m.avg_aqi),type:'bar',
+      marker:{color:t.months.map(m=>RAMP[m.key])},hovertemplate:'%{x}<br>AQI %{y} (%{customdata})<extra></extra>',
+      customdata:t.months.map(m=>bandOf(m.avg_aqi).label)}],
+      {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'IBM Plex Sans',size:12},
+       margin:{t:6,r:10,b:60,l:42},yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'avg AQI'},xaxis:{tickangle:-40}},
+      {displayModeBar:false});
+    const fm=m=>{const [y,mo]=m.split('-');return MONTHS[+mo-1]+' '+y};
+    $('mostMonth').innerHTML=`<div style="font-size:11px;color:var(--dim)">Most polluted month</div><div style="font-size:24px;font-weight:600;margin:3px 0">${t.most_polluted.avg_aqi}</div><div style="font-size:12px;color:var(--dim)">${fm(t.most_polluted.month)}</div>`;
+    $('mostMonth').style.borderLeft=`3px solid ${RAMP[bandOf(t.most_polluted.avg_aqi).key]}`;
+    $('leastMonth').innerHTML=`<div style="font-size:11px;color:var(--dim)">Least polluted month</div><div style="font-size:24px;font-weight:600;margin:3px 0">${t.least_polluted.avg_aqi}</div><div style="font-size:12px;color:var(--dim)">${fm(t.least_polluted.month)}</div>`;
+    $('leastMonth').style.borderLeft=`3px solid ${RAMP[bandOf(t.least_polluted.avg_aqi).key]}`;
+    const a=t.annual;
+    if(a.length>=2){
+      const dir=t.annual_change_pct<0?'improvement':'worsening';
+      $('annualCompare').innerHTML=`<div style="font-size:11px;color:var(--dim)">Annual average</div><div style="font-size:17px;font-weight:600;margin:6px 0">${a.map(x=>`${x.year}: ${x.avg_aqi}`).join(' → ')}</div><div style="font-size:12px;color:var(--dim)">${Math.abs(t.annual_change_pct)}% ${dir}</div>`;
+    }else{
+      $('annualCompare').innerHTML=`<div style="font-size:11px;color:var(--dim)">Annual average</div><div style="font-size:17px;font-weight:600;margin:6px 0">${a[0].year}: ${a[0].avg_aqi}</div><div style="font-size:12px;color:var(--dim)">Only one year of archive so far</div>`;
+    }
+    $('annualCompare').style.borderLeft='3px solid var(--blueSolid)';
+  }catch(e){}
+}
+
 async function loadBench(){try{const b=await (await fetch('/api/benchmark')).json();
   if(b.speedup){$('speedup').textContent=b.speedup+'×';$('benchRows').textContent=b.rows.toLocaleString()+' sensor readings';
   $('benchTimes').textContent=`pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`}}catch(e){}}
@@ -478,7 +562,7 @@ async function ask(){
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
-loadCities().then(refresh);loadBench();
+loadCities().then(()=>{refresh();renderCalendar();renderTrends()});loadBench();
 </script>
 </body>
 </html>
