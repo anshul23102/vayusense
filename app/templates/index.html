@@ -164,6 +164,13 @@
   .healthTab svg{width:15px;height:15px}
   .healthTab.on{color:var(--txt);border-color:rgba(157,193,255,.5);background:rgba(157,193,255,.08)}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe3ac;margin-right:5px;animation:pulse 1.6s infinite}
+  .smokeWrap{position:relative;width:26px;height:26px;display:inline-block;vertical-align:-8px;margin-left:6px}
+  .puff{position:absolute;bottom:0;left:50%;width:8px;height:8px;border-radius:50%;background:rgba(169,180,208,.5);
+    animation:puffRise 2.4s ease-in infinite}
+  .puff:nth-child(2){animation-delay:.8s;left:40%}
+  .puff:nth-child(3){animation-delay:1.6s;left:60%}
+  @keyframes puffRise{0%{transform:translate(-50%,0) scale(.4);opacity:0}
+    30%{opacity:.7}100%{transform:translate(-50%,-24px) scale(1.3);opacity:0}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .liveRegion{transition:opacity .25s ease}
   .liveRegion.loading{opacity:.45}
@@ -177,6 +184,7 @@
     #aurora{display:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
     .livePulse{animation:none}
+    .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
     html{scroll-behavior:auto}
   }
@@ -421,6 +429,25 @@ function selectCity(c){
 let CITY='Delhi';
 let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function countUp(el, target, {duration=900, decimals=0}={}){
+  const from=parseFloat(el.dataset.raw||el.textContent)||0;
+  if(reduceMotion || !isFinite(target)){ el.textContent=target.toFixed(decimals); el.dataset.raw=target; return; }
+  const start=performance.now();
+  let done=false;
+  function finish(){ if(done)return; done=true; el.textContent=target.toFixed(decimals); el.dataset.raw=target; }
+  function tick(now){
+    if(done)return;
+    const t=Math.min(1,(now-start)/duration);
+    const eased=1-Math.pow(1-t,3);
+    const val=from+(target-from)*eased;
+    el.textContent=val.toFixed(decimals);
+    if(t<1)requestAnimationFrame(tick); else finish();
+  }
+  requestAnimationFrame(tick);
+  // Safety net: if the tab is backgrounded/hidden, Chrome suspends rAF entirely.
+  // Guarantee the number still lands on the correct value instead of hanging.
+  setTimeout(finish, duration+120);
+}
 
 if(!reduceMotion){
   const aurora=$('aurora');
@@ -515,7 +542,7 @@ async function refresh(){
       const a=await (await fetch(`/api/aqi?city=${CITY}`)).json();
       if(myToken!==refreshToken)return;
       if(a.aqi!==undefined){
-        $('aqiVal').textContent=a.aqi;
+        countUp($('aqiVal'), a.aqi, {decimals:0});
         $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
         $('ringArc').style.stroke=a.category.color;
         const v=$('verdict');
@@ -555,8 +582,12 @@ async function refresh(){
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
   if(myToken!==refreshToken)return;
   if(imp.cigarettes_per_day_equivalent!==undefined){
-    $('impCig').innerHTML=`${imp.cigarettes_per_day_equivalent}<span> /day</span>`;
-    $('impYears').innerHTML=`${imp.estimated_life_expectancy_years_lost}<span> yrs</span>`;
+    if(!$('impCigNum')){
+      $('impCig').innerHTML=`<span id="impCigNum">0</span><span> /day</span><span class="smokeWrap" aria-hidden="true"><span class="puff"></span><span class="puff"></span><span class="puff"></span></span>`;
+      $('impYears').innerHTML=`<span id="impYearsNum">0</span><span> yrs</span>`;
+    }
+    countUp($('impCigNum'), imp.cigarettes_per_day_equivalent, {decimals:1});
+    countUp($('impYearsNum'), imp.estimated_life_expectancy_years_lost, {decimals:2});
   }
 }
 
