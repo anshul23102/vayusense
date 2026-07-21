@@ -658,6 +658,37 @@ async function loadCities(){
   $('paramSel').onchange=refresh;
 }
 
+let RANKING_DATA=[], CITIES_EXPANDED=false;
+function cityRowHtml(r,i){
+  const b=bandOf(r.aqi);
+  return `<div class="cityRow cardIn ${r.city===CITY?'current':''}" style="animation-delay:${Math.min(i,8)*30}ms" onclick="selectCity('${r.city}')">
+    <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
+    <div class="cityName">${r.city}</div>
+    <div class="cityAqi num">${r.aqi}</div>
+    <div class="cityCat" style="color:${b.color}">● ${r.category}</div>
+    <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
+  </div>`;
+}
+function renderCitiesTable(){
+  const ranking=RANKING_DATA;
+  const box=$('citiesTable');
+  if(!ranking.length){ box.innerHTML=''; return; }
+  if(CITIES_EXPANDED || ranking.length<=6){
+    box.innerHTML=ranking.map(cityRowHtml).join('')
+      + (ranking.length>6?`<button type="button" class="yearChip" style="margin-top:12px" onclick="CITIES_EXPANDED=false;renderCitiesTable()">Show fewer ↑</button>`:'');
+    return;
+  }
+  const top5=ranking.slice(0,5);
+  const myIdx=ranking.findIndex(r=>r.city===CITY);
+  const iShowMine = myIdx>=5;
+  let html=top5.map((r,i)=>cityRowHtml(r,i)).join('');
+  if(iShowMine){
+    html+=`<div class="scoreTxt" style="padding:8px 4px;opacity:.6">···</div>`+cityRowHtml(ranking[myIdx],5);
+  }
+  html+=`<button type="button" class="yearChip" style="margin-top:12px" onclick="CITIES_EXPANDED=true;renderCitiesTable()">Show all ${ranking.length} cities ↓</button>`;
+  box.innerHTML=html;
+}
+
 let refreshToken=0;
 async function refresh(){
   const myToken=++refreshToken;
@@ -741,16 +772,8 @@ async function refresh(){
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
         CURRENT_CATEGORY_KEY=a.category.key; renderHealthPanel(); renderSolutions(); renderMoodChar(a.category.color);
         $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
-        $('citiesTable').innerHTML=a.ranking.map((r,i)=>{
-          const b=bandOf(r.aqi);
-          return `<div class="cityRow cardIn ${r.city===CITY?'current':''}" style="animation-delay:${i*30}ms" onclick="selectCity('${r.city}')">
-            <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
-            <div class="cityName">${r.city}</div>
-            <div class="cityAqi num">${r.aqi}</div>
-            <div class="cityCat" style="color:${b.color}">● ${r.category}</div>
-            <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
-          </div>`;
-        }).join('');
+        RANKING_DATA=a.ranking; CITIES_EXPANDED=false;
+        renderCitiesTable();
         $('pollBasis').textContent=`Sub-AQI per pollutant · ${a.basis}`;
         $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub],i)=>{
           const b=bandOf(sub); const sv=s.pollutants[p]||{};
