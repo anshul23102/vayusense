@@ -23,7 +23,7 @@ from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
-from app import live
+from app import live, weather
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
@@ -99,6 +99,14 @@ def snapshot(city: str = "Delhi"):
         except ValueError:
             pass
     return snap
+
+
+@app.get("/api/weather")
+def weather_api(city: str = "Delhi"):
+    w = weather.get_weather(city)
+    if w is None:
+        return JSONResponse({"error": f"no weather data for city '{city}'"}, status_code=404)
+    return w
 
 
 @app.get("/api/trend")
