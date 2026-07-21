@@ -44,7 +44,7 @@ def landing():
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard():
-    return (ROOT / "app" / "templates" / "index.html").read_text()
+    return (ROOT / "app" / "templates" / "summary.html").read_text()
 
 
 @app.get("/city/{slug}", response_class=HTMLResponse)
