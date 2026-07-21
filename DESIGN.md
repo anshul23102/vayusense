@@ -18,30 +18,30 @@ colors:
   glass-deep: "#ffffff16"
 typography:
   display:
-    fontFamily: "Space Grotesk, sans-serif"
+    fontFamily: "Onest, sans-serif"
     fontSize: "clamp(2.75rem, 7.4vw, 6rem)"
     fontWeight: 700
     lineHeight: 1.04
     letterSpacing: "-0.02em"
   headline:
-    fontFamily: "Space Grotesk, sans-serif"
+    fontFamily: "Onest, sans-serif"
     fontSize: "clamp(1.875rem, 4vw, 2.75rem)"
-    fontWeight: 650
+    fontWeight: 700
     lineHeight: 1.15
     letterSpacing: "-0.01em"
   title:
-    fontFamily: "Space Grotesk, sans-serif"
-    fontSize: "23px"
-    fontWeight: 650
+    fontFamily: "Onest, sans-serif"
+    fontSize: "25px"
+    fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.01em"
   body:
-    fontFamily: "IBM Plex Sans, -apple-system, sans-serif"
+    fontFamily: "Onest, -apple-system, sans-serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: "IBM Plex Sans, -apple-system, sans-serif"
+    fontFamily: "Onest, -apple-system, sans-serif"
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 1.4
@@ -101,7 +101,7 @@ This system explicitly rejects the generic SaaS dashboard: no hero-metric-card c
 - Deep, near-black night backgrounds with drifting particulate haze and a cursor-reactive aurora glow
 - One primary accent (Ice) doing the CTA/focus work, Ultraviolet reserved for AI/agent moments, Photon Green reserved for the acceleration story
 - Flat glass surfaces at rest, lifted by soft ambient shadow and a firmer glow on interaction, never shadow-heavy by default
-- A strict two-family pairing: Space Grotesk for display and data numerals, IBM Plex Sans for everything else — never a third
+- A single family, Onest, with hierarchy carried entirely by size and weight — never a second family
 - Restrained motion: reveal-on-scroll, gentle hover lifts, a pulsing status dot; nothing choreographed or bouncy
 
 ## 2. Colors
@@ -154,20 +154,19 @@ band label present. Ultraviolet and Photon Green are not part of the ramp.
 
 ## 3. Typography
 
-**Display Font:** Space Grotesk (headlines, section titles, and every stat numeral — always with `font-variant-numeric: tabular-nums` on numbers)
-**Body Font:** IBM Plex Sans (body copy, labels, buttons, chat, captions; -apple-system, sans-serif fallback)
+**Font:** Onest, everywhere (headlines, section titles, stat numerals, body copy, labels, buttons, chat, captions; -apple-system, sans-serif fallback). Every stat numeral keeps `font-variant-numeric: tabular-nums`.
 
-**Character:** A two-family instrument pairing. Space Grotesk's slightly quirky geometric terminals give the big numbers a "scientific instrument" voice; IBM Plex Sans keeps running text engineered and neutral. The pairing rule is strict: if it's a headline or a number the user reads as data, it's Space Grotesk; everything else is Plex. No third family, ever.
+**Character:** A single-family, weight-and-size hierarchy — the same discipline the Google Cloud Gen AI Academy reference page uses (one rounded-geometric family, confident weight jumps between levels, no family-switching). Onest was chosen as the closest freely-licensed match to that reference's proprietary Google Sans; a second family is never introduced.
 
 ### Hierarchy
 - **Display** (700, `clamp(2.75rem, 7.4vw, 6rem)`, 1.04 line-height, -0.02em tracking): the landing hero headline only. Appears once per page.
-- **Headline** (650, `clamp(1.875rem, 4vw, 2.75rem)`, 1.15 line-height, -0.01em tracking): section titles on the landing page.
-- **Title** (650, 23px, 1.2 line-height, -0.01em tracking): dashboard section headers, one notch quieter than a landing Headline since the dashboard is a working surface, not a pitch.
+- **Headline** (700, `clamp(1.875rem, 4vw, 2.75rem)`, 1.15 line-height, -0.01em tracking): section titles on the landing page.
+- **Title** (700, 25px, 1.2 line-height, -0.01em tracking): dashboard section headers — a confident, near-Headline weight rather than a quieter notch, matching the reference's H2/H3 jump.
 - **Body** (400, 17px, 1.6 line-height, max 70ch): lead paragraphs and descriptive copy. Dashboard body copy runs smaller (13-15px) for density; never below 12px for anything a user must read closely.
 - **Label** (600, 12px, uppercase, 0.14em tracking): kickers, eyebrows, KPI captions, tag chips. The system's only uppercase-tracked text; reserve it for true labels, not for emphasis.
 
 ### Named Rules
-**The Two Voices Rule.** Space Grotesk speaks headlines and data numbers; IBM Plex Sans speaks everything else. A third family — or swapping their roles — breaks the calibrated-instrument read.
+**The One Voice Rule.** Onest speaks every level of the hierarchy; only weight and size separate a headline from a caption. Introducing a second family — or flattening the weight/size jumps between levels — breaks the calibrated-instrument read.
 
 ## 4. Elevation
 
@@ -222,7 +221,7 @@ The Night Watch uses two elevation vocabularies, kept strictly separate: a neutr
 - **Do** keep every screen to one dominant accent (Ice Solid) with Ultraviolet and Photon Green appearing only in their named contexts (agent moments, acceleration moments).
 - **Do** give cards real ambient lift (Ambient Rest/Hover) now that the system has moved past flat-only; keep that lift dark and diffuse, never colored.
 - **Do** pair every status color (Alert Rose, Amber Caution, Signal OK) with a text label or icon.
-- **Do** keep the pairing strict: Space Grotesk for display/numbers, IBM Plex Sans for text; let weight and tracking carry hierarchy within each.
+- **Do** keep Onest the only family; let weight and tracking carry hierarchy within it.
 - **Do** keep motion restrained: reveal-on-scroll, hover lifts, one pulsing status dot; always ship a prefers-reduced-motion alternative.
 
 ### Don't:
@@ -230,5 +229,5 @@ The Night Watch uses two elevation vocabularies, kept strictly separate: a neutr
 - **Don't** make this look like a government/bureaucratic data portal: no dense unstyled tables, no default form-control chrome, no bureaucratic labeling.
 - **Don't** make this look like a consumer weather app: no cartoonish icons, no playful illustration style, no rounded-mascot AQI badges.
 - **Don't** use a glow to fake structural depth, or an ambient shadow to fake significance; the two vocabularies stay separate.
-- **Don't** introduce a third type family, and don't set body copy in Space Grotesk or headlines in Plex.
+- **Don't** introduce a second type family, and don't flatten the weight/size jumps between hierarchy levels.
 - **Don't** rely on color alone for hazardous/safe/caution states.
