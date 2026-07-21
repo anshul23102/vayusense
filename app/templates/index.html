@@ -279,7 +279,7 @@
 <nav>
   <a class="logo" href="/"><div class="dot"></div><span>VayuSense</span></a>
   <div class="subnav">
-    <a href="#overview">Overview</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
+    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
   <div class="right">
     <div class="navSearchWrap">
@@ -361,6 +361,12 @@
   <div class="sectionHead"><div class="kicker">Compare</div><h2>India's cities, ranked</h2>
     <p id="citiesBasis" class="scoreTxt"></p></div>
   <div id="citiesTable"></div>
+</section>
+
+<section class="section reveal" id="hotspots">
+  <div class="sectionHead"><div class="kicker">Zoom in</div><h2>Pollution hotspots</h2>
+  <p class="scoreTxt">Individual monitoring stations within <span id="hotspotsCity">this city</span>, ranked by historical average PM2.5 — not every part of a city breathes the same air.</p></div>
+  <div class="grid" id="hotspotsGrid"></div>
 </section>
 
 <section class="section reveal" id="pollutants">
@@ -761,6 +767,32 @@ async function refresh(){
     countUp($('impCigNum'), imp.cigarettes_per_day_equivalent, {decimals:1});
     countUp($('impYearsNum'), imp.estimated_life_expectancy_years_lost, {decimals:2});
   }
+  renderHotspots();
+}
+
+async function renderHotspots(){
+  const myToken=refreshToken;
+  $('hotspotsCity').textContent=CITY;
+  try{
+    const stations=await (await fetch(`/api/stations?city=${CITY}`)).json();
+    if(myToken!==refreshToken)return;
+    const grid=$('hotspotsGrid');
+    if(!Array.isArray(stations)||!stations.length){ grid.innerHTML='<p class="scoreTxt">No station-level data for this city yet.</p>'; return; }
+    grid.innerHTML=stations.map((st,i)=>{
+      const b=bandOf(overallFromPm25(st.avg_pm25));
+      return `<div class="s6"><div class="objCard cardIn" style="animation-delay:${i*40}ms;border-left:3px solid ${b.color}">
+        <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">Hotspot #${i+1}</div>
+        <div style="font-size:15px;margin:4px 0 6px">${st.station}</div>
+        <div class="num" style="font-size:22px;font-weight:600">${st.avg_pm25}<span style="font-size:12px;color:var(--dim);font-family:'Onest'"> µg/m³ PM2.5 (avg)</span></div>
+        <div style="font-size:12px;margin-top:4px"><span style="color:${b.color}">● ${b.label}</span></div>
+      </div></div>`;
+    }).join('');
+  }catch(e){}
+}
+function overallFromPm25(v){
+  if(v<=12)return 0+v/12*50; if(v<=35.4)return 51+(v-12.1)/(35.4-12.1)*49;
+  if(v<=55.4)return 101+(v-35.5)/(55.4-35.5)*49; if(v<=150.4)return 151+(v-55.5)/(150.4-55.5)*49;
+  if(v<=250.4)return 201+(v-150.5)/(250.4-150.5)*99; return 301+(v-250.5)/(500.4-250.5)*199;
 }
 
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
