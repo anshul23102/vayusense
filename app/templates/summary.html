@@ -97,6 +97,10 @@
     border-left:5px solid transparent;border-right:5px solid transparent;
     border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
   .aqiLabels{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  #monumentSkyline{position:absolute;left:0;right:0;top:70px;width:100%;height:auto;max-height:220px;
+    opacity:.14;pointer-events:none;z-index:0}
+  @media (max-width:900px){#monumentSkyline{display:none}}
+  @media (prefers-reduced-motion: reduce){#monumentSkyline{opacity:.1}}
   .weatherStrip{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
   .weatherStrip .wItem{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}
   .weatherStrip .wItem svg{width:16px;height:16px;flex:none;color:var(--blueSolid)}
@@ -207,6 +211,73 @@
     </div>
   </div>
 </nav>
+
+<svg id="monumentSkyline" viewBox="0 0 1600 200" aria-hidden="true">
+  <defs>
+    <linearGradient id="skylineGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cfe0ff"/>
+      <stop offset="50%" stop-color="#a688fb"/>
+      <stop offset="100%" stop-color="#cfe0ff"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#skylineGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(40,60)">
+      <path d="M40 10v10M25 20h30"/>
+      <path d="M5 140V70a35 35 0 0 1 70 0v70"/>
+      <path d="M17 140V85a23 23 0 0 1 46 0v55"/>
+      <path d="M0 140h80M4 140v-18M76 140v-18"/>
+    </g>
+    <g transform="translate(190,40)">
+      <path d="M35 0l7 20M28 0h14"/>
+      <path d="M22 140l4-30h18l4 30"/>
+      <path d="M23 110l3-25h14l3 25M26 85l2-20h10l2 20M28 65l1.5-15h7l1.5 15"/>
+      <path d="M8 140h60"/>
+    </g>
+    <g transform="translate(330,45)">
+      <circle cx="4" cy="70" r="5"/><circle cx="146" cy="70" r="5"/>
+      <path d="M4 75v55M146 75v55"/>
+      <path d="M75 8c14 10 20 24 14 38c-4 10-14 14-14 14s-10-4-14-14c-6-14 0-28 14-38z"/>
+      <path d="M75 30v6"/>
+      <path d="M30 135V70h90v65"/>
+      <path d="M55 135V95a20 20 0 0 1 40 0v40"/>
+      <path d="M4 135h142"/>
+    </g>
+    <g transform="translate(540,42)">
+      <circle cx="6" cy="10" r="4"/><circle cx="114" cy="10" r="4"/>
+      <path d="M6 14v50M114 14v50"/>
+      <path d="M40 138V64a20 20 0 0 1 40 0v74"/>
+      <path d="M18 138V66M102 138V66"/>
+      <path d="M0 138h120"/>
+    </g>
+    <g transform="translate(710,45)">
+      <circle cx="4" cy="14" r="4"/><circle cx="106" cy="14" r="4"/>
+      <path d="M4 18v55M106 18v55"/>
+      <path d="M32 135V60a23 23 0 0 1 46 0v75"/>
+      <path d="M4 73v62M106 73v62"/>
+      <path d="M0 135h110"/>
+    </g>
+    <g transform="translate(870,55)">
+      <path d="M50 0c8 14 8 26 0 34c-8-8-8-20 0-34z"/>
+      <path d="M22 10c10 16 10 30 2 40c-10-8-12-24-2-40z"/>
+      <path d="M78 10c-10 16-10 30-2 40c10-8 12-24 2-40z"/>
+      <path d="M4 32c12 14 14 30 6 44c-12-10-16-28-6-44z"/>
+      <path d="M96 32c-12 14-14 30-6 44c12-10 16-28 6-44z"/>
+      <path d="M6 76c14 8 30 8 44 0c14 8 30 8 44 0"/>
+      <path d="M0 100h100M14 100V82M86 100V82"/>
+    </g>
+    <g transform="translate(1040,45)">
+      <path d="M60 0c-9 0-15 6-15 15v5h30v-5c0-9-6-15-15-15z"/>
+      <path d="M20 130V40a5 5 0 0 1 5-5h70a5 5 0 0 1 5 5v90"/>
+      <path d="M35 55h7M50 55h7M65 55h7M80 55h7M35 75h7M50 75h7M65 75h7M80 75h7M35 95h7M50 95h7M65 95h7M80 95h7M35 115h7M50 115h7M65 115h7M80 115h7"/>
+      <path d="M14 130h92"/>
+    </g>
+    <g transform="translate(1230,60)">
+      <path d="M40 5a14 14 0 0 1 14 14c0 6-3 11-8 13v8h-12v-8c-5-2-8-7-8-13a14 14 0 0 1 14-14z"/>
+      <path d="M14 90V45h52v45"/>
+      <path d="M0 90h80"/>
+    </g>
+  </g>
+</svg>
 
 <div class="sectionHead reveal">
   <div class="kicker">Right now</div>
