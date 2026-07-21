@@ -217,7 +217,7 @@
 <section class="section reveal" id="overview" style="border-top:none;padding-top:0">
 <div class="grid">
   <div class="s6">
-      <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span></div>
+      <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span><span class="tag" id="aqiRank" style="display:none"></span></div>
       <div class="scoreWrap">
         <div class="ring">
           <svg width="150" height="150" viewBox="0 0 150 150">
@@ -363,6 +363,7 @@ async function loadOverview(){
     $('scoreTxt').innerHTML=`Driven by ${a.dominant.toUpperCase()} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
     $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
     $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
+        if(a.rank && a.of){ $('aqiRank').style.display=''; $('aqiRank').textContent=`#${a.rank} of ${a.of}`; } else { $('aqiRank').style.display='none'; }
     $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
     CURRENT_CATEGORY_KEY=a.category.key; renderMoodChar(a.category.color); renderWeather();
     $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
