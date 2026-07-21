@@ -12,7 +12,7 @@
   :root{
     --bg:#0e1424; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
     --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
-    --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --bad:#ff8aa3; --ok:#4fe3ac; --amber:#ffce80;
+    --blue:#cfe0ff; --blueSolid:#7fb0ff; --violet:#a688fb; --nv:#8ef22a; --bad:#ff5c85; --ok:#3dfc9e; --amber:#ffc247;
     --shadow-rest:0 8px 28px rgba(6,10,25,.35); --shadow-hover:0 14px 40px rgba(6,10,25,.45);
     --disp:'Space Grotesk',sans-serif;
   }
@@ -36,7 +36,7 @@
     display:flex;align-items:center;gap:20px;padding:12px 18px;border-radius:18px;
     background:rgba(15,21,40,.62);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
   .logo{font-weight:650;font-size:16.5px;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
-  .logo .dot{width:22px;height:22px;border-radius:8px;background:conic-gradient(from 210deg,#cfe0ff,#b9a8fb,#cfe0ff);box-shadow:0 0 16px rgba(207,224,255,.45)}
+  .logo .dot{width:22px;height:22px;border-radius:8px;background:conic-gradient(from 210deg,#cfe0ff,#a688fb,#cfe0ff);box-shadow:0 0 16px rgba(207,224,255,.45)}
   .logo span{color:var(--blueSolid)}
   .subnav{display:flex;gap:14px;margin-left:18px}
   .subnav a{color:var(--dim);font-size:12.5px;text-decoration:none;font-family:'IBM Plex Sans'}
@@ -113,7 +113,7 @@
   .askrow input{flex:1;background:rgba(255,255,255,.055);color:var(--txt);border:1px solid var(--line);border-radius:14px;
     padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
   .askrow input:focus{border-color:rgba(157,193,255,.5)}
-  .askrow button{background:linear-gradient(135deg,#e3ecff,#9dc1ff);border:0;color:#0b1226;font-weight:650;
+  .askrow button{background:linear-gradient(135deg,#e3ecff,#7fb0ff);border:0;color:#0b1226;font-weight:650;
     padding:0 22px;border-radius:14px;cursor:pointer;font-size:14.5px;font-family:inherit;
     transition:transform .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(157,193,255,.3)}
   .askrow button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover),0 6px 20px rgba(157,193,255,.4)}
@@ -134,8 +134,8 @@
   .aqiBar span{height:100%}
   .aqiBar span:first-child{border-radius:99px 0 0 99px}
   .aqiBar span:last-child{border-radius:0 99px 99px 0}
-  .sGood{background:#4fe3ac}.sMod{background:#ffce80}.sPoor{background:#ffab73}
-  .sUnh{background:#ff8aa3}.sSev{background:#ef7ac8}.sHaz{background:#b04a63}
+  .sGood{background:#3dfc9e}.sMod{background:#ffc247}.sPoor{background:#ff9640}
+  .sUnh{background:#ff5c85}.sSev{background:#ef4fc0}.sHaz{background:#c93a5a}
   .aqiPointer{position:absolute;top:-6px;left:0;width:0;height:0;transform:translateX(-5px);
     border-left:5px solid transparent;border-right:5px solid transparent;
     border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
@@ -163,7 +163,7 @@
     border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
   .healthTab svg{width:15px;height:15px}
   .healthTab.on{color:var(--txt);border-color:rgba(157,193,255,.5);background:rgba(157,193,255,.08)}
-  .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe3ac;margin-right:5px;animation:pulse 1.6s infinite}
+  .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3dfc9e;margin-right:5px;animation:pulse 1.6s infinite}
   .smokeWrap{position:relative;width:26px;height:26px;display:inline-block;vertical-align:-8px;margin-left:6px}
   .puff{position:absolute;bottom:0;left:50%;width:8px;height:8px;border-radius:50%;background:rgba(169,180,208,.5);
     animation:puffRise 2.4s ease-in infinite}
@@ -252,7 +252,7 @@
         <div class="ring">
           <svg width="150" height="150" viewBox="0 0 150 150">
             <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
-            <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="#ffce80" stroke-width="12"
+            <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="#ffc247" stroke-width="12"
                     stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1),stroke .4s"/>
           </svg>
           <div class="val"><b id="aqiVal">–</b><small>AQI (US EPA)</small></div>
@@ -402,7 +402,7 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const RAMP={good:'#4fe3ac',moderate:'#ffce80',poor:'#ffab73',unhealthy:'#ff8aa3',severe:'#ef7ac8',hazardous:'#b04a63'};
+const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
@@ -499,8 +499,8 @@ async function refresh(){
   if(myToken!==refreshToken)return;
   if(t.series){
     const traces=[
-      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#9dc1ff',width:1.3},fill:'tozeroy',fillcolor:'rgba(157,193,255,.06)',hovertemplate:'%{x}<br>%{y:.1f} µg/m³<extra></extra>'},
-      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffce80',width:3},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (7d avg)<extra></extra>'},
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.mean),name:'daily mean',mode:'lines',line:{color:'#7fb0ff',width:1.3},fill:'tozeroy',fillcolor:'rgba(157,193,255,.06)',hovertemplate:'%{x}<br>%{y:.1f} µg/m³<extra></extra>'},
+      {x:t.series.map(d=>d.date),y:t.series.map(d=>d.roll7),name:'7-day trend',mode:'lines',line:{color:'#ffc247',width:3},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (7d avg)<extra></extra>'},
     ];
     let forecastMethod='';
     try{
@@ -515,7 +515,7 @@ async function refresh(){
         traces.push(
           {x:fx,y:fhigh,mode:'lines',line:{width:0},showlegend:false,hoverinfo:'skip'},
           {x:fx,y:flow,mode:'lines',line:{width:0},fill:'tonexty',fillcolor:'rgba(255,206,128,.10)',showlegend:false,hoverinfo:'skip'},
-          {x:fx,y:fy,name:`projected · ${f.method_label||'damped trend'}`,mode:'lines',line:{color:'#ffce80',width:2,dash:'dot'},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (projected)<extra></extra>'}
+          {x:fx,y:fy,name:`projected · ${f.method_label||'damped trend'}`,mode:'lines',line:{color:'#ffc247',width:2,dash:'dot'},hovertemplate:'%{x}<br>%{y:.1f} µg/m³ (projected)<extra></extra>'}
         );
       }
     }catch(e){}

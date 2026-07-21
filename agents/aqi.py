@@ -19,12 +19,12 @@ BREAKPOINTS: dict[str, list[tuple[float, float]]] = {
 }
 AQI_BANDS = [(0, 50), (51, 100), (101, 150), (151, 200), (201, 300), (301, 500)]
 CATEGORIES = [
-    {"key": "good", "label": "Good", "color": "#4fe3ac"},
-    {"key": "moderate", "label": "Moderate", "color": "#ffce80"},
-    {"key": "poor", "label": "Poor", "color": "#ffab73"},
-    {"key": "unhealthy", "label": "Unhealthy", "color": "#ff8aa3"},
-    {"key": "severe", "label": "Severe", "color": "#ef7ac8"},
-    {"key": "hazardous", "label": "Hazardous", "color": "#b04a63"},
+    {"key": "good", "label": "Good", "color": "#3dfc9e"},
+    {"key": "moderate", "label": "Moderate", "color": "#ffc247"},
+    {"key": "poor", "label": "Poor", "color": "#ff9640"},
+    {"key": "unhealthy", "label": "Unhealthy", "color": "#ff5c85"},
+    {"key": "severe", "label": "Severe", "color": "#ef4fc0"},
+    {"key": "hazardous", "label": "Hazardous", "color": "#c93a5a"},
 ]
 _MW = {"no2": 46.006, "so2": 64.066, "o3": 48.0, "co": 28.01}
 # EPA truncation: decimals kept per parameter (in EPA units)

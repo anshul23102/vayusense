@@ -5,12 +5,12 @@ colors:
   night-bg: "#0e1424"
   night-bg-deep: "#111a30"
   ice: "#cfe0ff"
-  ice-solid: "#9dc1ff"
-  ultraviolet: "#b9a8fb"
-  photon-green: "#9adb3f"
-  signal-ok: "#4fe3ac"
-  alert-rose: "#ff8aa3"
-  amber-caution: "#ffce80"
+  ice-solid: "#7fb0ff"
+  ultraviolet: "#a688fb"
+  photon-green: "#8ef22a"
+  signal-ok: "#3dfc9e"
+  alert-rose: "#ff5c85"
+  amber-caution: "#ffc247"
   ink: "#f3f6fd"
   mist: "#a9b4d0"
   hairline: "#ffffff17"
@@ -109,20 +109,20 @@ This system explicitly rejects the generic SaaS dashboard: no hero-metric-card c
 The palette is one deep night neutral, one cool primary accent, and two narrowly-scoped secondary accents; everything else is text and glass.
 
 ### Primary
-- **Ice Solid** (#9dc1ff): the one color allowed to ask for action. Primary buttons, focus rings, links, the CTA glow. Used on ≤10% of any given screen.
+- **Ice Solid** (#7fb0ff): the one color allowed to ask for action. Primary buttons, focus rings, links, the CTA glow. Used on ≤10% of any given screen.
 - **Ice** (#cfe0ff): the softer sibling of Ice Solid, used only inside gradient text treatments on hero headlines and the score-ring stroke gradient; never a flat fill on its own.
 
 ### Secondary
-- **Ultraviolet** (#b9a8fb): reserved for anything that signals "the AI is reasoning here": the agent chat's user-message tint, the score-ring gradient's second stop, the "Ask VayuSense" tag. Never used as a generic decorative accent.
-- **Photon Green** (#9adb3f): reserved exclusively for the acceleration story: the NVIDIA benchmark number, the live-status pulse dot, the "safe" trend arrows. If a green appears anywhere else on screen, it's the wrong token.
+- **Ultraviolet** (#a688fb): reserved for anything that signals "the AI is reasoning here": the agent chat's user-message tint, the score-ring gradient's second stop, the "Ask VayuSense" tag. Never used as a generic decorative accent.
+- **Photon Green** (#8ef22a): reserved exclusively for the acceleration story: the NVIDIA benchmark number, the live-status pulse dot, the "safe" trend arrows. If a green appears anywhere else on screen, it's the wrong token.
 
 ### Tertiary (status colors, dashboard only)
-- **Signal OK** (#4fe3ac): safe/healthy pollutant readings.
-- **Alert Rose** (#ff8aa3): hazardous readings, error states. Paired with an icon or label, never color alone, so meaning survives color blindness.
-- **Amber Caution** (#ffce80): borderline/caution readings and warning banners.
-- **Ember** (#ffab73): AQI ramp only — the "Poor" band.
-- **Magenta Signal** (#ef7ac8): AQI ramp only — the "Severe" band.
-- **Oxblood** (#b04a63): AQI ramp only — the "Hazardous" band.
+- **Signal OK** (#3dfc9e): safe/healthy pollutant readings.
+- **Alert Rose** (#ff5c85): hazardous readings, error states. Paired with an icon or label, never color alone, so meaning survives color blindness.
+- **Amber Caution** (#ffc247): borderline/caution readings and warning banners.
+- **Ember** (#ff9640): AQI ramp only — the "Poor" band.
+- **Magenta Signal** (#ef4fc0): AQI ramp only — the "Severe" band.
+- **Oxblood** (#c93a5a): AQI ramp only — the "Hazardous" band.
 
 ### Neutral
 - **Night BG** (#0e1424): the base field for the dashboard and every deep surface.

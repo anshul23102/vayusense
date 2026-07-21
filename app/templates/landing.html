@@ -11,7 +11,7 @@
   :root{
     --bg:#0e1424; --bg2:#111a30; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.09);
     --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.085);
-    --blue:#cfe0ff; --blueSolid:#9dc1ff; --violet:#b9a8fb; --nv:#9adb3f; --amber:#ffce80;
+    --blue:#cfe0ff; --blueSolid:#7fb0ff; --violet:#a688fb; --nv:#8ef22a; --amber:#ffc247;
     --shadow-rest:0 8px 28px rgba(6,10,25,.35); --shadow-hover:0 14px 40px rgba(6,10,25,.45);
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -35,12 +35,12 @@
     display:flex;align-items:center;gap:26px;padding:12px 20px;border-radius:18px;
     background:rgba(15,21,40,.55);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
   .logo{font-weight:700;font-size:21px;letter-spacing:.2px;display:flex;align-items:center;gap:10px}
-  .logo .dot{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,#9dc1ff,#b9a8fb,#9dc1ff);
+  .logo .dot{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,#7fb0ff,#a688fb,#7fb0ff);
     box-shadow:0 0 24px rgba(157,193,255,.7)}
   .logo span{color:var(--blue)}
   nav a{color:var(--dim);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
   nav a:hover{color:var(--txt)}
-  nav .cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);
+  nav .cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#e3ecff,#7fb0ff);
     padding:9px 18px;border-radius:12px;font-weight:600;box-shadow:0 6px 24px rgba(157,193,255,.35)}
 
   .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
@@ -59,7 +59,7 @@
   .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:600;
     font-size:16px;text-decoration:none;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s}
   .btn:hover{transform:translateY(-2px)}
-  .btn.primary{color:#071023;background:linear-gradient(135deg,#e3ecff,#9dc1ff);box-shadow:0 10px 34px rgba(157,193,255,.4)}
+  .btn.primary{color:#071023;background:linear-gradient(135deg,#e3ecff,#7fb0ff);box-shadow:0 10px 34px rgba(157,193,255,.4)}
   .btn.primary:hover{background:linear-gradient(135deg,#f2f7ff,#cfe0ff);box-shadow:var(--shadow-hover),0 10px 34px rgba(157,193,255,.5)}
   .btn.ghost{color:var(--txt);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
   .btn.ghost:hover{background:var(--glass2);box-shadow:var(--shadow-hover)}
@@ -266,7 +266,7 @@
 
 <script>
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const RAMP={good:'#4fe3ac',moderate:'#ffce80',poor:'#ffab73',unhealthy:'#ff8aa3',severe:'#ef7ac8',hazardous:'#b04a63'};
+const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',

@@ -57,7 +57,7 @@ def test_category_bands():
     assert category(150)["label"] == "Poor"
     assert category(300)["key"] == "severe"
     assert category(301)["key"] == "hazardous"
-    assert category(301)["color"] == "#b04a63"
+    assert category(301)["color"] == "#c93a5a"
 
 
 def test_archive_units_cover_all_params():
