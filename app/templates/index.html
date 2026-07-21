@@ -144,8 +144,8 @@
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03)}
   .cityRow.current{border-left:2px solid var(--blueSolid);padding-left:12px;margin-left:-14px}
-  .cityIconBadge{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
-  .cityIconBadge svg{width:18px;height:18px}
+  .cityIconBadge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .cityIconBadge svg{width:24px;height:24px}
   .cityName{flex:1;min-width:90px;font-size:14px}
   .cityAqi{width:52px;text-align:right;font-size:19px;font-weight:600}
   .cityCat{width:110px;font-size:12px}
@@ -161,7 +161,7 @@
   .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
   .healthTab{display:flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;padding:8px 14px;
     border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
-  .healthTab svg{width:15px;height:15px}
+  .healthTab svg{width:20px;height:20px;flex:none}
   .healthTab.on{color:var(--txt);border-color:rgba(157,193,255,.5);background:rgba(157,193,255,.08)}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3dfc9e;margin-right:5px;animation:pulse 1.6s infinite}
   .smokeWrap{position:relative;width:26px;height:26px;display:inline-block;vertical-align:-8px;margin-left:6px}
@@ -215,6 +215,12 @@
   <symbol id="ic-asthma" viewBox="0 0 24 24"><path d="M9 3v5M9 8c-2 0-3.5 1.6-3.5 3.5S7 15 9 15h6c2 0 3.5-1.6 3.5-3.5S17 8 15 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 15v3a2 2 0 1 1-4 0M15 15v3a2 2 0 1 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
   <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9c-1.4-3.3 1-6 4-6c2 0 3.6 1.4 5 3.4C13.4 6.4 15 5 17 5c3 0 5.4 2.7 4 6c-2 4.6-9 9-9 9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12h2l1.5-3 2 5 1.5-3H17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-worker" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4M6 9v9M18 9v9M6 20h12M9 13h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-pm25" viewBox="0 0 24 24"><circle cx="7" cy="8" r="1.4" fill="currentColor"/><circle cx="14" cy="6" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1.7" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="18" r="0.9" fill="currentColor"/><circle cx="6" cy="17" r="0.8" fill="currentColor"/></symbol>
+  <symbol id="ic-pm10" viewBox="0 0 24 24"><circle cx="8" cy="9" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="9" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="16" r="2.7" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="ic-co" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="ic-so2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="5.5" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="18.5" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.8 10.3L9.6 9.6M15.2 10.3L14.4 9.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+  <symbol id="ic-no2" viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="5.5" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="18.5" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 11.3L8 14.3M14.5 11.3L16 14.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+  <symbol id="ic-o3" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6.5" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
 </svg>
 <div id="aurora"></div>
 <canvas id="haze"></canvas>
@@ -406,6 +412,7 @@ const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85'
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
+const POLL_ICON={pm25:'ic-pm25',pm10:'ic-pm10',co:'ic-co',so2:'ic-so2',no2:'ic-no2',o3:'ic-o3'};
 const POLL_UNITS={co:'mg/m³'};
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
   Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
@@ -587,6 +594,7 @@ async function refresh(){
           const unit=(a.units&&a.units[p])||POLL_UNITS[p]||'µg/m³';
           return `<div class="s4"><button type="button" class="objCard cardIn" style="animation-delay:${i*40}ms;border-left:3px solid ${b.color};width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit"
             onclick="$('paramSel').value='${p}';$('paramSel').dispatchEvent(new Event('change'));$('trend').scrollIntoView({behavior:'smooth'})">
+            <div style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;background:${b.color}1f;color:${b.color}"><svg style="width:20px;height:20px"><use href="#${POLL_ICON[p]||'ic-pm25'}"/></svg></div>
             <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">${POLL_NAMES[p]||p}</div>
             <div class="num" style="font-size:26px;font-weight:600;margin:4px 0">${conc}<span style="font-size:13px;color:var(--dim);font-family:'IBM Plex Sans'"> ${unit}</span></div>
             <div style="font-size:12px"><span style="color:${b.color}">● ${b.label}</span> · AQI ${sub}${sv.times_who_limit?` · ${sv.times_who_limit}× WHO (daily)`:''}</div>
