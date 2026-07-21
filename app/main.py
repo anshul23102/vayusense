@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 
@@ -132,23 +133,24 @@ def city_aqi(city: str = "Delhi"):
     main_out = _city_aqi(city, allow_fetch=True)
     if main_out is None:
         return JSONResponse({"error": f"no data for city '{city}'"}, status_code=404)
-    # Ranking compares all cities on the SAME basis (archive latest day) so a
-    # live number for one city is never ranked against stale numbers for others.
-    ranking = []
-    for c in json.loads(data_tools.list_cities()):
-        arch = _archive_concs(c)
-        if arch is None:
+    # Every ranking row goes through the SAME live-preferred/archive-fallback
+    # path as the hero number, so a row's "source" always matches the data
+    # that actually produced its "aqi" — no city can show a live hero number
+    # while its own ranking row silently used a different (stale) basis.
+    others = [c for c in json.loads(data_tools.list_cities()) if c.lower() != city.lower()]
+    with ThreadPoolExecutor(max_workers=max(len(others), 1)) as pool:
+        results = list(pool.map(lambda c: _city_aqi(c, allow_fetch=True), others))
+    ranking = [{"city": main_out["city"], "aqi": main_out["aqi"],
+                "category": main_out["category"]["label"],
+                "dominant": main_out["dominant"], "source": main_out["source"]}]
+    for c, row in zip(others, results):
+        if row is None:
             continue
-        try:
-            aqi, dominant, _subs = overall_aqi(arch[0], arch[1])
-        except ValueError:
-            continue
-        row_source = "live" if live.peek_live_city(c) else "archive"
-        ranking.append({"city": c, "aqi": aqi, "category": aqi_category(aqi)["label"],
-                        "dominant": dominant, "source": row_source})
+        ranking.append({"city": c, "aqi": row["aqi"], "category": row["category"]["label"],
+                        "dominant": row["dominant"], "source": row["source"]})
     ranking.sort(key=lambda x: -x["aqi"])
     main_out["ranking"] = ranking
-    main_out["ranking_basis"] = "latest archive day, all cities"
+    main_out["ranking_basis"] = "live measurements where available (cached up to 45 min), EPA-method archive fallback otherwise"
     main_out["of"] = len(ranking)
     main_out["rank"] = next((i + 1 for i, r in enumerate(ranking)
                              if r["city"].lower() == city.lower()), None)
