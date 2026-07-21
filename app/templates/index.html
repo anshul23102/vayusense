@@ -47,6 +47,16 @@
   select{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);border-radius:12px;
     padding:8px 13px;font-size:13.5px;font-family:inherit;backdrop-filter:blur(8px)}
   select option{background:#141b31}
+  .navSearchWrap{position:relative}
+  .navSearchInput{width:170px;background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);
+    border-radius:12px;padding:8px 13px;font-size:13.5px;font-family:inherit;outline:none;backdrop-filter:blur(8px)}
+  .navSearchInput:focus{border-color:rgba(157,193,255,.5)}
+  .navSearchDrop{position:absolute;top:calc(100% + 6px);right:0;left:0;background:#141b31;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;z-index:30;display:none;max-height:260px;overflow-y:auto}
+  .navSearchDrop.on{display:block}
+  .navSearchItem{padding:9px 14px;font-size:13px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:9px}
+  .navSearchItem:hover,.navSearchItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .navSearchItem svg{width:14px;height:14px}
 
   .sectionHead{margin:52px 0 20px}
   .sectionHead:first-child{margin-top:0}
@@ -237,6 +247,13 @@
     <a href="#overview">Overview</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
   <div class="right">
+    <div class="navSearchWrap">
+      <label class="srOnly" for="navSearch">Search cities</label>
+      <input class="navSearchInput" id="navSearch" type="text" autocomplete="off"
+        placeholder="Search a city…" oninput="filterNavSearch(this.value)" onfocus="filterNavSearch(this.value)"
+        onkeydown="navSearchKeydown(event)">
+      <div class="navSearchDrop" id="navSearchDrop"></div>
+    </div>
     <label class="srOnly" for="citySel">City</label>
     <select id="citySel" aria-label="City"></select>
     <label class="srOnly" for="paramSel">Pollutant</label>
@@ -509,6 +526,33 @@ function selectCity(c){
   CITY=c;$('citySel').value=c;syncCityUrl(c);refresh();renderCalendar();renderTrends();
   $('overview').scrollIntoView({behavior:'smooth'});
 }
+let NAV_SEARCH_HI=-1;
+function filterNavSearch(q){
+  const drop=$('navSearchDrop');
+  q=(q||'').trim().toLowerCase();
+  const opts=[...$('citySel').options].map(o=>o.value);
+  const matches=q?opts.filter(c=>c.toLowerCase().includes(q)):opts;
+  NAV_SEARCH_HI=-1;
+  if(!matches.length){ drop.classList.remove('on'); drop.innerHTML=''; return; }
+  drop.innerHTML=matches.map(c=>
+    `<div class="navSearchItem" onclick="navSelectCity('${c}')"><svg><use href="#${cityIcon(c)}"/></svg>${c}</div>`).join('');
+  drop.classList.add('on');
+}
+function navSelectCity(c){
+  $('navSearch').value=''; $('navSearchDrop').classList.remove('on');
+  selectCity(c);
+}
+function navSearchKeydown(e){
+  const drop=$('navSearchDrop');
+  const items=[...drop.querySelectorAll('.navSearchItem')];
+  if(!items.length)return;
+  if(e.key==='ArrowDown'){ e.preventDefault(); NAV_SEARCH_HI=Math.min(NAV_SEARCH_HI+1,items.length-1); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); NAV_SEARCH_HI=Math.max(NAV_SEARCH_HI-1,0); }
+  else if(e.key==='Enter'){ e.preventDefault(); if(NAV_SEARCH_HI>=0)items[NAV_SEARCH_HI].click(); return; }
+  else return;
+  items.forEach((it,i)=>it.classList.toggle('hi',i===NAV_SEARCH_HI));
+}
+addEventListener('click',e=>{ if(!e.target.closest('.navSearchWrap'))$('navSearchDrop')?.classList.remove('on'); });
 let CITY='Delhi';
 let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
