@@ -20,12 +20,16 @@ OPENAQ_API_KEY = open("/tmp/openaq_key.txt").read().strip()
 HEADERS = {"X-API-Key": OPENAQ_API_KEY}
 
 NEW_CITY_QUERIES = {
-    "Bengaluru": {"coordinates": "12.9716,77.5946", "radius": 25000},
-    "Hyderabad": {"coordinates": "17.3850,78.4867", "radius": 25000},
-    "Pune":      {"coordinates": "18.5204,73.8567", "radius": 25000},
-    "Ahmedabad": {"coordinates": "23.0225,72.5714", "radius": 25000},
-    "Lucknow":   {"coordinates": "26.8467,80.9462", "radius": 25000},
-    "Patna":     {"coordinates": "25.5941,85.1376", "radius": 25000},
+    "Jaipur":        {"coordinates": "26.9124,75.7873", "radius": 25000},
+    "Surat":         {"coordinates": "21.1702,72.8311", "radius": 25000},
+    "Kanpur":        {"coordinates": "26.4499,80.3319", "radius": 25000},
+    "Nagpur":        {"coordinates": "21.1458,79.0882", "radius": 25000},
+    "Indore":        {"coordinates": "22.7196,75.8577", "radius": 25000},
+    "Bhopal":        {"coordinates": "23.2599,77.4126", "radius": 25000},
+    "Visakhapatnam": {"coordinates": "17.6868,83.2185", "radius": 25000},
+    "Vadodara":      {"coordinates": "22.3072,73.1812", "radius": 25000},
+    "Coimbatore":    {"coordinates": "11.0168,76.9558", "radius": 25000},
+    "Nashik":        {"coordinates": "19.9975,73.7898", "radius": 25000},
 }
 YEARS = [2024, 2025]
 MAX_LOCATIONS_PER_CITY = 10
