@@ -64,7 +64,41 @@ def cities():
 
 @app.get("/api/snapshot")
 def snapshot(city: str = "Delhi"):
-    return json.loads(data_tools.get_city_snapshot(city))
+    snap = json.loads(data_tools.get_city_snapshot(city))
+    # Overlay live concentrations where available, same live-preferred/
+    # archive-fallback discipline as _city_aqi(), so this KPI strip never
+    # shows a stale winter-archive reading next to a live hero AQI for the
+    # same city.
+    lv = live.get_live_city(city)
+    if "pollutants" in snap:
+        for entry in snap["pollutants"].values():
+            entry["source"] = "archive"
+        if lv:
+            for param, m in lv["concs"].items():
+                if param not in snap["pollutants"]:
+                    continue
+                entry = snap["pollutants"][param]
+                value = round(float(m["value"]), 1)
+                who = data_tools.WHO_24H.get(param)
+                entry["daily_mean"] = value
+                entry["times_who_limit"] = round(value / who, 1) if who else None
+                entry["source"] = "live"
+        # Recompute the overall AQI from the (possibly live-overlaid)
+        # concentrations too, so it can never disagree with the per-
+        # pollutant values sitting right next to it in this same response.
+        concs = {p: v["daily_mean"] for p, v in snap["pollutants"].items()}
+        units = {p: (lv["concs"][p]["unit"] if lv and p in lv["concs"] else ARCHIVE_UNITS.get(p))
+                 for p in concs}
+        try:
+            aqi_val, dominant, _subs = overall_aqi(concs, units)
+            snap["aqi"] = aqi_val
+            snap["aqi_category"] = aqi_category(aqi_val)["label"]
+            snap["aqi_dominant"] = dominant
+            snap["aqi_basis"] = ("live measurements where available, archive fallback otherwise"
+                                  if lv else "EPA-method AQI from daily averages")
+        except ValueError:
+            pass
+    return snap
 
 
 @app.get("/api/trend")

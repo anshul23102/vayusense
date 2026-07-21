@@ -705,7 +705,8 @@ async function refresh(){
   if(s.pollutants){
     $('kpis').innerHTML=Object.entries(s.pollutants).map(([k,v])=>{
       const bad=v.times_who_limit&&v.times_who_limit>1;
-      return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}</div><div class="v">${v.daily_mean}</div>
+      const liveTag=v.source==='live'?' <span class="livePulse" style="margin-left:2px"></span>':'';
+      return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}${liveTag}</div><div class="v">${v.daily_mean}</div>
         <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'-'}</div></div>`}).join('');
     $('scoreCity').textContent=CITY;
     try{
