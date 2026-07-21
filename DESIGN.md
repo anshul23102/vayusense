@@ -2,8 +2,8 @@
 name: VayuSense
 description: A calm, precise instrument for reading the air, not another SaaS dashboard
 colors:
-  night-bg: "#0e1424"
-  night-bg-deep: "#111a30"
+  night-bg: "#131b30"
+  night-bg-deep: "#16213a"
   ice: "#cfe0ff"
   ice-solid: "#7fb0ff"
   ultraviolet: "#a688fb"
@@ -13,9 +13,9 @@ colors:
   amber-caution: "#ffc247"
   ink: "#f3f6fd"
   mist: "#a9b4d0"
-  hairline: "#ffffff17"
-  glass: "#ffffff0d"
-  glass-deep: "#ffffff16"
+  hairline: "#ffffff1c"
+  glass: "#ffffff0f"
+  glass-deep: "#ffffff1a"
 typography:
   display:
     fontFamily: "Onest, sans-serif"
@@ -125,13 +125,13 @@ The palette is one deep night neutral, one cool primary accent, and two narrowly
 - **Oxblood** (#c93a5a): AQI ramp only — the "Hazardous" band.
 
 ### Neutral
-- **Night BG** (#0e1424): the base field for the dashboard and every deep surface.
-- **Night BG Deep** (#111a30): the landing page's secondary background stop, used only in the aurora gradient mix, never as a flat panel fill.
+- **Night BG** (#131b30): the base field for the dashboard and every deep surface.
+- **Night BG Deep** (#16213a): the landing page's secondary background stop, used only in the aurora gradient mix, never as a flat panel fill.
 - **Ink** (#f3f6fd): primary text. Near-white, never pure #fff.
 - **Mist** (#a9b4d0): secondary/muted text: labels, captions, timestamps, helper copy.
-- **Hairline** (#ffffff17): the only border color in the system. One weight, one opacity, everywhere.
-- **Glass** (#ffffff0d): the resting surface fill for every card, chip, input, and nav bar.
-- **Glass Deep** (#ffffff16): the hover/active surface fill, one step up from Glass.
+- **Hairline** (#ffffff1c): the only border color in the system. One weight, one opacity, everywhere.
+- **Glass** (#ffffff0f): the resting surface fill for every card, chip, input, and nav bar.
+- **Glass Deep** (#ffffff1a): the hover/active surface fill, one step up from Glass.
 
 ### Named Rules
 **The One Signal Rule.** Photon Green means acceleration and only acceleration. Ultraviolet means the AI is reasoning and only that. Reusing either color for an unrelated purpose breaks the vocabulary the whole product depends on.
