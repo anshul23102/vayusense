@@ -447,7 +447,27 @@ function renderHealthPanel(){
   $('healthTabs').innerHTML=HEALTH_DATA.conditions.map(c=>
     `<button type="button" class="healthTab ${c===ACTIVE_CONDITION?'on':''}" onclick="selectHealthTab('${c}')">
       <svg><use href="#${HEALTH_ICON[c]||'ic-lungs'}"/></svg>${HEALTH_DATA.labels[c]}</button>`).join('');
-  $('healthPanel').innerHTML=`<p style="font-size:14.5px;line-height:1.6">${HEALTH_DATA.guidance[ACTIVE_CONDITION][CURRENT_CATEGORY_KEY]}</p>`;
+  const cell=HEALTH_DATA.guidance[ACTIVE_CONDITION][CURRENT_CATEGORY_KEY];
+  const bandColor=RAMP[CURRENT_CATEGORY_KEY]||'var(--blueSolid)';
+  $('healthPanel').innerHTML=`
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+      <div style="width:48px;height:48px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;background:${bandColor}22;color:${bandColor}">
+        <svg style="width:26px;height:26px"><use href="#${HEALTH_ICON[ACTIVE_CONDITION]||'ic-lungs'}"/></svg>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <p style="font-size:15px;line-height:1.55;font-weight:500">${cell.summary}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+          <div>
+            <div style="color:var(--ok);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Do</div>
+            ${cell.dos.map(d=>`<div style="font-size:13px;color:var(--dim);line-height:1.6"><span style="color:var(--ok)">✓</span> ${d}</div>`).join('')}
+          </div>
+          <div>
+            <div style="color:var(--bad);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Don't</div>
+            ${cell.donts.map(d=>`<div style="font-size:13px;color:var(--dim);line-height:1.6"><span style="color:var(--bad)">✕</span> ${d}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
   $('healthCitation').textContent=HEALTH_DATA.citation;
 }
 function selectCity(c){

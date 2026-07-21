@@ -9,4 +9,7 @@ def test_health_guidance_api_shape():
     assert set(out["guidance"]) == set(CONDITIONS)
     for cond in CONDITIONS:
         assert set(out["guidance"][cond]) == {"good", "moderate", "poor", "unhealthy", "severe", "hazardous"}
+        for cat, cell in out["guidance"][cond].items():
+            assert set(cell) == {"summary", "dos", "donts"}
+            assert cell["dos"] and cell["donts"]
     assert len(out["citation"]) > 20

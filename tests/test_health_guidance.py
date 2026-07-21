@@ -12,18 +12,24 @@ def test_all_conditions_have_labels():
     assert len(CONDITIONS) == 6
 
 
-def test_every_cell_present_and_nonempty():
+def test_every_cell_present_and_well_formed():
     for cond in CONDITIONS:
         assert set(GUIDANCE[cond]) == set(CATEGORY_KEYS)
         for cat in CATEGORY_KEYS:
-            text = GUIDANCE[cond][cat]
-            assert isinstance(text, str) and len(text) > 15
+            cell = GUIDANCE[cond][cat]
+            assert isinstance(cell, dict)
+            assert set(cell) == {"summary", "dos", "donts"}
+            assert isinstance(cell["summary"], str) and len(cell["summary"]) > 10
+            assert isinstance(cell["dos"], list) and len(cell["dos"]) >= 1
+            assert isinstance(cell["donts"], list) and len(cell["donts"]) >= 1
+            assert all(isinstance(x, str) and x for x in cell["dos"])
+            assert all(isinstance(x, str) and x for x in cell["donts"])
 
 
-def test_no_duplicate_text_within_a_condition():
+def test_no_duplicate_summary_within_a_condition():
     for cond in CONDITIONS:
-        texts = list(GUIDANCE[cond].values())
-        assert len(texts) == len(set(texts)), f"duplicate guidance text in {cond}"
+        summaries = [GUIDANCE[cond][cat]["summary"] for cat in CATEGORY_KEYS]
+        assert len(summaries) == len(set(summaries)), f"duplicate summary in {cond}"
 
 
 def test_get_guidance_returns_cell():
