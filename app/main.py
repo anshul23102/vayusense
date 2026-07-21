@@ -21,6 +21,7 @@ from agents.agent import root_agent
 from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
+from agents.solutions import citation as solutions_citation, get_solutions
 from app import live
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -216,6 +217,15 @@ def monthly_api(city: str = "Delhi"):
 def health_guidance_api():
     return {"conditions": CONDITIONS, "labels": CONDITION_LABELS,
             "guidance": GUIDANCE, "citation": health_citation()}
+
+
+@app.get("/api/solutions")
+def solutions_api(category: str = "moderate"):
+    try:
+        solutions = get_solutions(category)
+    except KeyError:
+        return JSONResponse({"error": f"unknown category '{category}'"}, status_code=404)
+    return {"category": category, "solutions": solutions, "citation": solutions_citation()}
 
 
 @app.get("/api/benchmark")
