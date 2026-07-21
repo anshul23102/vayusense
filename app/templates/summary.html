@@ -35,7 +35,7 @@
     display:flex;align-items:center;gap:20px;padding:12px 18px;border-radius:18px;
     background:rgba(15,21,40,.62);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
   .logo{font-weight:700;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
-  .logo .dot{width:28px;height:28px;flex:none;box-shadow:0 0 16px rgba(207,224,255,.4)}
+  .logo .dot{width:40px;height:40px;flex:none;object-fit:contain}
   .logo span{color:var(--blueSolid)}
   html{scroll-behavior:smooth}
   nav .right{margin-left:auto;display:flex;gap:10px;align-items:center}
@@ -196,7 +196,7 @@
 
 <div class="shell">
 <nav>
-  <a class="logo" href="/"><svg class="dot" viewBox="0 0 28 28" aria-hidden="true"><defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#cfe0ff"/><stop offset="100%" stop-color="#a688fb"/></linearGradient></defs><rect width="28" height="28" rx="9" fill="url(#logoGrad)"/><path d="M6 11c3.4-3.4 8-3.6 10.8-.6c2 2.1 1.3 5.1-1.1 5.3c-1.7.1-2.5-1.4-1.3-2.6" stroke="#0e1424" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M4.8 16.2c4.4-2.8 10-2.8 13.6.9" stroke="#0e1424" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".8"/><path d="M7.5 20.4c3-1.9 6.6-1.9 9 .3" stroke="#0e1424" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".55"/><circle cx="21.5" cy="7.5" r="1.3" fill="#0e1424"/></svg><span>VayuSense</span></a>
+  <a class="logo" href="/"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></a>
   <div class="right">
     <div class="navSearchWrap">
       <label class="srOnly" for="navSearch">Search cities</label>
