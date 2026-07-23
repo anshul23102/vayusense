@@ -6,12 +6,14 @@ and never raises: callers get None on failure, same discipline as live.py and
 weather.py."""
 from __future__ import annotations
 
+import logging
 import math
 import time
 from datetime import datetime, timezone
 
 import httpx
 
+log = logging.getLogger("vayusense.wind")
 API = "https://api.open-meteo.com/v1/forecast"
 TTL_SECONDS = 1800          # 30 min -- wind fields don't need to be per-minute fresh
 _cache: dict[str, tuple[float, dict | None]] = {}
@@ -54,9 +56,12 @@ def _fetch_grid() -> dict | None:
             })
             r.raise_for_status()
             results = r.json()
-    except Exception:
+    except Exception as e:
+        log.warning("wind grid fetch failed: %s", e)
         return None
     if not isinstance(results, list) or len(results) != NX * NY:
+        log.warning("wind grid response shape mismatch: expected %d points, got %s",
+                     NX * NY, len(results) if isinstance(results, list) else type(results))
         return None
 
     u_data, v_data = [], []
@@ -101,7 +106,8 @@ def get_wind_grid() -> dict | None:
         return hit[1]
     try:
         result = _fetch_grid()
-    except Exception:
+    except Exception as e:
+        log.warning("get_wind_grid failed: %s", e)
         result = None
     _cache["india"] = (_now(), result)
     return result

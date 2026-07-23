@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+.git/
+.gitignore
+data/raw/
+*.csv.gz
+.DS_Store
+.ipynb_checkpoints/
+.impeccable/
+.pytest_cache/
+docs/
+tests/

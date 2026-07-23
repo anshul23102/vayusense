@@ -6,6 +6,7 @@ archive; the app must never error because OpenAQ is unavailable."""
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from datetime import datetime, timedelta, timezone
@@ -14,6 +15,7 @@ from pathlib import Path
 
 import httpx
 
+log = logging.getLogger("vayusense.live")
 ROOT = Path(__file__).resolve().parent.parent
 API = "https://api.openaq.org/v3"
 TTL_SECONDS = 2700          # 45 min
@@ -57,7 +59,8 @@ def _fetch(city: str) -> dict | None:
     for loc in locs[:5]:
         try:
             data = _get_json(f"{API}/locations/{loc['location_id']}/latest")
-        except Exception:
+        except Exception as e:
+            log.warning("live fetch failed for %s/location %s: %s", city, loc["location_id"], e)
             continue
         hit = False
         for row in data.get("results", []):
@@ -92,7 +95,8 @@ def get_live_city(city: str) -> dict | None:
         return hit[1]
     try:
         result = _fetch(city)
-    except Exception:
+    except Exception as e:
+        log.warning("get_live_city(%s) failed, falling back to archive: %s", city, e)
         result = None
     _cache[city] = (_now(), result)   # cache None too: no hammering on failure
     return result

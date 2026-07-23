@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
+from collections import defaultdict, deque
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
@@ -11,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from google.adk.runners import InMemoryRunner
@@ -35,6 +37,25 @@ runner = InMemoryRunner(agent=root_agent, app_name="vayusense")
 class AskBody(BaseModel):
     question: str
     session_id: str | None = None
+
+
+# In-process sliding-window rate limit for the LLM-backed /api/ask endpoint --
+# guards against a cost-bomb from unrestricted Gemini calls. Per-process only
+# (fine for a single Cloud Run instance; not a distributed limiter).
+ASK_RATE_LIMIT = 8          # max requests
+ASK_RATE_WINDOW = 60        # per this many seconds, per client IP
+_ask_hits: dict[str, deque] = defaultdict(deque)
+
+
+def _rate_limited(client_id: str) -> bool:
+    now = time.time()
+    hits = _ask_hits[client_id]
+    while hits and now - hits[0] > ASK_RATE_WINDOW:
+        hits.popleft()
+    if len(hits) >= ASK_RATE_LIMIT:
+        return True
+    hits.append(now)
+    return False
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -294,12 +315,18 @@ def benchmark():
 
 
 @app.post("/api/ask")
-async def ask(body: AskBody):
+async def ask(body: AskBody, request: Request):
     question = body.question.strip()
     if not question:
         return JSONResponse({"error": "Please type a question first."}, status_code=400)
     if len(question) > 500:
         return JSONResponse({"error": "That question is too long. Try something shorter."}, status_code=400)
+    client_id = request.client.host if request.client else "unknown"
+    if _rate_limited(client_id):
+        return JSONResponse(
+            {"error": "You're asking questions faster than VayuSense can think. Please wait a moment and try again."},
+            status_code=429,
+        )
 
     try:
         session_id = body.session_id or str(uuid.uuid4())

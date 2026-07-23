@@ -214,11 +214,11 @@
   <h2 class="reveal d1">An AQI reading doesn't tell you what it costs.</h2>
   <p class="lead reveal d2">"165 AQI, Poor" means nothing to a parent at 7 AM. So VayuSense translates raw
     pollutant readings into stakes a person actually feels: cigarettes inhaled, years of life expectancy at stake.
-    On the days our data captured, Delhi's air carried the daily equivalent of <b style="color:var(--bad,#ff7a94)">4 cigarettes</b>:
+    Right now, Delhi's air carries the daily equivalent of <b id="impactCigsLead" style="color:var(--bad,#ff7a94)">&hellip;</b>:
     every single day, for everyone breathing it.</p>
   <div class="cards">
-    <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-cigarette"/></svg></div><h3>4 cigarettes / day</h3><p>Delhi's sustained annual PM2.5 exposure, converted using Berkeley Earth's published cigarette-equivalence methodology.</p></div>
-    <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-hourglass"/></svg></div><h3>~8.2 years</h3><p>Illustrative life-expectancy impact using an AQLI-style epidemiological coefficient: a stat most air-quality tools never surface.</p></div>
+    <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-cigarette"/></svg></div><h3 id="impactCigsCard">&hellip;</h3><p>Delhi's live annual PM2.5 exposure, converted using Berkeley Earth's published cigarette-equivalence methodology.</p></div>
+    <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-hourglass"/></svg></div><h3 id="impactYearsCard">&hellip;</h3><p>Illustrative life-expectancy impact using an AQLI-style epidemiological coefficient: a stat most air-quality tools never surface.</p></div>
     <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-chart"/></svg></div><h3>Data that just sits there</h3><p>Millions of readings across dozens of stations, and still no one tells you: is it safe to go outside <i>today</i>? VayuSense closes that gap.</p></div>
   </div>
 </section>
@@ -280,18 +280,33 @@ const LANDING_DATA={cities:[],ranking:[],bench:null};
 function goToCity(name){ location.href=`/city/${encodeURIComponent(name.toLowerCase())}`; }
 async function loadLandingData(){
   try{
-    const [cities, aqi, bench] = await Promise.all([
+    const [cities, aqi, bench, impact] = await Promise.all([
       fetch('/api/cities').then(r=>r.json()),
       fetch('/api/aqi?city=Delhi').then(r=>r.json()),
       fetch('/api/forecast_bench?city=Delhi&parameter=pm25').then(r=>r.json()),
+      fetch('/api/impact?city=Delhi').then(r=>r.json()),
     ]);
     LANDING_DATA.cities=cities;
     LANDING_DATA.ranking=aqi.ranking||[];
     LANDING_DATA.bench=bench;
+    LANDING_DATA.impact=impact;
     renderShowcase();
     renderSearch();
     renderCityGrid();
+    renderImpact();
   }catch(e){ /* every render* function below no-ops gracefully if its data is missing */ }
+}
+function renderImpact(){
+  const imp=LANDING_DATA.impact;
+  if(!imp || imp.error)return;
+  const cigs=imp.cigarettes_per_day_equivalent;
+  const yrs=imp.estimated_life_expectancy_years_lost;
+  const lead=document.getElementById('impactCigsLead');
+  const card1=document.getElementById('impactCigsCard');
+  const card2=document.getElementById('impactYearsCard');
+  if(lead)lead.textContent=`${cigs} cigarettes`;
+  if(card1)card1.textContent=`${cigs} cigarettes / day`;
+  if(card2)card2.textContent=`~${yrs} years`;
 }
 function renderShowcase(){
   const grid=document.getElementById('showcaseGrid');
@@ -309,7 +324,7 @@ function renderShowcase(){
   }
   tiles.push(`<div class="showTile reveal d1"><div class="ic"><svg><use href="#ic-signal"/></svg></div>
     <h3>Air Quality Calendar</h3><p>Every archived day, for every tracked city, colored by its EPA-method
-    AQI band. Two years of real measured history you can actually scan for patterns, not just a today-snapshot.</p></div>`);
+    AQI band, spanning 2024 through today. Real measured history you can actually scan for patterns, not just a today-snapshot.</p></div>`);
   if(top){
     tiles.push(`<div class="showTile reveal d2"><div class="ic"><svg><use href="#${cityIcon(top.city)}"/></svg></div>
       <h3>${top.city} leads today</h3><p>Ranked #1 of 20 tracked cities right now at

@@ -4,10 +4,12 @@ because the weather API is unavailable -- weather is a supporting context
 signal, not the app's core data."""
 from __future__ import annotations
 
+import logging
 import time
 
 import httpx
 
+log = logging.getLogger("vayusense.weather")
 API = "https://api.open-meteo.com/v1/forecast"
 TTL_SECONDS = 1800          # 30 min
 _cache: dict[str, tuple[float, dict | None]] = {}
@@ -56,7 +58,8 @@ def _fetch(city: str) -> dict | None:
             })
             r.raise_for_status()
             data = r.json()
-    except Exception:
+    except Exception as e:
+        log.warning("weather fetch failed for %s: %s", city, e)
         return None
     cur = data.get("current")
     if not cur:
@@ -76,7 +79,8 @@ def get_weather(city: str) -> dict | None:
         return hit[1]
     try:
         result = _fetch(city)
-    except Exception:
+    except Exception as e:
+        log.warning("get_weather(%s) failed: %s", city, e)
         result = None
     _cache[city] = (_now(), result)
     return result

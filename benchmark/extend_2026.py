@@ -11,13 +11,16 @@ city/parameter so the stats stay consistent across the year boundary.
 import concurrent.futures as cf
 import gzip
 import io
+import os
 import time
 import xml.etree.ElementTree as ET
 
 import pandas as pd
 import requests
+from dotenv import load_dotenv
 
-OPENAQ_API_KEY = open("/tmp/openaq_key.txt").read().strip()
+load_dotenv()
+OPENAQ_API_KEY = os.environ["OPENAQ_API_KEY"]
 HEADERS = {"X-API-Key": OPENAQ_API_KEY}
 
 CITY_QUERIES = {
