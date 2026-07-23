@@ -7,6 +7,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23cfe0ff'/%3E%3Cstop offset='100%25' stop-color='%23b9a8fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='7' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+<link rel="stylesheet" href="/static/vendor/leaflet-velocity/leaflet-velocity.css">
 <style>
   :root{
     --bg:#131b30; --txt:#f3f6fd; --dim:#a9b4d0; --line:rgba(255,255,255,.11);
@@ -101,6 +103,19 @@
   .weatherStrip .wItem{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}
   .weatherStrip .wItem svg{width:16px;height:16px;flex:none;color:var(--blueSolid)}
   .weatherStrip .wItem b{color:var(--txt);font-weight:600}
+  #windMapContainer{background:#0b1020}
+  .windMapTip{background:#141b31 !important;color:var(--txt) !important;border:1px solid var(--line) !important;
+    font-family:'Onest',sans-serif !important;font-size:12.5px !important;border-radius:8px !important}
+  .leaflet-control-attribution{background:rgba(15,21,40,.7) !important;color:var(--dim) !important}
+  .leaflet-control-attribution a{color:var(--blueSolid) !important}
+  .windMapHint{background:rgba(15,21,40,.75);color:#f3f6fd;font-family:'Onest',sans-serif;font-size:12px;
+    padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);pointer-events:none;white-space:nowrap}
+  .windMapPopup .leaflet-popup-content-wrapper{background:#141b31;color:var(--txt);border-radius:12px;
+    font-family:'Onest',sans-serif;border:1px solid var(--line)}
+  .windMapPopup .leaflet-popup-content{font-size:13px;line-height:1.6;margin:12px 14px}
+  .windMapPopup .leaflet-popup-tip{background:#141b31}
+  .leaflet-control-zoom a{background:#141b31 !important;color:var(--txt) !important;border-color:var(--line) !important}
+  .leaflet-control-zoom a:hover{background:#1c2540 !important}
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s}
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03)}
@@ -267,9 +282,19 @@
   <div id="citiesTable"></div>
 </section>
 
+<section class="section reveal" id="windmap">
+  <div class="sectionHead"><div class="kicker">Live</div><h2>Wind &amp; air quality map</h2>
+    <p class="scoreTxt">Real wind vectors sampled across India (Open-Meteo), animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>. The red-to-green overlay is a live AQI heatmap; state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
+  <div id="windMapContainer" style="height:520px;border-radius:16px;overflow:hidden;border:1px solid var(--line)"></div>
+  <p class="scoreTxt" id="windMapNote" style="margin-top:10px"></p>
+</section>
+
 <p class="foot">Want the full instrument panel — pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="/static/vendor/leaflet-velocity/leaflet-velocity.js"></script>
+<script src="/static/vendor/leaflet-heat/leaflet-heat.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -377,6 +402,7 @@ async function loadOverview(){
         <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
       </div>`;
     }).join('');
+    renderWindMap(a.ranking);
   }
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
   if(imp.cigarettes_per_day_equivalent!==undefined){
@@ -400,6 +426,92 @@ async function renderWeather(){
     ].filter(Boolean);
     strip.innerHTML=items.map(([ic,val])=>`<span class="wItem"><svg><use href="#${ic}"/></svg><b>${val}</b></span>`).join('');
   }catch(e){ strip.innerHTML=''; }
+}
+
+let WIND_MAP=null, WIND_LAYER=null, WIND_MARKERS_ADDED=false;
+async function renderWindMap(ranking){
+  const container=$('windMapContainer');
+  if(!container || typeof L==='undefined'){ return; }
+  if(!WIND_MAP){
+    WIND_MAP=L.map(container, {center:[22.5,80], zoom:4, minZoom:3, maxZoom:9, scrollWheelZoom:false, zoomControl:true});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
+    }).addTo(WIND_MAP);
+
+    // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
+    // same interaction pattern as the aqi.in/IQAir reference maps.
+    const hint=L.control({position:'topright'});
+    hint.onAdd=function(){
+      const div=L.DomUtil.create('div','windMapHint');
+      div.innerHTML=(navigator.platform.toUpperCase().indexOf('MAC')>=0?'⌘':'Ctrl')+' + scroll to zoom';
+      return div;
+    };
+    hint.addTo(WIND_MAP);
+    container.addEventListener('wheel', function(e){
+      if(e.ctrlKey || e.metaKey){
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1 : -1;
+        WIND_MAP.setZoom(WIND_MAP.getZoom() + delta, {animate:true});
+      }
+    }, {passive:false});
+
+    // India + state boundaries, so the country's shape and internal
+    // divisions are immediately legible instead of relying on tile labels.
+    fetch('/static/vendor/geo/india-states.geojson').then(r=>r.json()).then(geo=>{
+      L.geoJSON(geo, {
+        style:{color:'#cfe0ff', weight:1.3, opacity:.75, fillOpacity:0, dashArray:null},
+        onEachFeature:(feature,layer)=>{
+          if(feature.properties && feature.properties.shapeName){
+            layer.bindTooltip(feature.properties.shapeName, {sticky:true, className:'windMapTip'});
+          }
+        },
+      }).addTo(WIND_MAP);
+    }).catch(()=>{});
+  }
+  if(!WIND_MARKERS_ADDED && ranking && ranking.length){
+    try{
+      const coords=await (await fetch('/api/city-coords')).json();
+      const heatPoints=[];
+      ranking.forEach(r=>{
+        const c=coords[r.city];
+        if(!c)return;
+        const color=RAMP[r.category?.toLowerCase?.()]||'#7fb0ff';
+        // Hazardous (301+) reads as full intensity; scales down from there,
+        // same severity ceiling as the rest of the app's AQI Ramp.
+        heatPoints.push([c[0], c[1], Math.min(r.aqi/300, 1)]);
+        L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
+          .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
+          .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
+      });
+      if(typeof L.heatLayer==='function' && heatPoints.length){
+        L.heatLayer(heatPoints, {
+          radius:45, blur:35, maxZoom:9, max:1,
+          gradient:{0.0:'#3dfc9e', 0.17:'#ffc247', 0.33:'#ff9640', 0.5:'#ff5c85', 0.67:'#ef4fc0', 1.0:'#c93a5a'},
+        }).addTo(WIND_MAP);
+      }
+      WIND_MARKERS_ADDED=true;
+    }catch(e){}
+  }
+  try{
+    const grid=await (await fetch('/api/wind-grid')).json();
+    if(grid.error) { $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.'; return; }
+    if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); }
+    WIND_LAYER=L.velocityLayer({
+      displayValues:true,
+      displayOptions:{velocityType:'Wind', position:'bottomleft', emptyString:'No wind data'},
+      data: grid,
+      maxVelocity: 20,
+      velocityScale: 0.01,
+      colorScale: ['#3dfc9e','#ffc247','#ff9640','#ff5c85','#ef4fc0'],
+    });
+    WIND_LAYER.addTo(WIND_MAP);
+    // The bundled canvasLayer's own requestAnimFrame-driven first draw doesn't
+    // reliably self-trigger on this Leaflet build; kick it once explicitly.
+    setTimeout(()=>{ if(WIND_LAYER && WIND_LAYER.onDrawLayer) WIND_LAYER.onDrawLayer(); }, 50);
+    $('windMapNote').textContent=`Wind field refreshed: ${grid[0]?.header?.refTime||''}`;
+  }catch(e){
+    $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.';
+  }
 }
 
 loadCities();

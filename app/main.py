@@ -23,7 +23,7 @@ from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
-from app import live, weather
+from app import live, weather, wind
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
@@ -107,6 +107,19 @@ def weather_api(city: str = "Delhi"):
     if w is None:
         return JSONResponse({"error": f"no weather data for city '{city}'"}, status_code=404)
     return w
+
+
+@app.get("/api/wind-grid")
+def wind_grid_api():
+    grid = wind.get_wind_grid()
+    if grid is None:
+        return JSONResponse({"error": "wind grid unavailable"}, status_code=503)
+    return grid
+
+
+@app.get("/api/city-coords")
+def city_coords_api():
+    return {city: [lat, lon] for city, (lat, lon) in weather.CITY_COORDS.items()}
 
 
 @app.get("/api/trend")
