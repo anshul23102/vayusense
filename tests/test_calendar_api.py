@@ -20,10 +20,10 @@ def test_calendar_year_filter():
     assert out["basis"] == "EPA-method daily AQI from the archive"
 
 
-def test_calendar_two_year_city():
-    # Chennai is the only city whose archive spans 2024 and 2025
+def test_calendar_multi_year_city():
+    # Every city's archive now spans 2024, 2025, and into 2026
     out = calendar_api(city="Chennai", year=2024)
-    assert set(out["years_available"]) == {2024, 2025}
+    assert {2024, 2025, 2026}.issubset(set(out["years_available"]))
     assert len(out["days"]) >= 250
     assert all(d["date"].startswith("2024-") for d in out["days"])
 

@@ -17,19 +17,18 @@ def test_monthly_shape_and_math():
     assert out["least_polluted"]["avg_aqi"] == min(avgs.values())
 
 
-def test_annual_change_two_year_city():
-    # Chennai spans 2024+2025, so annual change is computable there
+def test_annual_change_multi_year_city():
+    # Every city now spans 2024, 2025, and into 2026, so annual change is computable
     out = monthly_api(city="Chennai")
     a = out["annual"]
-    assert len(a) == 2
+    assert len(a) >= 2
     expect = round((a[-1]["avg_aqi"] - a[0]["avg_aqi"]) / a[0]["avg_aqi"] * 100, 1)
     assert out["annual_change_pct"] == expect
 
 
-def test_single_year_city_has_zero_change():
+def test_delhi_also_spans_multiple_years():
     out = monthly_api(city="Delhi")
-    assert len(out["annual"]) == 1
-    assert out["annual_change_pct"] == 0.0
+    assert len(out["annual"]) >= 2
 
 
 def test_monthly_unknown_city():
