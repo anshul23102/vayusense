@@ -158,6 +158,41 @@ def impact(city: str = "Delhi"):
     return json.loads(data_tools.get_human_impact(city))
 
 
+@app.get("/api/yoy")
+def yoy(city: str = "Delhi", window: int = 7):
+    return json.loads(data_tools.get_year_over_year(city, window))
+
+
+@lru_cache(maxsize=8)
+def _yoy_ranking_cached(window: int) -> tuple:
+    cities = json.loads(data_tools.list_cities())
+    rows = []
+    for c in cities:
+        r = json.loads(data_tools.get_year_over_year(c, window))
+        if "error" not in r:
+            rows.append((c, r["pct_change"], r["current_period"]["avg_aqi"],
+                          r["same_period_last_year"]["avg_aqi"], r["verdict"]))
+    rows.sort(key=lambda t: t[1])
+    return tuple(rows)
+
+
+@app.get("/api/yoy_ranking")
+def yoy_ranking(window: int = 7):
+    rows = _yoy_ranking_cached(window)
+    return {
+        "window_days": window,
+        "most_improved": [
+            {"city": c, "pct_change": p, "current_avg_aqi": cur, "last_year_avg_aqi": ly, "verdict": v}
+            for c, p, cur, ly, v in rows[:5]
+        ],
+        "most_worsened": [
+            {"city": c, "pct_change": p, "current_avg_aqi": cur, "last_year_avg_aqi": ly, "verdict": v}
+            for c, p, cur, ly, v in list(reversed(rows))[:5]
+        ],
+        "cities_compared": len(rows),
+    }
+
+
 @app.get("/api/forecast")
 def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
     return json.loads(data_tools.get_forecast(city, parameter, days))

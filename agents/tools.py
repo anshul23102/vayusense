@@ -253,6 +253,82 @@ def get_worst_stations(city: str, top_n: int = 5) -> str:
     return json.dumps([{"station": r.location, "avg_pm25": round(float(r.value), 1)} for r in d.itertuples()])
 
 
+@lru_cache(maxsize=32)
+def _daily_overall_aqi_cached(city_key: str) -> tuple:
+    """Per-day EPA-method overall AQI for a city, across its FULL archived
+    history (all years) -- the same aggregation calendar_api/monthly_api use
+    in app/main.py, duplicated here so it's available as an agent tool
+    without importing the web app module."""
+    df = _daily()
+    d = df[df["city"].str.lower() == city_key]
+    if d.empty:
+        return ()
+    out = []
+    for date, grp in d.groupby("date"):
+        concs = dict(zip(grp["parameter"], grp["mean"].astype(float)))
+        try:
+            aqi_val, _dom, _subs = _overall_aqi(concs, ARCHIVE_UNITS)
+        except ValueError:
+            continue
+        out.append((date.date(), aqi_val))
+    out.sort(key=lambda t: t[0])
+    return tuple(out)
+
+
+def get_year_over_year(city: str, window_days: int = 7) -> str:
+    """Compare a city's recent average AQI against the same calendar window one
+    year earlier, using the real archived daily AQI (not live data). Answers
+    "how does this compare to last year" style questions.
+
+    Args:
+        city: City name, e.g. "Delhi".
+        window_days: Size of the trailing comparison window in days (default 7).
+    """
+    import datetime as _dt
+
+    days = _daily_overall_aqi_cached(city.lower())
+    if not days:
+        return json.dumps({"error": f"no data for city '{city}'"})
+    by_date = dict(days)
+    latest = days[-1][0]
+    window_days = max(1, min(int(window_days), 30))
+
+    def _window_avg(end: _dt.date) -> tuple[float | None, int]:
+        start = end - _dt.timedelta(days=window_days - 1)
+        vals = [by_date[d] for d in by_date if start <= d <= end]
+        return (round(sum(vals) / len(vals), 1) if vals else None), len(vals)
+
+    current_avg, current_n = _window_avg(latest)
+    last_year_end = latest - _dt.timedelta(days=365)
+    last_year_avg, last_year_n = _window_avg(last_year_end)
+
+    if current_avg is None or last_year_avg is None or last_year_n < max(2, window_days // 2):
+        return json.dumps({
+            "error": "not enough same-period data from a year ago for this city yet",
+            "city": city, "latest_date": str(latest),
+        })
+
+    pct_change = round((current_avg - last_year_avg) / last_year_avg * 100, 1)
+    verdict = "worse" if pct_change > 3 else "better" if pct_change < -3 else "about the same"
+    return json.dumps({
+        "city": city,
+        "window_days": window_days,
+        "current_period": {"end": str(latest),
+                            "start": str(latest - _dt.timedelta(days=window_days - 1)),
+                            "avg_aqi": current_avg, "days_counted": current_n},
+        "same_period_last_year": {"end": str(last_year_end),
+                                   "start": str(last_year_end - _dt.timedelta(days=window_days - 1)),
+                                   "avg_aqi": last_year_avg, "days_counted": last_year_n},
+        "pct_change": pct_change,
+        "verdict": verdict,
+        "methodology": (
+            f"Average EPA-method daily AQI over the trailing {window_days} archived days, "
+            "compared to the same calendar window exactly one year earlier, from the same "
+            "processed archive used everywhere else in VayuSense."
+        ),
+    })
+
+
 def get_human_impact(city: str) -> str:
     """Translate a city's annual average PM2.5 into two plain-human-stakes metrics that
     go beyond a raw AQI number: (1) the equivalent daily cigarette exposure (Berkeley

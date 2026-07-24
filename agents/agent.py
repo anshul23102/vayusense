@@ -15,7 +15,10 @@ import os
 from dotenv import load_dotenv
 from google.adk.agents import Agent, SequentialAgent
 
-from .tools import get_city_snapshot, get_forecast, get_human_impact, get_trend, get_worst_stations, list_cities
+from .tools import (
+    get_city_snapshot, get_forecast, get_human_impact, get_trend,
+    get_worst_stations, get_year_over_year, list_cities,
+)
 
 load_dotenv()
 MODEL = os.getenv("MODEL", "gemini-2.5-flash")
@@ -53,6 +56,10 @@ Use your tools to gather FACTS before answering:
   (e.g. "projected by BigQuery ML ARIMA_PLUS; historical error ±11 µg/m³ on
   held-out data") and never state a forecast value with the same confidence as a
   measured one
+- get_year_over_year(city, window_days) whenever the question compares "now" to
+  "last year", asks if things are getting better/worse over the long run, or asks
+  for historical context — this compares the trailing window's average AQI to the
+  same calendar window exactly one year earlier, from real archived data
 - list_cities() if the requested city may not be covered
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
@@ -61,7 +68,8 @@ direction, any anomaly days, relevant hotspots, human-impact metrics when releva
 and forecast figures (clearly marked as a projection) when the user asked about
 upcoming days. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
 """,
-    tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, get_forecast, list_cities],
+    tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, get_forecast,
+           get_year_over_year, list_cities],
     output_key="analysis",
 )
 

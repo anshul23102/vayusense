@@ -96,6 +96,10 @@
   .impactStat .n span{font-size:15px;font-weight:600;color:var(--dim)}
   .impactStat .l{color:var(--dim);font-size:12px;margin-top:5px}
   .impactNote{color:var(--dim);font-size:11px;line-height:1.5;margin-top:12px;opacity:.75}
+  .yoyCard{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .yoyCard .pct{font-family:var(--disp);font-size:30px;font-weight:700;line-height:1;white-space:nowrap}
+  .yoyCard .txt{color:var(--dim);font-size:13px;line-height:1.6;max-width:520px}
+  .yoyCard .txt b{color:var(--txt)}
 
   /* KPI strip */
   .kpiStrip{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
@@ -357,6 +361,11 @@
         </div>
       </div>
       <p class="impactNote">Illustrative estimate: Berkeley Earth cigarette-equivalence & AQLI-style life-expectancy coefficient, based on published air-quality epidemiology. Not a medical diagnosis.</p>
+  </div>
+
+  <div class="s12" id="yoyBlock" style="display:none">
+      <div class="eyebrow"><svg class="ic-i"><use href="#ic-signal"/></svg> Year over year <span class="tag">real archive, not live</span></div>
+      <div class="yoyCard" id="yoyCard"></div>
   </div>
 
   <div class="s12">
@@ -802,6 +811,27 @@ async function refresh(){
   }
   renderHotspots();
   renderWeather();
+  renderYoy();
+}
+
+async function renderYoy(){
+  const myToken=refreshToken;
+  const block=$('yoyBlock');
+  try{
+    const y=await (await fetch(`/api/yoy?city=${CITY}&window=7`)).json();
+    if(myToken!==refreshToken)return;
+    if(y.error){ block.style.display='none'; return; }
+    block.style.display='';
+    const worse=y.pct_change>3, better=y.pct_change<-3;
+    const color=worse?'#ff5c85':better?'#3dfc9e':'#a9b4d0';
+    const arrow=worse?'▲':better?'▼':'●';
+    const sign=y.pct_change>0?'+':'';
+    $('yoyCard').innerHTML=`
+      <div class="pct" style="color:${color}">${arrow} ${sign}${y.pct_change}%</div>
+      <div class="txt">${CITY}'s trailing <b>${y.window_days}-day</b> average AQI is <b>${y.verdict}</b> than the same week last year:
+      <b>${y.current_period.avg_aqi}</b> (${y.current_period.start} to ${y.current_period.end}) vs
+      <b>${y.same_period_last_year.avg_aqi}</b> (${y.same_period_last_year.start} to ${y.same_period_last_year.end}), both computed the same way from the real archive.</div>`;
+  }catch(e){ block.style.display='none'; }
 }
 
 async function renderWeather(){

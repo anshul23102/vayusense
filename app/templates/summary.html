@@ -125,6 +125,13 @@
   .cityAqi{width:52px;text-align:right;font-size:19px;font-weight:600}
   .cityCat{width:110px;font-size:12px}
   .cityDom{width:60px;text-align:right;color:var(--dim);font-size:11px;text-transform:uppercase}
+  .yoyRankGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .yoyCol h3{font-size:14px;margin:0 0 4px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .yoyRow{display:flex;align-items:center;gap:12px;padding:9px 4px;border-top:1px solid var(--line)}
+  .yoyRow:first-child{border-top:none}
+  .yoyRow .city{flex:1;font-size:14px}
+  .yoyRow .pctSmall{font-family:var(--disp);font-weight:700;font-size:15px;white-space:nowrap}
+  @media (max-width:640px){.yoyRankGrid{grid-template-columns:1fr}}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3dfc9e;margin-right:5px;animation:pulse 1.6s infinite}
   .moodChar{width:64px;height:80px;flex:none;margin-left:auto;transition:color .4s}
   .moodChar use{transition:opacity .25s}
@@ -282,6 +289,12 @@
   <div id="citiesTable"></div>
 </section>
 
+<section class="section reveal" id="yoyRanking">
+  <div class="sectionHead"><div class="kicker">Year over year</div><h2>Who's actually improving?</h2>
+    <p class="scoreTxt">Trailing 7-day average AQI vs the same calendar week last year, across all 20 cities, from the real archive — not a live snapshot.</p></div>
+  <div class="yoyRankGrid" id="yoyRankGrid"></div>
+</section>
+
 <section class="section reveal" id="windmap">
   <div class="sectionHead"><div class="kicker">Live</div><h2>Wind &amp; air quality map</h2>
     <p class="scoreTxt">Real wind vectors sampled across India (Open-Meteo), animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>. The red-to-green overlay is a live AQI heatmap; state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
@@ -411,6 +424,23 @@ async function loadOverview(){
     countUp($('impCigNum'), imp.cigarettes_per_day_equivalent, {decimals:1});
     countUp($('impYearsNum'), imp.estimated_life_expectancy_years_lost, {decimals:2});
   }
+  renderYoyRanking();
+}
+
+async function renderYoyRanking(){
+  try{
+    const y=await (await fetch('/api/yoy_ranking?window=7')).json();
+    const row=(r)=>{
+      const worse=r.pct_change>3, better=r.pct_change<-3;
+      const color=worse?'#ff5c85':better?'#3dfc9e':'#a9b4d0';
+      const sign=r.pct_change>0?'+':'';
+      return `<div class="yoyRow"><div class="cityIconBadge" style="width:34px;height:34px;background:${color}22"><svg style="width:20px;height:20px;color:${color}"><use href="#${cityIcon(r.city)}"/></svg></div>
+        <div class="city">${r.city}</div><div class="pctSmall" style="color:${color}">${sign}${r.pct_change}%</div></div>`;
+    };
+    $('yoyRankGrid').innerHTML=`
+      <div class="yoyCol"><h3>Most improved</h3>${y.most_improved.map(row).join('')}</div>
+      <div class="yoyCol"><h3>Most worsened</h3>${y.most_worsened.map(row).join('')}</div>`;
+  }catch(e){ document.getElementById('yoyRanking').style.display='none'; }
 }
 
 async function renderWeather(){
