@@ -197,8 +197,9 @@
     <input class="searchInput" id="citySearch" type="text" autocomplete="off"
       placeholder="Search one of 20 tracked Indian cities…"
       oninput="filterSearch(this.value)" onfocus="filterSearch(this.value)"
-      onkeydown="searchKeydown(event)">
-    <div class="searchDrop" id="searchDrop"></div>
+      onkeydown="searchKeydown(event)" role="combobox" aria-expanded="false" aria-autocomplete="list"
+      aria-controls="searchDrop" aria-activedescendant="">
+    <div class="searchDrop" id="searchDrop" role="listbox"></div>
   </div>
   <div class="statRow reveal d4">
     <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>17,061,481</b> readings analyzed</div>
@@ -355,27 +356,42 @@ function renderShowcase(){
 }
 let SEARCH_HI=-1;
 function renderSearch(){ /* cities are already loaded into LANDING_DATA; nothing to pre-render until typed */ }
+function closeSearchDrop(){
+  document.getElementById('searchDrop').classList.remove('on');
+  document.getElementById('citySearch').setAttribute('aria-expanded','false');
+  document.getElementById('citySearch').setAttribute('aria-activedescendant','');
+  SEARCH_HI=-1;
+}
 function filterSearch(q){
   const drop=document.getElementById('searchDrop');
+  const input=document.getElementById('citySearch');
   q=(q||'').trim().toLowerCase();
   const matches=q?LANDING_DATA.cities.filter(c=>c.toLowerCase().includes(q)):LANDING_DATA.cities;
   SEARCH_HI=-1;
-  if(!matches.length){ drop.classList.remove('on'); drop.innerHTML=''; return; }
-  drop.innerHTML=matches.map(c=>
-    `<div class="searchItem" onclick="goToCity('${c}')"><svg><use href="#${cityIcon(c)}"/></svg>${c}</div>`).join('');
+  input.setAttribute('aria-activedescendant','');
+  if(!matches.length){ drop.classList.remove('on'); drop.innerHTML=''; input.setAttribute('aria-expanded','false'); return; }
+  drop.innerHTML=matches.map((c,i)=>
+    `<div class="searchItem" id="searchitem-${i}" role="option" aria-selected="false" onclick="goToCity('${c}')"><svg><use href="#${cityIcon(c)}"/></svg>${c}</div>`).join('');
   drop.classList.add('on');
+  input.setAttribute('aria-expanded','true');
 }
 function searchKeydown(e){
   const drop=document.getElementById('searchDrop');
   const items=[...drop.querySelectorAll('.searchItem')];
+  if(e.key==='Escape'){ closeSearchDrop(); return; }
   if(!items.length)return;
   if(e.key==='ArrowDown'){ e.preventDefault(); SEARCH_HI=Math.min(SEARCH_HI+1,items.length-1); }
   else if(e.key==='ArrowUp'){ e.preventDefault(); SEARCH_HI=Math.max(SEARCH_HI-1,0); }
   else if(e.key==='Enter'){ e.preventDefault(); if(SEARCH_HI>=0)items[SEARCH_HI].click(); return; }
   else return;
-  items.forEach((it,i)=>it.classList.toggle('hi',i===SEARCH_HI));
+  items.forEach((it,i)=>{
+    const hi=i===SEARCH_HI;
+    it.classList.toggle('hi',hi);
+    it.setAttribute('aria-selected',String(hi));
+  });
+  document.getElementById('citySearch').setAttribute('aria-activedescendant', SEARCH_HI>=0?`searchitem-${SEARCH_HI}`:'');
 }
-addEventListener('click',e=>{ if(!e.target.closest('.searchWrap'))document.getElementById('searchDrop')?.classList.remove('on'); });
+addEventListener('click',e=>{ if(!e.target.closest('.searchWrap'))closeSearchDrop(); });
 function renderCityGrid(){
   const grid=document.getElementById('cityGrid');
   if(!grid)return;

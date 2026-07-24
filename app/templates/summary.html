@@ -244,8 +244,9 @@
       <label class="srOnly" for="navSearch">Search cities</label>
       <input class="navSearchInput" id="navSearch" type="text" autocomplete="off"
         placeholder="Search a city…" oninput="filterNavSearch(this.value)" onfocus="filterNavSearch(this.value)"
-        onkeydown="navSearchKeydown(event)">
-      <div class="navSearchDrop" id="navSearchDrop"></div>
+        onkeydown="navSearchKeydown(event)" role="combobox" aria-expanded="false" aria-autocomplete="list"
+        aria-controls="navSearchDrop" aria-activedescendant="">
+      <div class="navSearchDrop" id="navSearchDrop" role="listbox"></div>
     </div>
   </div>
 </nav>
@@ -401,27 +402,41 @@ let CITIES=[];
 async function loadCities(){ CITIES=await (await fetch('/api/cities')).json(); }
 
 let SEARCH_HI=-1;
+function closeNavSearchDrop(){
+  $('navSearchDrop').classList.remove('on');
+  $('navSearch').setAttribute('aria-expanded','false');
+  $('navSearch').setAttribute('aria-activedescendant','');
+  SEARCH_HI=-1;
+}
 function filterNavSearch(q){
   const drop=$('navSearchDrop');
   q=(q||'').trim().toLowerCase();
   const matches=q?CITIES.filter(c=>c.toLowerCase().includes(q)):CITIES;
   SEARCH_HI=-1;
-  if(!matches.length){ drop.classList.remove('on'); drop.innerHTML=''; return; }
-  drop.innerHTML=matches.map(c=>
-    `<div class="navSearchItem" onclick="goToCity('${c}')"><svg><use href="#${cityIcon(c)}"/></svg>${c}</div>`).join('');
+  $('navSearch').setAttribute('aria-activedescendant','');
+  if(!matches.length){ drop.classList.remove('on'); drop.innerHTML=''; $('navSearch').setAttribute('aria-expanded','false'); return; }
+  drop.innerHTML=matches.map((c,i)=>
+    `<div class="navSearchItem" id="navitem-${i}" role="option" aria-selected="false" onclick="goToCity('${c}')"><svg><use href="#${cityIcon(c)}"/></svg>${c}</div>`).join('');
   drop.classList.add('on');
+  $('navSearch').setAttribute('aria-expanded','true');
 }
 function navSearchKeydown(e){
   const drop=$('navSearchDrop');
   const items=[...drop.querySelectorAll('.navSearchItem')];
+  if(e.key==='Escape'){ closeNavSearchDrop(); return; }
   if(!items.length)return;
   if(e.key==='ArrowDown'){ e.preventDefault(); SEARCH_HI=Math.min(SEARCH_HI+1,items.length-1); }
   else if(e.key==='ArrowUp'){ e.preventDefault(); SEARCH_HI=Math.max(SEARCH_HI-1,0); }
   else if(e.key==='Enter'){ e.preventDefault(); if(SEARCH_HI>=0)items[SEARCH_HI].click(); return; }
   else return;
-  items.forEach((it,i)=>it.classList.toggle('hi',i===SEARCH_HI));
+  items.forEach((it,i)=>{
+    const hi=i===SEARCH_HI;
+    it.classList.toggle('hi',hi);
+    it.setAttribute('aria-selected',String(hi));
+  });
+  $('navSearch').setAttribute('aria-activedescendant', SEARCH_HI>=0?`navitem-${SEARCH_HI}`:'');
 }
-addEventListener('click',e=>{ if(!e.target.closest('.navSearchWrap'))$('navSearchDrop')?.classList.remove('on'); });
+addEventListener('click',e=>{ if(!e.target.closest('.navSearchWrap'))closeNavSearchDrop(); });
 
 async function loadOverview(){
   const CITY='Delhi';
