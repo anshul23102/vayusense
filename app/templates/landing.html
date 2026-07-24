@@ -88,7 +88,9 @@
     transition:background .2s;overflow:hidden}
   .card:hover{background:rgba(255,255,255,.06)}
   .card .ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    margin-bottom:18px;background:rgba(157,193,255,.14);border:1px solid var(--line);color:var(--blueSolid)}
+    margin-bottom:18px;background:rgba(157,193,255,.14);border:1px solid var(--line);color:var(--blueSolid);
+    transition:transform .2s}
+  .card:hover .ic{transform:scale(1.08) translateY(-2px)}
   .card .ic svg{width:22px;height:22px}
   .showcase{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:36px}
   .showTile{position:relative;padding:20px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);
@@ -138,6 +140,10 @@
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important;transition-delay:0s !important}
     .card,.btn,.kpi{transition-duration:.01s !important}
     #aurora{display:none}
+    /* No tilt/scale here (motion is opted out of), so hover needs to read
+       through color alone: a visible border brighten + stronger fill,
+       snapping instantly instead of animating. */
+    .card:hover,.showTile:hover{border-color:rgba(157,193,255,.55);background:rgba(255,255,255,.09)}
   }
 </style>
 </head>
@@ -455,7 +461,10 @@ if(!reduceMotion){
     const el=e.target.closest(TILT_SELECTOR);
     if(el){
       const r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-      el.style.transform=`perspective(850px) rotateY(${x*9}deg) rotateX(${-y*9}deg) translateY(-3px) translateZ(0)`;
+      /* Rotation alone reads as parallax proportional to card size, so small
+         tiles barely show it. Scale is size-independent -- keeps every card
+         family feeling equally tactile regardless of footprint. */
+      el.style.transform=`perspective(850px) rotateY(${x*9}deg) rotateX(${-y*9}deg) translateY(-3px) scale(1.025) translateZ(0)`;
       tiltEl=el;
     }else if(tiltEl){
       tiltEl.style.transform='';
