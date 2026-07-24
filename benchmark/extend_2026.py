@@ -44,6 +44,26 @@ CITY_QUERIES = {
     "Vadodara":      {"coordinates": "22.3072,73.1812", "radius": 25000},
     "Coimbatore":    {"coordinates": "11.0168,76.9558", "radius": 25000},
     "Nashik":        {"coordinates": "19.9975,73.7898", "radius": 25000},
+    # Added in the 20->36 city expansion (benchmark/expand_cities_v2.py) --
+    # kept here too since benchmark/refresh_incremental.py imports
+    # CITY_QUERIES from this module for its nightly refresh, and would
+    # otherwise silently stop refreshing these cities after today.
+    "Guwahati":      {"coordinates": "26.1445,91.7362", "radius": 25000},
+    "Raipur":        {"coordinates": "21.2514,81.6296", "radius": 25000},
+    "Faridabad":     {"coordinates": "28.4089,77.3178", "radius": 25000},
+    "Baddi":         {"coordinates": "30.9578,76.7914", "radius": 25000},
+    "Dhanbad":       {"coordinates": "23.7957,86.4304", "radius": 25000},
+    "Kochi":         {"coordinates": "9.9312,76.2673",  "radius": 25000},
+    "Imphal":        {"coordinates": "24.8170,93.9368", "radius": 25000},
+    "Shillong":      {"coordinates": "25.5788,91.8933", "radius": 25000},
+    "Aizawl":        {"coordinates": "23.7271,92.7176", "radius": 25000},
+    "Kohima":        {"coordinates": "25.6751,94.1086", "radius": 25000},
+    "Bhubaneswar":   {"coordinates": "20.2961,85.8245", "radius": 25000},
+    "Ludhiana":      {"coordinates": "30.9010,75.8573", "radius": 25000},
+    "Gangtok":       {"coordinates": "27.3389,88.6065", "radius": 25000},
+    "Agartala":      {"coordinates": "23.8315,91.2868", "radius": 25000},
+    "Dehradun":      {"coordinates": "30.3165,78.0322", "radius": 25000},
+    "Itanagar":      {"coordinates": "27.0844,93.6053", "radius": 25000},
 }
 YEARS = [2026]
 MAX_LOCATIONS_PER_CITY = 12
