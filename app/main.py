@@ -26,7 +26,7 @@ from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
-from app import aqi_stations, card, data_sync, live, weather, wind
+from app import card, data_sync, live, weather, wind
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
@@ -183,34 +183,12 @@ def weather_api(city: str = "Delhi"):
     return w
 
 
-def _parse_bbox(bbox: str | None) -> tuple[float, float, float, float] | None:
-    """'lo1,la1,lo2,la2' (west,south,east,north) -> tuple, or None if absent/malformed."""
-    if not bbox:
-        return None
-    try:
-        parts = [float(v) for v in bbox.split(",")]
-    except ValueError:
-        return None
-    return tuple(parts) if len(parts) == 4 else None
-
-
 @app.get("/api/wind-grid")
-def wind_grid_api(bbox: str | None = None):
-    grid = wind.get_wind_grid(_parse_bbox(bbox))
+def wind_grid_api():
+    grid = wind.get_wind_grid()
     if grid is None:
         return JSONResponse({"error": "wind grid unavailable"}, status_code=503)
     return grid
-
-
-@app.get("/api/aqi-stations")
-def aqi_stations_api(bbox: str | None = None):
-    parsed = _parse_bbox(bbox)
-    if parsed is None:
-        return JSONResponse({"error": "bbox required as 'lo1,la1,lo2,la2'"}, status_code=400)
-    stations = aqi_stations.get_stations(parsed)
-    if stations is None:
-        return JSONResponse({"error": "aqi stations unavailable"}, status_code=503)
-    return {"stations": stations}
 
 
 @app.get("/api/city-coords")

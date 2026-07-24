@@ -129,11 +129,6 @@
   .windMapPopup .leaflet-popup-content{font-size:13px;line-height:1.6;margin:12px 14px}
   .windMapPopup .leaflet-popup-tip{background:#141b31}
   .leaflet-control-zoom a{background:#141b31 !important;color:var(--txt) !important;border-color:var(--line) !important}
-  .windMapLegend{background:rgba(15,21,40,.85);color:#f3f6fd;font-family:'Onest',sans-serif;font-size:11.5px;
-    padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);line-height:1.9}
-  .windMapLegend b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:4px}
-  .windMapLegend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .windMapLegend i{width:9px;height:9px;border-radius:50%;flex:none}
   .leaflet-control-zoom a:hover{background:#1c2540 !important}
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
@@ -323,10 +318,9 @@
 
 <section class="section reveal" id="windmap">
   <div class="sectionHead"><div class="kicker">Live</div><h2>Wind &amp; air quality map</h2>
-    <p class="scoreTxt">Real wind vectors from Open-Meteo, animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>, anywhere in the world -- pan or zoom to load wind and live air-quality stations for that region. The colored markers and heatmap are real, live OpenAQ station readings for whatever area is in view, not a fixed city list. Country outlines via Natural Earth; India's state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
+    <p class="scoreTxt">Real wind vectors sampled across India (Open-Meteo), animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>. The red-to-green overlay is a live AQI heatmap; state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
   <div id="windMapContainer" style="height:520px;border-radius:16px;overflow:hidden;border:1px solid var(--line)"></div>
-  <p class="scoreTxt" id="windMapNote" style="margin-top:10px;max-width:none"></p>
-  <p class="scoreTxt" id="windMapAqiNote" style="max-width:none"></p>
+  <p class="scoreTxt" id="windMapNote" style="margin-top:10px"></p>
 </section>
 
 <p class="foot">Want the full instrument panel — pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
@@ -517,33 +511,76 @@ async function renderWeather(){
   }catch(e){ strip.innerHTML=''; }
 }
 
-let WIND_MAP=null, WIND_LAYER=null, AQI_HEAT=null, AQI_MARKERS=[], MAP_MOVE_TIMER=null;
-const AQI_LEGEND=[['good','Good'],['moderate','Moderate'],['poor','Poor'],['unhealthy','Unhealthy'],['severe','Severe'],['hazardous','Hazardous']];
+let WIND_MAP=null, WIND_LAYER=null, WIND_MARKERS_ADDED=false;
+async function renderWindMap(ranking){
+  const container=$('windMapContainer');
+  if(!container || typeof L==='undefined'){ return; }
+  if(!WIND_MAP){
+    WIND_MAP=L.map(container, {center:[22.5,80], zoom:4, minZoom:3, maxZoom:9, scrollWheelZoom:false, zoomControl:true});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
+    }).addTo(WIND_MAP);
 
-function mapBboxStr(){
-  const b=WIND_MAP.getBounds();
-  const lo1=Math.max(-180,b.getWest()), lo2=Math.min(180,b.getEast());
-  const la1=Math.max(-85,b.getSouth()), la2=Math.min(85,b.getNorth());
-  return `${lo1.toFixed(2)},${la1.toFixed(2)},${lo2.toFixed(2)},${la2.toFixed(2)}`;
-}
-function timeAgo(iso){
-  if(!iso)return 'unknown time';
-  const mins=Math.round((Date.now()-new Date(iso).getTime())/60000);
-  if(mins<1)return 'just now';
-  if(mins<60)return `${mins}m ago`;
-  const hrs=Math.round(mins/60);
-  return hrs<24?`${hrs}h ago`:`${Math.round(hrs/24)}d ago`;
-}
+    // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
+    // same interaction pattern as the aqi.in/IQAir reference maps.
+    if(!matchMedia('(pointer:coarse)').matches){
+      const hint=L.control({position:'topright'});
+      hint.onAdd=function(){
+        const div=L.DomUtil.create('div','windMapHint');
+        div.innerHTML=(navigator.platform.toUpperCase().indexOf('MAC')>=0?'⌘':'Ctrl')+' + scroll to zoom';
+        return div;
+      };
+      hint.addTo(WIND_MAP);
+    }
+    container.addEventListener('wheel', function(e){
+      if(e.ctrlKey || e.metaKey){
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1 : -1;
+        WIND_MAP.setZoom(WIND_MAP.getZoom() + delta, {animate:true});
+      }
+    }, {passive:false});
 
-async function refreshWindLayer(){
-  // A leftover layer from a *previous* view is worse than no layer at all --
-  // Leaflet still pans/repositions its canvas with the map, so a stale field
-  // ends up displayed as if it were current for a region it was never
-  // sampled for. Clear it up front; only a genuinely fresh fetch adds one back.
-  if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); WIND_LAYER=null; }
+    // India + state boundaries, so the country's shape and internal
+    // divisions are immediately legible instead of relying on tile labels.
+    fetch('/static/vendor/geo/india-states.geojson').then(r=>r.json()).then(geo=>{
+      L.geoJSON(geo, {
+        style:{color:'#cfe0ff', weight:1.3, opacity:.75, fillOpacity:0, dashArray:null},
+        onEachFeature:(feature,layer)=>{
+          if(feature.properties && feature.properties.shapeName){
+            layer.bindTooltip(feature.properties.shapeName, {sticky:true, className:'windMapTip'});
+          }
+        },
+      }).addTo(WIND_MAP);
+    }).catch(()=>{});
+  }
+  if(!WIND_MARKERS_ADDED && ranking && ranking.length){
+    try{
+      const coords=await (await fetch('/api/city-coords')).json();
+      const heatPoints=[];
+      ranking.forEach(r=>{
+        const c=coords[r.city];
+        if(!c)return;
+        const color=RAMP[r.category?.toLowerCase?.()]||'#7fb0ff';
+        // Hazardous (301+) reads as full intensity; scales down from there,
+        // same severity ceiling as the rest of the app's AQI Ramp.
+        heatPoints.push([c[0], c[1], Math.min(r.aqi/300, 1)]);
+        L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
+          .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
+          .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
+      });
+      if(typeof L.heatLayer==='function' && heatPoints.length){
+        L.heatLayer(heatPoints, {
+          radius:45, blur:35, maxZoom:9, max:1,
+          gradient:{0.0:'#3dfc9e', 0.17:'#ffc247', 0.33:'#ff9640', 0.5:'#ff5c85', 0.67:'#ef4fc0', 1.0:'#c93a5a'},
+        }).addTo(WIND_MAP);
+      }
+      WIND_MARKERS_ADDED=true;
+    }catch(e){}
+  }
   try{
-    const grid=await (await fetch(`/api/wind-grid?bbox=${mapBboxStr()}`)).json();
-    if(grid.error){ $('windMapNote').textContent='Wind data temporarily unavailable for this view.'; return; }
+    const grid=await (await fetch('/api/wind-grid')).json();
+    if(grid.error) { $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.'; return; }
+    if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); }
     WIND_LAYER=L.velocityLayer({
       displayValues:true,
       displayOptions:{velocityType:'Wind', position:'bottomleft', emptyString:'No wind data'},
@@ -558,141 +595,8 @@ async function refreshWindLayer(){
     setTimeout(()=>{ if(WIND_LAYER && WIND_LAYER.onDrawLayer) WIND_LAYER.onDrawLayer(); }, 50);
     $('windMapNote').textContent=`Wind field refreshed: ${grid[0]?.header?.refTime||''}`;
   }catch(e){
-    $('windMapNote').textContent='Wind data temporarily unavailable for this view.';
+    $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.';
   }
-}
-
-async function refreshAqiLayer(){
-  try{
-    const r=await (await fetch(`/api/aqi-stations?bbox=${mapBboxStr()}`)).json();
-    AQI_MARKERS.forEach(m=>WIND_MAP.removeLayer(m)); AQI_MARKERS=[];
-    if(AQI_HEAT){ WIND_MAP.removeLayer(AQI_HEAT); AQI_HEAT=null; }
-    if(r.error || !r.stations){ $('windMapAqiNote').textContent='Live station data temporarily unavailable for this view.'; return; }
-    const heatPoints=r.stations.map(s=>[s.lat, s.lon, Math.min(s.aqi/300, 1)]);
-    // Heat layer MUST be added before the markers: both render into Leaflet's
-    // shared overlayPane, stacked by DOM insertion order, and leaflet.heat's
-    // canvas doesn't set pointer-events:none -- added after the markers, its
-    // (mostly transparent but fully hit-testable) canvas silently swallows
-    // every click across the whole map, not just where the heat is visible.
-    if(typeof L.heatLayer==='function' && heatPoints.length){
-      AQI_HEAT=L.heatLayer(heatPoints, {
-        radius:45, blur:35, maxZoom:9, max:1, pane:'aqiHeatPane',
-        gradient:{0.0:'#3dfc9e', 0.17:'#ffc247', 0.33:'#ff9640', 0.5:'#ff5c85', 0.67:'#ef4fc0', 1.0:'#c93a5a'},
-      }).addTo(WIND_MAP);
-    }
-    r.stations.forEach(s=>{
-      const linkHtml = s.is_supported_city
-        ? `<a href="/city/${s.supported_city_slug}" style="color:#7fb0ff">Open full city page →</a>`
-        : `<a href="/city/delhi?ask=${encodeURIComponent('What should I know about the air quality in '+s.city+' right now?')}#ask" style="color:#7fb0ff">Ask VayuSense →</a>`;
-      const marker=L.circleMarker([s.lat,s.lon], {radius:8, color:'#0b1020', fillColor:s.color, fillOpacity:.95, weight:2, pane:'aqiMarkerPane'}).addTo(WIND_MAP)
-        .bindTooltip(`${s.city}${s.country?', '+s.country:''}`, {direction:'top', className:'windMapTip', offset:[0,-6]})
-        .bindPopup(`<b>${s.name}</b><br>${s.city}${s.country?', '+s.country:''}<br>AQI ${s.aqi} (US EPA) · ${s.category}<br>PM2.5 ${s.value} µg/m³ · as of ${timeAgo(s.updated_at)}<br>${linkHtml}`, {className:'windMapPopup'});
-      AQI_MARKERS.push(marker);
-    });
-    $('windMapAqiNote').textContent = r.stations.length
-      ? `${r.stations.length} live station${r.stations.length===1?'':'s'} in view · OpenAQ`
-      : 'No live OpenAQ stations found in this view -- try zooming out or panning.';
-  }catch(e){
-    $('windMapAqiNote').textContent='Live station data temporarily unavailable for this view.';
-  }
-}
-
-async function renderSupportedCityMarkers(ranking){
-  // Always-visible, never cleared by the dynamic live layers -- VayuSense's
-  // own supported cities should stay one click away regardless of whatever
-  // real OpenAQ stations do or don't happen to be in view.
-  if(!ranking || !ranking.length)return;
-  try{
-    const coords=await (await fetch('/api/city-coords')).json();
-    ranking.forEach(r=>{
-      const c=coords[r.city];
-      if(!c)return;
-      const color=RAMP[r.category?.toLowerCase?.()]||'#7fb0ff';
-      L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2, pane:'aqiMarkerPane'}).addTo(WIND_MAP)
-        .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
-        .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
-    });
-  }catch(e){}
-}
-
-async function renderWindMap(ranking){
-  const container=$('windMapContainer');
-  if(!container || typeof L==='undefined'){ return; }
-  if(WIND_MAP){ refreshWindLayer(); refreshAqiLayer(); return; }
-  WIND_MAP=L.map(container, {center:[22.5,80], zoom:3, minZoom:2, maxZoom:9, scrollWheelZoom:false, zoomControl:true, worldCopyJump:true});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
-  }).addTo(WIND_MAP);
-
-  // Explicit panes so markers are *always* clickable above the heat layer,
-  // regardless of add/remove order -- the persistent city dots are added
-  // once here at init, long before the first heat layer ever exists, so
-  // relying on DOM insertion order alone would still bury them under it.
-  WIND_MAP.createPane('aqiHeatPane').style.zIndex = 410;   // just above overlayPane (400)
-  WIND_MAP.createPane('aqiMarkerPane').style.zIndex = 620; // above markerPane (600)
-
-  // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
-  // same interaction pattern as the aqi.in/IQAir reference maps.
-  if(!matchMedia('(pointer:coarse)').matches){
-    const hint=L.control({position:'topright'});
-    hint.onAdd=function(){
-      const div=L.DomUtil.create('div','windMapHint');
-      div.innerHTML=(navigator.platform.toUpperCase().indexOf('MAC')>=0?'⌘':'Ctrl')+' + scroll to zoom';
-      return div;
-    };
-    hint.addTo(WIND_MAP);
-  }
-  container.addEventListener('wheel', function(e){
-    if(e.ctrlKey || e.metaKey){
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 1 : -1;
-      WIND_MAP.setZoom(WIND_MAP.getZoom() + delta, {animate:true});
-    }
-  }, {passive:false});
-
-  // World country outlines everywhere, plus India's own state-level detail
-  // layered on top (kept from the original India-only map).
-  fetch('/static/vendor/geo/world-countries.geojson').then(r=>r.json()).then(geo=>{
-    L.geoJSON(geo, {
-      style:{color:'#cfe0ff', weight:1, opacity:.5, fillOpacity:0},
-      onEachFeature:(feature,layer)=>{
-        const name=feature.properties && feature.properties.NAME;
-        if(name) layer.bindTooltip(name, {sticky:true, className:'windMapTip'});
-      },
-    }).addTo(WIND_MAP);
-  }).catch(()=>{});
-  fetch('/static/vendor/geo/india-states.geojson').then(r=>r.json()).then(geo=>{
-    L.geoJSON(geo, {
-      style:{color:'#cfe0ff', weight:1.3, opacity:.75, fillOpacity:0, dashArray:null},
-      onEachFeature:(feature,layer)=>{
-        if(feature.properties && feature.properties.shapeName){
-          layer.bindTooltip(feature.properties.shapeName, {sticky:true, className:'windMapTip'});
-        }
-      },
-    }).addTo(WIND_MAP);
-  }).catch(()=>{});
-
-  // Always-visible AQI color key, so the heatmap/markers are self-explanatory
-  // without needing to hover anything first.
-  const legend=L.control({position:'bottomright'});
-  legend.onAdd=function(){
-    const div=L.DomUtil.create('div','windMapLegend');
-    div.innerHTML='<b>AQI</b>'+AQI_LEGEND.map(([key,label])=>
-      `<span><i style="background:${RAMP[key]}"></i>${label}</span>`).join('');
-    return div;
-  };
-  legend.addTo(WIND_MAP);
-
-  // Refetch both live layers for wherever the map currently shows, debounced
-  // so a drag/zoom gesture doesn't fire a burst of requests mid-motion.
-  WIND_MAP.on('moveend zoomend', ()=>{
-    clearTimeout(MAP_MOVE_TIMER);
-    MAP_MOVE_TIMER=setTimeout(()=>{ refreshWindLayer(); refreshAqiLayer(); }, 500);
-  });
-
-  renderSupportedCityMarkers(ranking);
-  refreshWindLayer();
-  refreshAqiLayer();
 }
 
 loadCities();
