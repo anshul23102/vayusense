@@ -67,11 +67,13 @@
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
   .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
   .objCard{position:relative;padding:16px;border-radius:14px;background:rgba(255,255,255,.035);
-    border:1px solid var(--line);transition:background .2s}
-  .objCard:hover{background:rgba(255,255,255,.06)}
+    border:1px solid var(--line);transition:background .2s,transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
+    transform-style:preserve-3d;will-change:transform}
+  .objCard:hover{background:rgba(255,255,255,.06);box-shadow:0 14px 36px rgba(6,10,25,.4)}
   .card{position:relative;padding:24px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);
-    transition:background .2s,box-shadow .2s}
-  .card:hover{background:rgba(255,255,255,.05)}
+    transition:background .2s,box-shadow .2s,transform .15s cubic-bezier(.2,.8,.2,1);
+    transform-style:preserve-3d;will-change:transform}
+  .card:hover{background:rgba(255,255,255,.05);box-shadow:0 14px 36px rgba(6,10,25,.4)}
   .s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}
   @media(max-width:940px){.s4,.s6,.s8{grid-column:span 12}}
   .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -81,7 +83,10 @@
   .heroRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:820px){.heroRow{grid-template-columns:1fr}}
   .scoreWrap{display:flex;align-items:center;gap:24px}
-  .ring{position:relative;width:150px;height:150px;flex:none}
+  .chartGlow{transition:filter .35s}
+  .chartGlow.hovering{filter:drop-shadow(0 0 20px rgba(127,176,255,.16))}
+  .ring{position:relative;width:150px;height:150px;flex:none;transition:filter .3s}
+  .ring:hover{filter:drop-shadow(0 0 22px var(--ringGlow,rgba(127,176,255,.35)))}
   .ring svg{transform:rotate(-90deg)}
   .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .ring .val b{font-size:40px;font-weight:700;line-height:1}
@@ -92,7 +97,8 @@
 
   .impactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px}
   .impactStat{border-left:1px solid var(--line);border-radius:0;padding:6px 16px}
-  .impactStat .n{font-size:30px;font-weight:700;line-height:1}
+  .impactStat .n{font-size:30px;font-weight:700;line-height:1;transition:text-shadow .25s,transform .25s cubic-bezier(.2,.8,.2,1)}
+  .impactStat:hover .n{text-shadow:0 0 24px rgba(255,92,133,.45);transform:translateX(2px)}
   .impactStat .n span{font-size:15px;font-weight:600;color:var(--dim)}
   .impactStat .l{color:var(--dim);font-size:12px;margin-top:5px}
   .impactNote{color:var(--dim);font-size:11px;line-height:1.5;margin-top:12px;opacity:.75}
@@ -158,22 +164,28 @@
   .weatherStrip .wItem{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}
   .weatherStrip .wItem svg{width:16px;height:16px;flex:none;color:var(--blueSolid)}
   .weatherStrip .wItem b{color:var(--txt);font-weight:600}
-  .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s}
+  .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
-  .cityRow:hover{background:rgba(255,255,255,.03)}
+  .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
   .cityRow.current{border-left:2px solid var(--blueSolid);padding-left:12px;margin-left:-14px}
-  .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
+  .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+  .cityRow:hover .cityIconBadge{transform:scale(1.08)}
   .cityIconBadge svg{width:32px;height:32px}
   .cityName{flex:1;min-width:90px;font-size:14px}
   .cityAqi{width:52px;text-align:right;font-size:19px;font-weight:600}
   .cityCat{width:110px;font-size:12px}
   .cityDom{width:60px;text-align:right;color:var(--dim);font-size:11px;text-transform:uppercase}
+  .cityGo{width:0;overflow:hidden;opacity:0;color:var(--blueSolid);font-size:15px;transition:width .2s cubic-bezier(.2,.8,.2,1),opacity .15s}
+  .cityRow:hover .cityGo{width:16px;opacity:1}
   .calMonth h4{font-family:var(--disp);font-size:13px;margin-bottom:8px;font-weight:600}
   .calRow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
   .calHead span{font-size:9px;color:var(--dim);text-align:center}
   .calDay{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;
-    font-size:9.5px;font-family:var(--disp);font-variant-numeric:tabular-nums;color:#0b1226;font-weight:600}
+    font-size:9.5px;font-family:var(--disp);font-variant-numeric:tabular-nums;color:#0b1226;font-weight:600;
+    cursor:default;transition:transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .15s,z-index 0s;position:relative}
+  .calDay:not(.empty):hover{transform:scale(1.28);box-shadow:0 6px 18px rgba(6,10,25,.5);z-index:2}
   .calDay.empty{background:rgba(255,255,255,.03);color:transparent}
+  .calDay.empty:hover{transform:none;box-shadow:none}
   .yearChip{font:inherit;font-size:12.5px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);
     background:transparent;color:var(--dim);cursor:pointer}
   .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
@@ -215,6 +227,7 @@
 </style>
 </head>
 <body>
+<div id="scrollProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:2px;width:0;background:var(--blueSolid);opacity:.85;z-index:1000;transition:width .1s linear"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ic-lungs" viewBox="0 0 24 24"><path d="M12 3v7M12 10c-1 -3 -4 -3 -5 -1c-2 3 -2 9 0 11c2 1.5 4 -0.5 5 -3M12 10c1 -3 4 -3 5 -1c2 3 2 9 0 11c-2 1.5 -4 -0.5 -5 -3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -324,7 +337,7 @@
       <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span><span class="tag" id="aqiRank" style="display:none"></span>
         <button type="button" id="shareBtn" class="tag" style="cursor:pointer;font:inherit;background:transparent;color:var(--dim);-webkit-appearance:none;appearance:none" onclick="shareCard()">Share ⤴</button></div>
       <div class="scoreWrap">
-        <div class="ring">
+        <div class="ring" id="scoreRing">
           <svg width="150" height="150" viewBox="0 0 150 150">
             <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
             <circle id="ringArc" cx="75" cy="75" r="65" fill="none" stroke="#ffc247" stroke-width="12"
@@ -415,7 +428,7 @@
 <div class="grid">
   <div class="s8">
       <div class="eyebrow">90-day pollution trend <span class="tag">daily mean · 7-day rolling</span></div>
-      <div id="trendChart" style="height:320px"></div>
+      <div id="trendChart" class="chartGlow" style="height:320px"></div>
       <details class="impactNote" id="forecastNote" style="display:none;margin-top:12px">
         <summary style="cursor:pointer;color:var(--dim)">Dotted line = short-term statistical projection (not a measurement), with a widening uncertainty band. Methodology ▾</summary>
         <p id="forecastMethod" style="margin-top:6px"></p>
@@ -449,7 +462,7 @@
 
 <section class="section reveal" id="trends">
   <div class="sectionHead"><div class="kicker">Long view</div><h2>Monthly &amp; annual trends</h2></div>
-  <div id="monthlyChart" style="height:300px"></div>
+  <div id="monthlyChart" class="chartGlow" style="height:300px"></div>
   <div class="grid" style="margin-top:18px">
     <div class="s4"><div class="objCard num" id="mostMonth"></div></div>
     <div class="s4"><div class="objCard num" id="leastMonth"></div></div>
@@ -661,6 +674,47 @@ if(!reduceMotion){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
+(function(){
+  const bar=$('scrollProgress');
+  function update(){
+    const h=document.documentElement;
+    const pct=(h.scrollTop)/((h.scrollHeight-h.clientHeight)||1)*100;
+    bar.style.width=Math.min(100,Math.max(0,pct))+'%';
+  }
+  addEventListener('scroll',update,{passive:true});
+  addEventListener('resize',update);
+  update();
+})();
+
+/* Delegated 3D tilt for every boxed card (.objCard/.card) -- delegated at
+   document level so it works on cards rendered after page load (pollutant
+   cards, hotspots, forecast bench), not just ones present at first paint. */
+if(!reduceMotion){
+  const TILT_SELECTOR='.objCard, .card';
+  let tiltEl=null;
+  document.addEventListener('mousemove',e=>{
+    const el=e.target.closest(TILT_SELECTOR);
+    if(el){
+      const r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      el.style.transform=`perspective(900px) rotateY(${x*6}deg) rotateX(${-y*6}deg) translateY(-3px) translateZ(0)`;
+      tiltEl=el;
+    }else if(tiltEl){
+      tiltEl.style.transform='';
+      tiltEl=null;
+    }
+  });
+  document.addEventListener('mouseleave',()=>{if(tiltEl){tiltEl.style.transform='';tiltEl=null}});
+}
+
+/* Plotly charts glow softly while the cursor is actively reading a point --
+   a small "the instrument is responding to you" cue, not decoration. */
+function PLOT_HOVER_HOOK(divId){
+  const el=document.getElementById(divId);
+  if(!el || reduceMotion)return;
+  el.on('plotly_hover',()=>el.classList.add('hovering'));
+  el.on('plotly_unhover',()=>el.classList.remove('hovering'));
+}
+
 async function loadCities(){
   const cities=await (await fetch('/api/cities')).json();
   $('citySel').innerHTML=cities.map(c=>`<option ${c===CITY?'selected':''}>${c}</option>`).join('');
@@ -677,6 +731,7 @@ function cityRowHtml(r,i){
     <div class="cityAqi num">${r.aqi}</div>
     <div class="cityCat" style="color:${b.color}">● ${r.category}</div>
     <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
+    <div class="cityGo">→</div>
   </div>`;
 }
 function renderCitiesTable(){
@@ -732,9 +787,13 @@ async function refresh(){
     if(myToken!==refreshToken)return;
     Plotly.newPlot('trendChart',traces,{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Onest',size:12},
       margin:{t:6,r:10,b:36,l:42},legend:{orientation:'h',y:1.12},
-      xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:false},
+      xaxis:{gridcolor:'rgba(255,255,255,.04)',showspikes:true,spikemode:'across',spikethickness:1,spikecolor:'rgba(157,193,255,.4)',spikedash:'dot'},
       yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'µg/m³'},
-      hovermode:'x unified'},{displayModeBar:false});
+      hovermode:'x unified',
+      hoverlabel:{bgcolor:'#1c2540',bordercolor:'rgba(255,255,255,.15)',font:{color:'#f3f6fd',family:'Onest',size:12}},
+      transition:{duration:250,easing:'cubic-in-out'}},
+      {displayModeBar:false,scrollZoom:false});
+    PLOT_HOVER_HOOK('trendChart');
     const note=$('forecastNote');
     if(traces.length>2){
       note.style.display='';
@@ -774,6 +833,7 @@ async function refresh(){
         countUp($('aqiVal'), a.aqi, {decimals:0});
         $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
         $('ringArc').style.stroke=a.category.color;
+        $('scoreRing').style.setProperty('--ringGlow', a.category.color+'59');
         const v=$('verdict');
         v.innerHTML='<span class="vdot"></span>'+a.category.label;
         v.style.color=a.category.color;v.style.borderColor=a.category.color;
@@ -973,11 +1033,14 @@ async function renderTrends(){
     if(!t.months){$('trends').style.display='none';return}
     $('trends').style.display='';
     Plotly.newPlot('monthlyChart',[{x:t.months.map(m=>m.month),y:t.months.map(m=>m.avg_aqi),type:'bar',
-      marker:{color:t.months.map(m=>RAMP[m.key])},hovertemplate:'%{x}<br>AQI %{y} (%{customdata})<extra></extra>',
+      marker:{color:t.months.map(m=>RAMP[m.key]),line:{width:0}},hovertemplate:'%{x}<br>AQI %{y} (%{customdata})<extra></extra>',
       customdata:t.months.map(m=>bandOf(m.avg_aqi).label)}],
       {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Onest',size:12},
-       margin:{t:6,r:10,b:60,l:42},yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'avg AQI'},xaxis:{tickangle:-40}},
+       margin:{t:6,r:10,b:60,l:42},yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'avg AQI'},xaxis:{tickangle:-40},
+       hoverlabel:{bgcolor:'#1c2540',bordercolor:'rgba(255,255,255,.15)',font:{color:'#f3f6fd',family:'Onest',size:12}},
+       transition:{duration:250,easing:'cubic-in-out'}},
       {displayModeBar:false});
+    PLOT_HOVER_HOOK('monthlyChart');
     const fm=m=>{const [y,mo]=m.split('-');return MONTHS[+mo-1]+' '+y};
     $('mostMonth').innerHTML=`<div style="font-size:11px;color:var(--dim)">Most polluted month</div><div style="font-size:24px;font-weight:600;margin:3px 0">${t.most_polluted.avg_aqi}</div><div style="font-size:12px;color:var(--dim)">${fm(t.most_polluted.month)}</div>`;
     $('mostMonth').style.borderLeft=`3px solid ${RAMP[bandOf(t.most_polluted.avg_aqi).key]}`;
