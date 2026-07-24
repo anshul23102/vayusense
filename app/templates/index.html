@@ -143,6 +143,8 @@
     border-radius:99px;padding:8px 14px;cursor:pointer;transition:all .2s;min-height:36px}
   .sugg button:hover{color:var(--txt);background:var(--glass2)}
   .sugg button:focus-visible{outline:2px solid var(--blueSolid);outline-offset:2px}
+  #newChatBtn{transition:color .15s,background .15s,border-color .15s}
+  #newChatBtn:hover{color:var(--txt);background:var(--glass2);border-color:rgba(157,193,255,.4)}
 
   .foot{color:var(--dim);font-size:12.5px;text-align:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
   .reveal{opacity:0;transform:translateY(22px);filter:blur(6px);
@@ -187,12 +189,18 @@
   .calDay.empty{background:rgba(255,255,255,.03);color:transparent}
   .calDay.empty:hover{transform:none;box-shadow:none}
   .yearChip{font:inherit;font-size:12.5px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);
-    background:transparent;color:var(--dim);cursor:pointer}
+    background:transparent;color:var(--dim);cursor:pointer;transition:color .15s,border-color .15s,background .15s,transform .15s cubic-bezier(.2,.8,.2,1)}
+  .yearChip:hover{color:var(--txt);background:rgba(255,255,255,.04);transform:translateY(-1px)}
   .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
   .healthTab{display:flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;padding:8px 14px;
-    border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
-  .healthTab svg{width:20px;height:20px;flex:none}
+    border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;
+    transition:color .18s,border-color .18s,background .18s,transform .15s cubic-bezier(.2,.8,.2,1)}
+  .healthTab svg{width:20px;height:20px;flex:none;transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+  .healthTab:hover{color:var(--txt);background:rgba(255,255,255,.04);transform:translateY(-1px)}
+  .healthTab:hover svg{transform:scale(1.1)}
   .healthTab.on{color:var(--txt);border-color:rgba(157,193,255,.5);background:rgba(157,193,255,.08)}
+  @keyframes panelFadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .panelFade{animation:panelFadeIn .25s cubic-bezier(.2,.8,.2,1)}
   .livePulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3dfc9e;margin-right:5px;animation:pulse 1.6s infinite}
   .moodChar{width:64px;height:80px;flex:none;margin-left:auto;transition:color .4s}
   .moodChar use{transition:opacity .25s}
@@ -221,6 +229,8 @@
     .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
     .cardIn{animation:none !important;opacity:1 !important;transform:none !important}
+    .panelFade{animation:none !important}
+    .objCard,.card,.cityIconBadge,.calDay,.impactStat .n,.ring{transition:none !important}
     html{scroll-behavior:auto}
   }
   .ic-i{width:15px;height:15px;vertical-align:-2.5px;flex:none}
@@ -577,6 +587,8 @@ function renderHealthPanel(){
       </div>
     </div>`;
   $('healthCitation').textContent=HEALTH_DATA.citation;
+  const panel=$('healthPanel');
+  panel.classList.remove('panelFade'); void panel.offsetWidth; panel.classList.add('panelFade');
 }
 const SOLUTION_ICON={air_purifier:'ic-purifier',car_filter:'ic-carfilter',n95_mask:'ic-mask',stay_indoor:'ic-home'};
 const STATUS_COLOR={'Not needed':'var(--ok)',Optional:'var(--ok)',Recommended:'var(--amber)',Advised:'var(--amber)',Must:'var(--bad)'};
