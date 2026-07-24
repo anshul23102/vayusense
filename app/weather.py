@@ -37,6 +37,24 @@ CITY_COORDS = {
     "Vadodara": (22.3072, 73.1812),
     "Coimbatore": (11.0168, 76.9558),
     "Nashik": (19.9975, 73.7898),
+    # Added to give every state real coverage (Goa excluded: verified zero
+    # OpenAQ stations anywhere in the state before deciding not to fake it).
+    "Guwahati": (26.1445, 91.7362),
+    "Raipur": (21.2514, 81.6296),
+    "Faridabad": (28.4089, 77.3178),
+    "Baddi": (30.9578, 76.7914),
+    "Dhanbad": (23.7957, 86.4304),
+    "Kochi": (9.9312, 76.2673),
+    "Imphal": (24.8170, 93.9368),
+    "Shillong": (25.5788, 91.8933),
+    "Aizawl": (23.7271, 92.7176),
+    "Kohima": (25.6751, 94.1086),
+    "Bhubaneswar": (20.2961, 85.8245),
+    "Ludhiana": (30.9010, 75.8573),
+    "Gangtok": (27.3389, 88.6065),
+    "Agartala": (23.8315, 91.2868),
+    "Dehradun": (30.3165, 78.0322),
+    "Itanagar": (27.0844, 93.6053),
 }
 
 

@@ -201,16 +201,16 @@
   </div>
   <div class="searchWrap reveal d4">
     <input class="searchInput" id="citySearch" type="text" autocomplete="off"
-      placeholder="Search one of 20 tracked Indian cities…"
+      placeholder="Search one of 36 tracked Indian cities…"
       oninput="filterSearch(this.value)" onfocus="filterSearch(this.value)"
       onkeydown="searchKeydown(event)" role="combobox" aria-expanded="false" aria-autocomplete="list"
       aria-controls="searchDrop" aria-activedescendant="">
     <div class="searchDrop" id="searchDrop" role="listbox"></div>
   </div>
   <div class="statRow reveal d4">
-    <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>17,061,481</b> readings analyzed</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>25,347,842</b> readings analyzed</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b>37.5×</b> faster with NVIDIA</div>
-    <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>20</b> cities · <b>6</b> pollutants</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>36</b> cities · <b>6</b> pollutants</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-chip"/></svg> <b>2</b> reasoning agents</div>
   </div>
   <div class="scroll">SCROLL</div>
@@ -224,7 +224,7 @@
 
 <section id="cities-grid">
   <div class="kicker reveal">Pick a city</div>
-  <h2 class="reveal d1">Twenty cities. One tap away.</h2>
+  <h2 class="reveal d1">Thirty-six cities. One tap away.</h2>
   <div class="showcase" id="cityGrid"></div>
 </section>
 
@@ -261,7 +261,7 @@
   <p class="lead reveal d2">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
     can shift by the hour, a 9-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision. This is the original proof run, on the first
-    4 cities; the live dataset has since grown to 20 cities and over 17M readings without needing to re-earn that speedup.</p>
+    4 cities; the live dataset has since grown to 36 cities (one per state, Goa excepted -- verified zero real OpenAQ stations there) and over 25M readings without needing to re-earn that speedup.</p>
   <div class="benchWrap">
     <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
     <div class="rows">
@@ -349,7 +349,7 @@ function renderShowcase(){
     AQI band, spanning 2024 through today. Real measured history you can actually scan for patterns, not just a today-snapshot.</p></div>`);
   if(top){
     tiles.push(`<div class="showTile reveal d2"><div class="ic"><svg><use href="#${cityIcon(top.city)}"/></svg></div>
-      <h3>${top.city} leads today</h3><p>Ranked #1 of 20 tracked cities right now at
+      <h3>${top.city} leads today</h3><p>Ranked #1 of ${LANDING_DATA.cities.length} tracked cities right now at
       <b style="color:var(--txt)">${top.aqi} AQI (${top.category})</b>, on the same honest basis for every city.
       See the full ranking on the dashboard.</p></div>`);
   }

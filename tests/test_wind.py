@@ -38,5 +38,5 @@ def test_wind_grid_api_503_on_missing(monkeypatch):
 def test_city_coords_api():
     from app.main import city_coords_api
     out = city_coords_api()
-    assert len(out) == 20
+    assert len(out) == 36
     assert out["Delhi"] == [28.6139, 77.209]
