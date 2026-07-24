@@ -208,6 +208,10 @@
     background:transparent;color:var(--dim);cursor:pointer;transition:color .15s,border-color .15s,background .15s,transform .15s cubic-bezier(.2,.8,.2,1)}
   .yearChip:hover{color:var(--txt);background:rgba(255,255,255,.04);transform:translateY(-1px)}
   .yearChip.on{color:var(--txt);border-color:rgba(157,193,255,.5)}
+  .navBack{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:99px;border:1px solid var(--line);
+    background:transparent;color:var(--dim);text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+    transition:color .15s,border-color .15s,background .15s,transform .15s cubic-bezier(.2,.8,.2,1);flex:none}
+  .navBack:hover{color:var(--txt);background:rgba(255,255,255,.04);border-color:rgba(157,193,255,.4);transform:translateY(-1px)}
   .healthTab{display:flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;padding:8px 14px;
     border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;
     transition:color .18s,border-color .18s,background .18s,transform .15s cubic-bezier(.2,.8,.2,1)}
@@ -340,6 +344,7 @@
 <div class="shell">
 <nav>
   <a class="logo" href="/"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></a>
+  <a class="navBack" href="/dashboard">← Dashboard</a>
   <div class="subnav">
     <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
