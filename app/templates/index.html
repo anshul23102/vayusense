@@ -321,7 +321,8 @@
 <section class="section reveal" id="overview" style="border-top:none;padding-top:0">
 <div class="grid">
   <div class="s6">
-      <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span><span class="tag" id="aqiRank" style="display:none"></span></div>
+      <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span><span class="tag" id="aqiRank" style="display:none"></span>
+        <button type="button" id="shareBtn" class="tag" style="cursor:pointer;border:none;font:inherit" onclick="shareCard()">Share ⤴</button></div>
       <div class="scoreWrap">
         <div class="ring">
           <svg width="150" height="150" viewBox="0 0 150 150">
@@ -435,7 +436,7 @@
 
 <section class="section reveal" id="calendar">
   <div class="sectionHead"><div class="kicker">Calendar</div><h2>Air quality calendar</h2>
-    <p>Every archive day, colored by its EPA-method daily AQI.</p></div>
+    <p>Every archive day, colored by its EPA-method daily AQI. <a id="exportLink" href="/api/export?city=Delhi&format=csv" style="color:inherit;text-decoration:underline">Download the full daily archive (CSV)</a> · <a id="exportLinkJson" href="/api/export?city=Delhi&format=json" style="color:inherit;text-decoration:underline">JSON</a></p></div>
   <div id="calYears" style="display:flex;gap:8px;margin-bottom:16px"></div>
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
     <button type="button" id="calPrev" class="yearChip" onclick="calPage(-1)" aria-label="Previous months">◀</button>
@@ -764,6 +765,8 @@ async function refresh(){
       return `<div class="kpi"><div class="l">${k.toUpperCase()} · ${v.trend}${liveTag}</div><div class="v">${v.daily_mean}</div>
         <div class="who ${bad?'bad':'ok'}">${v.times_who_limit?v.times_who_limit+'× WHO':'-'}</div></div>`}).join('');
     $('scoreCity').textContent=CITY;
+    $('exportLink').href=`/api/export?city=${encodeURIComponent(CITY)}&format=csv`;
+    $('exportLinkJson').href=`/api/export?city=${encodeURIComponent(CITY)}&format=json`;
     try{
       const a=await (await fetch(`/api/aqi?city=${CITY}`)).json();
       if(myToken!==refreshToken)return;
@@ -812,6 +815,39 @@ async function refresh(){
   renderHotspots();
   renderWeather();
   renderYoy();
+}
+
+async function shareCard(){
+  const btn=$('shareBtn');
+  const orig=btn.textContent;
+  const url=location.href;
+  const text=`${CITY}'s air quality right now, via VayuSense`;
+  const imgUrl=`/city/${CITY.toLowerCase()}/card.png`;
+  // Open the tab synchronously, in direct response to the click, so browsers
+  // don't treat it as a popup once we fill in its location after an await.
+  const preOpened=(!navigator.share)?window.open('about:blank','_blank'):null;
+  try{
+    const resp=await fetch(imgUrl);
+    const blob=await resp.blob();
+    const file=new File([blob], `vayusense_${CITY.toLowerCase()}.png`, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      if(preOpened)preOpened.close();
+      await navigator.share({files:[file], title:text, text, url});
+      return;
+    }
+    if(navigator.share){
+      await navigator.share({title:text, text, url});
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    btn.textContent='Link copied ✓';
+    setTimeout(()=>btn.textContent=orig,1800);
+    if(preOpened)preOpened.location.href=imgUrl; else window.open(imgUrl,'_blank');
+  }catch(e){
+    if(preOpened)preOpened.close();
+    try{ await navigator.clipboard.writeText(url); btn.textContent='Link copied ✓'; setTimeout(()=>btn.textContent=orig,1800); }
+    catch(e2){}
+  }
 }
 
 async function renderYoy(){

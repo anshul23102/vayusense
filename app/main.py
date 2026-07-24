@@ -1,6 +1,7 @@
 """VayuSense web app — FastAPI dashboard + ADK agent chat."""
 from __future__ import annotations
 
+import io
 import json
 import time
 import uuid
@@ -14,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from google.adk.runners import InMemoryRunner
 from google.genai import types
@@ -25,7 +26,7 @@ from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
-from app import live, weather, wind
+from app import card, live, weather, wind
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
@@ -75,7 +76,46 @@ def city_page(slug: str):
     if match is None:
         return JSONResponse({"error": f"unknown city '{slug}'"}, status_code=404)
     html = (ROOT / "app" / "templates" / "index.html").read_text()
-    return html.replace("let CITY='Delhi';", f"let CITY='{match}';")
+    html = html.replace("let CITY='Delhi';", f"let CITY='{match}';")
+    row = _city_aqi(match, allow_fetch=False)
+    if row is not None:
+        title = f"{match} air quality: {row['aqi']} AQI ({row['category']['label']}) | VayuSense"
+        desc = (f"{match}'s AQI is {row['aqi']} ({row['category']['label']}), driven by "
+                f"{row['dominant'].upper()}. Real-time, GPU-processed air quality intelligence.")
+        image = f"/city/{slug.lower()}/card.png"
+        meta = (
+            f'<meta property="og:title" content="{title}">'
+            f'<meta property="og:description" content="{desc}">'
+            f'<meta property="og:image" content="{image}">'
+            f'<meta property="og:type" content="website">'
+            f'<meta name="twitter:card" content="summary_large_image">'
+            f'<meta name="twitter:title" content="{title}">'
+            f'<meta name="twitter:description" content="{desc}">'
+            f'<meta name="twitter:image" content="{image}">'
+        )
+        html = html.replace("</head>", meta + "</head>")
+    return html
+
+
+@app.get("/city/{slug}/card.png")
+def city_card(slug: str):
+    cities = json.loads(data_tools.list_cities())
+    match = next((c for c in cities if c.lower() == slug.lower()), None)
+    if match is None:
+        return JSONResponse({"error": f"unknown city '{slug}'"}, status_code=404)
+    row = _city_aqi(match, allow_fetch=True)
+    if row is None:
+        return JSONResponse({"error": f"no data for city '{match}'"}, status_code=404)
+    imp = json.loads(data_tools.get_human_impact(match))
+    png = card.render_card(
+        city=match, aqi=row["aqi"], category_key=row["category"]["key"],
+        category_label=row["category"]["label"], dominant=row["dominant"],
+        source=row["source"], updated=row["last_updated"],
+        cigarettes_per_day=imp.get("cigarettes_per_day_equivalent", 0),
+        years_lost=imp.get("estimated_life_expectancy_years_lost", 0),
+    )
+    return Response(content=png, media_type="image/png",
+                     headers={"Cache-Control": "public, max-age=1800"})
 
 
 @app.get("/api/cities")
@@ -324,6 +364,30 @@ def monthly_api(city: str = "Delhi"):
             "most_polluted": {"month": most["month"], "avg_aqi": most["avg_aqi"]},
             "least_polluted": {"month": least["month"], "avg_aqi": least["avg_aqi"]},
             "annual": annual, "annual_change_pct": change}
+
+
+@app.get("/api/export")
+def export_data(city: str = "Delhi", format: str = "csv"):
+    df = data_tools._daily()
+    d = df[df["city"].str.lower() == city.lower()][
+        ["date", "parameter", "mean", "max", "count", "roll7", "anomaly"]
+    ].sort_values(["parameter", "date"])
+    if d.empty:
+        return JSONResponse({"error": f"no data for city '{city}'"}, status_code=404)
+    d = d.rename(columns={"mean": "daily_mean", "max": "daily_max", "count": "n_readings",
+                           "roll7": "rolling_7day_mean"})
+    fname_base = f"vayusense_{city.lower()}_daily_archive"
+    if format == "json":
+        records = json.loads(d.to_json(orient="records", date_format="iso"))
+        return JSONResponse({
+            "city": city, "rows": len(records),
+            "source": "OpenAQ archive (AWS Open Data), GPU-processed",
+            "data": records,
+        }, headers={"Content-Disposition": f'attachment; filename="{fname_base}.json"'})
+    buf = io.StringIO()
+    d.to_csv(buf, index=False)
+    return Response(content=buf.getvalue(), media_type="text/csv",
+                     headers={"Content-Disposition": f'attachment; filename="{fname_base}.csv"'})
 
 
 @app.get("/api/health_guidance")
