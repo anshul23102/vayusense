@@ -820,33 +820,35 @@ async function refresh(){
 async function shareCard(){
   const btn=$('shareBtn');
   const orig=btn.textContent;
-  const url=location.href;
-  const text=`${CITY}'s air quality right now, via VayuSense`;
   const imgUrl=`/city/${CITY.toLowerCase()}/card.png`;
-  // Open the tab synchronously, in direct response to the click, so browsers
-  // don't treat it as a popup once we fill in its location after an await.
-  const preOpened=(!navigator.share)?window.open('about:blank','_blank'):null;
+  // Mobile: the OS share sheet (with the image attached) is genuinely the
+  // better experience -- it can hand the file straight to WhatsApp/Messages.
+  // Desktop: browsers' share sheets often have no real "save" option (macOS
+  // Safari's doesn't), so a direct file download is what "share" actually
+  // needs to mean there.
+  const isTouchDevice = matchMedia('(pointer: coarse)').matches;
   try{
     const resp=await fetch(imgUrl);
     const blob=await resp.blob();
-    const file=new File([blob], `vayusense_${CITY.toLowerCase()}.png`, {type:'image/png'});
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      if(preOpened)preOpened.close();
-      await navigator.share({files:[file], title:text, text, url});
-      return;
+    if(isTouchDevice && navigator.canShare){
+      const file=new File([blob], `vayusense_${CITY.toLowerCase()}.png`, {type:'image/png'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:`${CITY}'s air quality right now, via VayuSense`});
+        return;
+      }
     }
-    if(navigator.share){
-      await navigator.share({title:text, text, url});
-      return;
-    }
-    await navigator.clipboard.writeText(url);
-    btn.textContent='Link copied ✓';
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download=`vayusense_${CITY.toLowerCase()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 4000);
+    btn.textContent='Downloaded ✓';
     setTimeout(()=>btn.textContent=orig,1800);
-    if(preOpened)preOpened.location.href=imgUrl; else window.open(imgUrl,'_blank');
   }catch(e){
-    if(preOpened)preOpened.close();
-    try{ await navigator.clipboard.writeText(url); btn.textContent='Link copied ✓'; setTimeout(()=>btn.textContent=orig,1800); }
-    catch(e2){}
+    window.open(imgUrl,'_blank');
   }
 }
 
