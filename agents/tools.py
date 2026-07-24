@@ -36,6 +36,16 @@ def _forecasts() -> pd.DataFrame:
     return pd.read_parquet(DATA_DIR / "forecasts.parquet")
 
 
+def invalidate_caches() -> None:
+    """Drop every in-memory cache derived from the processed parquet files,
+    so the next read picks up freshly-synced data (see app/data_sync.py).
+    Safe to call any time; caches simply repopulate on next access."""
+    _daily.cache_clear()
+    _league.cache_clear()
+    _forecasts.cache_clear()
+    _daily_overall_aqi_cached.cache_clear()
+
+
 @lru_cache(maxsize=1)
 def _bench() -> dict:
     path = Path(__file__).resolve().parent.parent / "benchmark" / "forecast_bench.json"

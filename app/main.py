@@ -26,13 +26,26 @@ from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
-from app import card, live, weather, wind
+from app import card, data_sync, live, weather, wind
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
 app.mount("/static", StaticFiles(directory=ROOT / "app" / "static"), name="static")
 
 runner = InMemoryRunner(agent=root_agent, app_name="vayusense")
+
+
+@app.middleware("http")
+async def sync_processed_data(request: Request, call_next):
+    # Cloud Run only allocates CPU during request handling by default, so a
+    # free-running background thread (data_sync.start_background_sync) can
+    # stall indefinitely between requests -- piggyback the TTL-gated check on
+    # actual traffic instead. maybe_refresh() is a cheap no-op the vast
+    # majority of calls (a single time.time() comparison); it only does real
+    # work once per TTL window, and never raises.
+    from starlette.concurrency import run_in_threadpool
+    await run_in_threadpool(data_sync.maybe_refresh)
+    return await call_next(request)
 
 
 class AskBody(BaseModel):
@@ -306,6 +319,15 @@ def city_aqi(city: str = "Delhi"):
     main_out["rank"] = next((i + 1 for i, r in enumerate(ranking)
                              if r["city"].lower() == city.lower()), None)
     return main_out
+
+
+def invalidate_all_caches() -> None:
+    """Called after a fresh parquet sync (app/data_sync.py) so every cache
+    derived from the processed data -- here and in agents/tools.py -- picks
+    up the new data on next access instead of serving stale in-memory rows."""
+    data_tools.invalidate_caches()
+    _daily_overall_cached.cache_clear()
+    _yoy_ranking_cached.cache_clear()
 
 
 @lru_cache(maxsize=32)
