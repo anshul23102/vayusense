@@ -1165,6 +1165,15 @@ async function ask(){
 }
 
 loadCities().then(()=>{refresh();renderCalendar();renderTrends()});loadBench();loadHealthGuidance();
+
+// A map marker elsewhere in the app (e.g. a global AQI station outside our
+// 20 supported cities) can deep-link here with a preset question via
+// ?ask=...#ask -- pre-fill it but don't auto-send, so nothing calls the
+// LLM without the user actually choosing to.
+(function(){
+  const preset=new URLSearchParams(location.search).get('ask');
+  if(preset && $('q'))$('q').value=preset;
+})();
 </script>
 </body>
 </html>
