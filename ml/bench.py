@@ -64,8 +64,16 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
             "mae": {k: round(v, 2) for k, v in scores.items()},
         })
         forecast_rows += _final_forecast_rows(grp, city, parameter)
-    if bq:
-        forecast_rows += bq["forecasts"]
+    # bq["series"]' MAE is reused above for scoring/winner-selection -- a
+    # historical backtest error doesn't go stale. bq["forecasts"] is NOT
+    # reused, deliberately: those rows are dated relative to whenever
+    # ml/bq_arima.py last ran real BigQuery training, and unlike the local
+    # methods (recomputed fresh, from the current series, every time this
+    # runs) there's no cheap way to "refresh" an ARIMA_PLUS prediction
+    # without retraining. Re-dating old rows to look current would present a
+    # stale value as if it were a live forecast. When arima_plus wins a
+    # series' backtest but has no current forecast row, get_forecast()
+    # already falls back to the damped-trend method -- see agents/tools.py.
     bench = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "fold_scheme": {

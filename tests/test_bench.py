@@ -32,7 +32,14 @@ def test_run_bench_scores_series_and_writes_winner():
     assert (forecasts["value"] <= forecasts["high"]).all()
 
 
-def test_bq_results_are_merged():
+def test_bq_mae_is_merged_but_stale_forecast_rows_are_not():
+    # bq["series"]' MAE is a historical backtest score -- still valid to
+    # reuse regardless of when it was computed, so arima_plus can still win
+    # the comparison. bq["forecasts"] rows are dated relative to whenever
+    # ml/bq_arima.py last actually ran BigQuery training, though, and there's
+    # no cheap way to "refresh" them the way local methods get recomputed
+    # fresh on every run -- so they must NOT be merged into the served
+    # output, or a stale prediction would be presented as a live one.
     bq = {
         "series": [{"city": "Testville", "parameter": "pm25", "mae": 0.01}],
         "forecasts": [
@@ -44,4 +51,4 @@ def test_bq_results_are_merged():
     tv = next(s for s in bench["series"] if s["city"] == "Testville")
     assert tv["mae"]["arima_plus"] == 0.01
     assert tv["winner"] == "arima_plus"                  # 0.01 beats everything
-    assert (forecasts["method"] == "arima_plus").sum() == 1
+    assert (forecasts["method"] == "arima_plus").sum() == 0
