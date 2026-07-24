@@ -325,8 +325,8 @@
   <div class="sectionHead"><div class="kicker">Live</div><h2>Wind &amp; air quality map</h2>
     <p class="scoreTxt">Real wind vectors from Open-Meteo, animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>, anywhere in the world -- pan or zoom to load wind and live air-quality stations for that region. The colored markers and heatmap are real, live OpenAQ station readings for whatever area is in view, not a fixed city list. Country outlines via Natural Earth; India's state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
   <div id="windMapContainer" style="height:520px;border-radius:16px;overflow:hidden;border:1px solid var(--line)"></div>
-  <p class="scoreTxt" id="windMapNote" style="margin-top:10px"></p>
-  <p class="scoreTxt" id="windMapAqiNote"></p>
+  <p class="scoreTxt" id="windMapNote" style="margin-top:10px;max-width:none"></p>
+  <p class="scoreTxt" id="windMapAqiNote" style="max-width:none"></p>
 </section>
 
 <p class="foot">Want the full instrument panel — pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
@@ -474,7 +474,7 @@ async function loadOverview(){
         <div class="cityGo">→</div>
       </div>`;
     }).join('');
-    renderWindMap();
+    renderWindMap(a.ranking);
   }
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
   if(imp.cigarettes_per_day_equivalent!==undefined){
@@ -536,10 +536,14 @@ function timeAgo(iso){
 }
 
 async function refreshWindLayer(){
+  // A leftover layer from a *previous* view is worse than no layer at all --
+  // Leaflet still pans/repositions its canvas with the map, so a stale field
+  // ends up displayed as if it were current for a region it was never
+  // sampled for. Clear it up front; only a genuinely fresh fetch adds one back.
+  if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); WIND_LAYER=null; }
   try{
     const grid=await (await fetch(`/api/wind-grid?bbox=${mapBboxStr()}`)).json();
     if(grid.error){ $('windMapNote').textContent='Wind data temporarily unavailable for this view.'; return; }
-    if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); }
     WIND_LAYER=L.velocityLayer({
       displayValues:true,
       displayOptions:{velocityType:'Wind', position:'bottomleft', emptyString:'No wind data'},
@@ -591,7 +595,25 @@ async function refreshAqiLayer(){
   }
 }
 
-async function renderWindMap(){
+async function renderSupportedCityMarkers(ranking){
+  // Always-visible, never cleared by the dynamic live layers -- VayuSense's
+  // own supported cities should stay one click away regardless of whatever
+  // real OpenAQ stations do or don't happen to be in view.
+  if(!ranking || !ranking.length)return;
+  try{
+    const coords=await (await fetch('/api/city-coords')).json();
+    ranking.forEach(r=>{
+      const c=coords[r.city];
+      if(!c)return;
+      const color=RAMP[r.category?.toLowerCase?.()]||'#7fb0ff';
+      L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
+        .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
+        .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
+    });
+  }catch(e){}
+}
+
+async function renderWindMap(ranking){
   const container=$('windMapContainer');
   if(!container || typeof L==='undefined'){ return; }
   if(WIND_MAP){ refreshWindLayer(); refreshAqiLayer(); return; }
@@ -659,6 +681,7 @@ async function renderWindMap(){
     MAP_MOVE_TIMER=setTimeout(()=>{ refreshWindLayer(); refreshAqiLayer(); }, 500);
   });
 
+  renderSupportedCityMarkers(ranking);
   refreshWindLayer();
   refreshAqiLayer();
 }
