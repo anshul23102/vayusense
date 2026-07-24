@@ -66,6 +66,7 @@
 
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
   .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
+  @media(max-width:680px){.section{scroll-margin-top:130px}}
   .s6{grid-column:span 6}.s12{grid-column:span 12}
   @media(max-width:940px){.s6{grid-column:span 12}}
   .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px}
@@ -132,6 +133,7 @@
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
+  .cityRow:focus-visible{outline:2px solid var(--blueSolid);outline-offset:-2px;border-radius:8px}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
   .cityIconBadge svg{width:32px;height:32px}

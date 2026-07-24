@@ -73,6 +73,7 @@
 
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
   .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
+  @media(max-width:680px){.section{scroll-margin-top:170px}}
   .objCard{position:relative;padding:16px;border-radius:14px;background:rgba(255,255,255,.035);
     border:1px solid var(--line);transition:background .2s,transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
     transform-style:preserve-3d;will-change:transform}
@@ -181,6 +182,7 @@
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
+  .cityRow:focus-visible{outline:2px solid var(--blueSolid);outline-offset:-2px;border-radius:8px}
   .cityRow.current{border-left:2px solid var(--blueSolid);padding-left:12px;margin-left:-14px}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
@@ -520,7 +522,7 @@
         <button type="button" onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</button>
       </div>
       <div class="askrow">
-        <input id="q" placeholder="Ask about air quality, health risk, timing, hotspots…" onkeydown="if(event.key==='Enter')ask()">
+        <input id="q" placeholder="Ask about air quality, health risk, timing…" onkeydown="if(event.key==='Enter')ask()">
         <button id="askBtn" onclick="ask()">Ask →</button>
       </div>
     </div>
@@ -749,7 +751,7 @@ async function loadCities(){
 let RANKING_DATA=[], CITIES_EXPANDED=false;
 function cityRowHtml(r,i){
   const b=bandOf(r.aqi);
-  return `<div class="cityRow cardIn ${r.city===CITY?'current':''}" style="animation-delay:${Math.min(i,8)*30}ms" onclick="selectCity('${r.city}')">
+  return `<div class="cityRow cardIn ${r.city===CITY?'current':''}" style="animation-delay:${Math.min(i,8)*30}ms" onclick="selectCity('${r.city}')" role="button" tabindex="0" aria-label="View ${r.city}, AQI ${r.aqi}, ${r.category}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCity('${r.city}')}">
     <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
     <div class="cityName">${r.city}</div>
     <div class="cityAqi num">${r.aqi}</div>
