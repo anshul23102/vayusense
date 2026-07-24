@@ -41,6 +41,12 @@
   .logo span{color:var(--blueSolid)}
   html{scroll-behavior:smooth}
   nav .right{margin-left:auto;display:flex;gap:10px;align-items:center}
+  @media(max-width:680px){
+    nav{flex-wrap:wrap;row-gap:10px;justify-content:center}
+    nav .right{width:100%;margin-left:0}
+    .navSearchWrap{flex:1 1 100%}
+    .navSearchInput{width:100%;box-sizing:border-box}
+  }
   .navSearchWrap{position:relative}
   .navSearchInput{width:220px;background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);
     border-radius:12px;padding:8px 13px;font-size:13.5px;font-family:inherit;outline:none;backdrop-filter:blur(8px)}
@@ -62,10 +68,14 @@
   .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
   .s6{grid-column:span 6}.s12{grid-column:span 12}
   @media(max-width:940px){.s6{grid-column:span 12}}
-  .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px}
   .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:10.5px;color:var(--dim);letter-spacing:.3px;font-weight:600}
 
   .scoreWrap{display:flex;align-items:center;gap:24px}
+  @media(max-width:480px){
+    .scoreWrap{flex-wrap:wrap}
+    .moodChar{display:none}
+  }
   .ring{position:relative;width:150px;height:150px;flex:none;transition:filter .3s}
   .ring:hover{filter:drop-shadow(0 0 22px var(--ringGlow,rgba(127,176,255,.35)))}
   .ring svg{transform:rotate(-90deg)}
@@ -100,7 +110,8 @@
   .aqiPointer{position:absolute;top:-6px;left:0;width:0;height:0;transform:translateX(-5px);
     border-left:5px solid transparent;border-right:5px solid transparent;
     border-top:7px solid var(--txt);transition:left .8s cubic-bezier(.2,.8,.2,1)}
-  .aqiLabels{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  .aqiLabels{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;color:var(--dim);font-size:10px;margin-top:6px;letter-spacing:.3px}
+  @media(max-width:480px){.aqiLabels{font-size:9.5px}.aqiLabels span{flex:1 1 auto}}
   .weatherStrip{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
   .weatherStrip .wItem{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}
   .weatherStrip .wItem svg{width:16px;height:16px;flex:none;color:var(--blueSolid)}
@@ -491,13 +502,15 @@ async function renderWindMap(ranking){
 
     // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
     // same interaction pattern as the aqi.in/IQAir reference maps.
-    const hint=L.control({position:'topright'});
-    hint.onAdd=function(){
-      const div=L.DomUtil.create('div','windMapHint');
-      div.innerHTML=(navigator.platform.toUpperCase().indexOf('MAC')>=0?'⌘':'Ctrl')+' + scroll to zoom';
-      return div;
-    };
-    hint.addTo(WIND_MAP);
+    if(!matchMedia('(pointer:coarse)').matches){
+      const hint=L.control({position:'topright'});
+      hint.onAdd=function(){
+        const div=L.DomUtil.create('div','windMapHint');
+        div.innerHTML=(navigator.platform.toUpperCase().indexOf('MAC')>=0?'⌘':'Ctrl')+' + scroll to zoom';
+        return div;
+      };
+      hint.addTo(WIND_MAP);
+    }
     container.addEventListener('wheel', function(e){
       if(e.ctrlKey || e.metaKey){
         e.preventDefault();

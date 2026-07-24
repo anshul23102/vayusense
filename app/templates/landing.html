@@ -37,10 +37,20 @@
   .logo{font-weight:700;font-size:27px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
   .logo .dot{width:38px;height:38px;flex:none;object-fit:contain}
   .logo span{color:var(--blue)}
+  .navLinks{display:flex;gap:26px}
   nav a{color:var(--dim);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
   nav a:hover{color:var(--txt)}
   nav .cta{margin-left:auto;color:#071023;background:linear-gradient(135deg,#e3ecff,#7fb0ff);
     padding:9px 18px;border-radius:12px;font-weight:600;box-shadow:0 6px 24px rgba(157,193,255,.35)}
+  .ctaShort{display:none}
+  @media(max-width:720px){
+    .navLinks{display:none}
+    nav .cta{font-size:13px;padding:8px 14px;white-space:nowrap}
+  }
+  @media(max-width:420px){
+    .ctaFull{display:none}
+    .ctaShort{display:inline}
+  }
 
   .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
     text-align:center;padding:120px 6vw 60px}
@@ -166,8 +176,10 @@
 <div class="shell">
 <nav>
   <div class="logo"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></div>
-  <a href="#why">Why</a><a href="#how">How it works</a><a href="#bench">GPU benchmark</a>
-  <a class="cta" href="/dashboard">Open Live Dashboard →</a>
+  <div class="navLinks">
+    <a href="#why">Why</a><a href="#how">How it works</a><a href="#bench">GPU benchmark</a>
+  </div>
+  <a class="cta" href="/dashboard"><span class="ctaFull">Open Live Dashboard →</span><span class="ctaShort">Dashboard →</span></a>
 </nav>
 
 <div class="hero">
