@@ -28,6 +28,11 @@ RAMP = {
 BANDS = [(0, 50, "good"), (51, 100, "moderate"), (101, 150, "poor"),
          (151, 200, "unhealthy"), (201, 300, "severe"), (301, 500, "hazardous")]
 
+# Oxblood is correct for fills/outlines (WCAG non-text 3:1 threshold: 3.45:1
+# against the night bg) but fails AA as small text (needs 4.5:1) -- this
+# lightened variant is used only where the color is drawn as readable text.
+TEXT_SAFE = {**RAMP, "hazardous": (0xd2, 0x5c, 0x76)}
+
 
 def _font(weight: str, size: int) -> ImageFont.FreeTypeFont:
     name = {"regular": "Onest-Regular.ttf", "semibold": "Onest-SemiBold.ttf",
@@ -87,10 +92,11 @@ def render_card(*, city: str, aqi: int, category_key: str, category_label: str,
     pill_w, pill_h = int(tw) + 76, 56
     pill_layer = Image.new("RGBA", (pill_w, pill_h), (0, 0, 0, 0))
     pd = ImageDraw.Draw(pill_layer)
+    text_color = TEXT_SAFE.get(category_key, color)
     pd.rounded_rectangle([0, 0, pill_w - 1, pill_h - 1], radius=28,
                           fill=(*color, 40), outline=(*color, 255), width=2)
     pd.ellipse([24, 25, 34, 35], fill=(*color, 255))
-    pd.text((46, 14), category_label, font=lf, fill=(*color, 255))
+    pd.text((46, 14), category_label, font=lf, fill=(*text_color, 255))
     img.alpha_composite(pill_layer, (64, pill_y))
 
     # AQI ramp mini-bar with a pointer at the current value.

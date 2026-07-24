@@ -278,6 +278,9 @@
 <script>
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
+// See DESIGN.md audit note: Oxblood is correct for fills/strokes (3:1 threshold)
+// but fails WCAG AA as small text (3.45:1) -- lightened only at text call sites.
+function textSafeColor(key,color){ return key==='hazardous' ? '#d25c76' : (color||RAMP[key]); }
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
@@ -384,7 +387,7 @@ function renderCityGrid(){
       <div class="ic"><svg><use href="#${cityIcon(r.city)}"/></svg></div>
       <h3 class="num" style="font-size:20px">${r.city}</h3>
       <p><span class="num" style="font-size:18px;color:var(--txt)">${r.aqi}</span> AQI ·
-        <span style="color:${b.color}">${r.category}</span></p>
+        <span style="color:${textSafeColor(b.key,b.color)}">${r.category}</span></p>
     </div>`;
   }).join('');
   document.querySelectorAll('#cityGrid .reveal').forEach(el=>io.observe(el));

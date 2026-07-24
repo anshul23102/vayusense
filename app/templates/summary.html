@@ -332,6 +332,9 @@
 const $ = id => document.getElementById(id);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
+// See index.html for why: Oxblood is correct for fills/strokes (3:1 threshold)
+// but fails WCAG AA as small text (3.45:1) -- lightened only at text call sites.
+function textSafeColor(key,color){ return key==='hazardous' ? '#d25c76' : (color||RAMP[key]); }
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
   Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
   Lucknow:'ic-lucknow',Patna:'ic-patna',Jaipur:'ic-jaipur',Surat:'ic-surat',Kanpur:'ic-kanpur',Nagpur:'ic-nagpur',Indore:'ic-indore',Bhopal:'ic-bhopal',Visakhapatnam:'ic-visakhapatnam',Vadodara:'ic-vadodara',Coimbatore:'ic-coimbatore',Nashik:'ic-nashik',};
@@ -430,7 +433,7 @@ async function loadOverview(){
     $('scoreRing').style.setProperty('--ringGlow', a.category.color+'59');
     const v=$('verdict');
     v.innerHTML='<span class="vdot"></span>'+a.category.label;
-    v.style.color=a.category.color;v.style.borderColor=a.category.color;
+    v.style.color=textSafeColor(a.category.key,a.category.color);v.style.borderColor=a.category.color;
     $('scoreTxt').innerHTML=`Driven by ${a.dominant.toUpperCase()} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
     $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
     $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
@@ -439,12 +442,13 @@ async function loadOverview(){
     CURRENT_CATEGORY_KEY=a.category.key; renderMoodChar(a.category.color); renderWeather();
     $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
     $('citiesTable').innerHTML=a.ranking.map((r,i)=>{
-      const color=RAMP[r.category?.toLowerCase?.()]||a.category.color;
+      const catKey=r.category?.toLowerCase?.();
+      const color=RAMP[catKey]||a.category.color;
       return `<div class="cityRow cardIn" style="animation-delay:${i*30}ms" onclick="goToCity('${r.city}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')goToCity('${r.city}')">
         <div class="cityIconBadge" style="background:${color}22"><svg style="color:${color}"><use href="#${cityIcon(r.city)}"/></svg></div>
         <div class="cityName">${r.city}</div>
         <div class="cityAqi num">${r.aqi}</div>
-        <div class="cityCat" style="color:${color}">● ${r.category}</div>
+        <div class="cityCat" style="color:${textSafeColor(catKey,color)}">● ${r.category}</div>
         <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
         <div class="cityGo">→</div>
       </div>`;

@@ -539,6 +539,12 @@
 <script>
 const $ = id => document.getElementById(id);
 const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
+// Oxblood (Hazardous) is correct for graphical fills/strokes (ring arc, calendar
+// cells, chart bars: 3:1 non-text threshold) but only 3.45:1 against the night
+// background -- fails WCAG AA (4.5:1) when used as small text (verdict labels,
+// category text). This lightened variant is used ONLY at those text call sites;
+// the AQI Ramp's actual brand color is untouched everywhere else.
+function textSafeColor(key,color){ return key==='hazardous' ? '#d25c76' : (color||RAMP[key]); }
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
@@ -755,7 +761,7 @@ function cityRowHtml(r,i){
     <div class="cityIconBadge" style="background:${b.color}22"><svg style="color:${b.color}"><use href="#${cityIcon(r.city)}"/></svg></div>
     <div class="cityName">${r.city}</div>
     <div class="cityAqi num">${r.aqi}</div>
-    <div class="cityCat" style="color:${b.color}">● ${r.category}</div>
+    <div class="cityCat" style="color:${textSafeColor(b.key,b.color)}">● ${r.category}</div>
     <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
     <div class="cityGo">→</div>
   </div>`;
@@ -864,7 +870,7 @@ async function refresh(){
         $('scoreRing').style.setProperty('--ringGlow', a.category.color+'59');
         const v=$('verdict');
         v.innerHTML='<span class="vdot"></span>'+a.category.label;
-        v.style.color=a.category.color;v.style.borderColor=a.category.color;
+        v.style.color=textSafeColor(a.category.key,a.category.color);v.style.borderColor=a.category.color;
         $('scoreTxt').innerHTML=`Driven by ${a.dominant.toUpperCase()} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
         $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
         $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
@@ -884,7 +890,7 @@ async function refresh(){
             <div style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;background:${b.color}1f;color:${b.color}"><svg style="width:20px;height:20px"><use href="#${POLL_ICON[p]||'ic-pm25'}"/></svg></div>
             <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">${POLL_NAMES[p]||p}</div>
             <div class="num" style="font-size:26px;font-weight:600;margin:4px 0">${conc}<span style="font-size:13px;color:var(--dim);font-family:'Onest'"> ${unit}</span></div>
-            <div style="font-size:12px"><span style="color:${b.color}">● ${b.label}</span> · AQI ${sub}${sv.times_who_limit?` · ${sv.times_who_limit}× WHO (daily)`:''}</div>
+            <div style="font-size:12px"><span style="color:${textSafeColor(b.key,b.color)}">● ${b.label}</span> · AQI ${sub}${sv.times_who_limit?` · ${sv.times_who_limit}× WHO (daily)`:''}</div>
           </button></div>`}).join('');
       }
     }catch(e){}
@@ -991,7 +997,7 @@ async function renderHotspots(){
         <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">Hotspot #${i+1}</div>
         <div style="font-size:15px;margin:4px 0 6px">${st.station}</div>
         <div class="num" style="font-size:22px;font-weight:600">${st.avg_pm25}<span style="font-size:12px;color:var(--dim);font-family:'Onest'"> µg/m³ PM2.5 (avg)</span></div>
-        <div style="font-size:12px;margin-top:4px"><span style="color:${b.color}">● ${b.label}</span></div>
+        <div style="font-size:12px;margin-top:4px"><span style="color:${textSafeColor(b.key,b.color)}">● ${b.label}</span></div>
       </div></div>`;
     }).join('');
   }catch(e){}
