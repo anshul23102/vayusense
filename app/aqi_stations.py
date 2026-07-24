@@ -64,11 +64,19 @@ def _now() -> float:
     return time.time()
 
 
+# One shared client for the process, not one per request. A single bbox
+# query can fire off ~20 "latest" calls across a thread pool; each opening
+# and tearing down its own httpx.Client (and TLS handshake) was the actual
+# cause of the multi-second lag users saw -- httpx.Client's sync
+# implementation is documented safe for concurrent use across threads, and
+# reusing it lets those requests share pooled, kept-alive connections.
+_client = httpx.Client(timeout=8)
+
+
 def _get_json(url: str, params: dict | None = None) -> dict:
-    with httpx.Client(timeout=8, headers={"X-API-Key": _api_key()}) as cli:
-        r = cli.get(url, params=params)
-        r.raise_for_status()
-        return r.json()
+    r = _client.get(url, params=params, headers={"X-API-Key": _api_key()})
+    r.raise_for_status()
+    return r.json()
 
 
 def _fetch_locations(bbox: tuple[float, float, float, float]) -> list[dict]:

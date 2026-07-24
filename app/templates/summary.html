@@ -568,25 +568,27 @@ async function refreshAqiLayer(){
     AQI_MARKERS.forEach(m=>WIND_MAP.removeLayer(m)); AQI_MARKERS=[];
     if(AQI_HEAT){ WIND_MAP.removeLayer(AQI_HEAT); AQI_HEAT=null; }
     if(r.error || !r.stations){ $('windMapAqiNote').textContent='Live station data temporarily unavailable for this view.'; return; }
-    const heatPoints=[];
+    const heatPoints=r.stations.map(s=>[s.lat, s.lon, Math.min(s.aqi/300, 1)]);
+    // Heat layer MUST be added before the markers: both render into Leaflet's
+    // shared overlayPane, stacked by DOM insertion order, and leaflet.heat's
+    // canvas doesn't set pointer-events:none -- added after the markers, its
+    // (mostly transparent but fully hit-testable) canvas silently swallows
+    // every click across the whole map, not just where the heat is visible.
+    if(typeof L.heatLayer==='function' && heatPoints.length){
+      AQI_HEAT=L.heatLayer(heatPoints, {
+        radius:45, blur:35, maxZoom:9, max:1, pane:'aqiHeatPane',
+        gradient:{0.0:'#3dfc9e', 0.17:'#ffc247', 0.33:'#ff9640', 0.5:'#ff5c85', 0.67:'#ef4fc0', 1.0:'#c93a5a'},
+      }).addTo(WIND_MAP);
+    }
     r.stations.forEach(s=>{
-      // Hazardous (301+) reads as full intensity; scales down from there,
-      // same severity ceiling as the rest of the app's AQI Ramp.
-      heatPoints.push([s.lat, s.lon, Math.min(s.aqi/300, 1)]);
       const linkHtml = s.is_supported_city
         ? `<a href="/city/${s.supported_city_slug}" style="color:#7fb0ff">Open full city page →</a>`
         : `<a href="/city/delhi?ask=${encodeURIComponent('What should I know about the air quality in '+s.city+' right now?')}#ask" style="color:#7fb0ff">Ask VayuSense →</a>`;
-      const marker=L.circleMarker([s.lat,s.lon], {radius:8, color:'#0b1020', fillColor:s.color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
+      const marker=L.circleMarker([s.lat,s.lon], {radius:8, color:'#0b1020', fillColor:s.color, fillOpacity:.95, weight:2, pane:'aqiMarkerPane'}).addTo(WIND_MAP)
         .bindTooltip(`${s.city}${s.country?', '+s.country:''}`, {direction:'top', className:'windMapTip', offset:[0,-6]})
         .bindPopup(`<b>${s.name}</b><br>${s.city}${s.country?', '+s.country:''}<br>AQI ${s.aqi} (US EPA) · ${s.category}<br>PM2.5 ${s.value} µg/m³ · as of ${timeAgo(s.updated_at)}<br>${linkHtml}`, {className:'windMapPopup'});
       AQI_MARKERS.push(marker);
     });
-    if(typeof L.heatLayer==='function' && heatPoints.length){
-      AQI_HEAT=L.heatLayer(heatPoints, {
-        radius:45, blur:35, maxZoom:9, max:1,
-        gradient:{0.0:'#3dfc9e', 0.17:'#ffc247', 0.33:'#ff9640', 0.5:'#ff5c85', 0.67:'#ef4fc0', 1.0:'#c93a5a'},
-      }).addTo(WIND_MAP);
-    }
     $('windMapAqiNote').textContent = r.stations.length
       ? `${r.stations.length} live station${r.stations.length===1?'':'s'} in view · OpenAQ`
       : 'No live OpenAQ stations found in this view -- try zooming out or panning.';
@@ -606,7 +608,7 @@ async function renderSupportedCityMarkers(ranking){
       const c=coords[r.city];
       if(!c)return;
       const color=RAMP[r.category?.toLowerCase?.()]||'#7fb0ff';
-      L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
+      L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2, pane:'aqiMarkerPane'}).addTo(WIND_MAP)
         .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
         .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
     });
@@ -621,6 +623,13 @@ async function renderWindMap(ranking){
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
   }).addTo(WIND_MAP);
+
+  // Explicit panes so markers are *always* clickable above the heat layer,
+  // regardless of add/remove order -- the persistent city dots are added
+  // once here at init, long before the first heat layer ever exists, so
+  // relying on DOM insertion order alone would still bury them under it.
+  WIND_MAP.createPane('aqiHeatPane').style.zIndex = 410;   // just above overlayPane (400)
+  WIND_MAP.createPane('aqiMarkerPane').style.zIndex = 620; // above markerPane (600)
 
   // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
   // same interaction pattern as the aqi.in/IQAir reference maps.
