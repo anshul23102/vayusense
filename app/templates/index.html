@@ -88,6 +88,19 @@
   @media(max-width:940px){.s4,.s6,.s8{grid-column:span 12}}
   .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px}
   .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:10.5px;color:var(--dim);letter-spacing:.3px;font-weight:600}
+  /* .tag is reused for purely decorative badges (ADK multi-agent, rank
+     chips) elsewhere, so the hover treatment is scoped to the one .tag
+     that's actually a button -- Share had zero hover feedback despite
+     being clickable. */
+  #shareBtn{transition:color .15s,background .15s,border-color .15s,transform .15s cubic-bezier(.2,.8,.2,1)}
+  #shareBtn:hover{color:var(--txt);background:rgba(255,255,255,.04);border-color:rgba(157,193,255,.4);transform:translateY(-1px)}
+
+  /* Press feedback: hover alone never fires on touch, so every clickable
+     control here also gets a distinct :active state -- the only tactile
+     signal a tap gets on mobile before the action actually resolves. */
+  #shareBtn:active,#newChatBtn:active,.yearChip:active,.healthTab:active,
+  .cityRow:active,.askrow button:active,.sugg button:active,.navSearchItem:active{
+    transform:scale(.96);transition-duration:.08s}
 
   /* HERO: score + impact */
   .heroRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -181,6 +194,16 @@
   .weatherStrip .wItem{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12.5px}
   .weatherStrip .wItem svg{width:16px;height:16px;flex:none;color:var(--blueSolid)}
   .weatherStrip .wItem b{color:var(--txt);font-weight:600}
+  /* One rule-based sentence combining category + trend + human-impact into
+     the single takeaway PRODUCT.md already promises ("a straight answer,
+     not a spreadsheet") -- currently those three facts sit in three
+     separate places (badge, KPI trend arrows, impact card) with nothing
+     tying them into one read. */
+  .synthesisBox{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;
+    border-radius:12px;background:rgba(157,193,255,.06);border:1px solid rgba(157,193,255,.18)}
+  .synthesisBox .ic-i{color:var(--blueSolid);flex:none;margin-top:2px}
+  .synthesisBox p{font-size:13.5px;line-height:1.6;color:var(--txt);margin:0}
+  .synthesisBox p b{color:inherit;font-weight:700}
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
@@ -409,6 +432,10 @@
         <div class="aqiLabels"><span>Good</span><span>Moderate 51</span><span>Poor 101</span><span>Unhealthy 151</span><span>Severe 201</span><span>Hazardous 301+</span></div>
       </div>
       <div id="weatherStrip" class="weatherStrip" aria-hidden="true"></div>
+      <div id="synthesisBox" class="synthesisBox" style="display:none">
+        <svg class="ic-i" aria-hidden="true"><use href="#ic-chip"/></svg>
+        <p id="synthesisText"></p>
+      </div>
   </div>
 
   <div class="s6">
@@ -832,6 +859,7 @@ let refreshToken=0;
 async function refresh(){
   const myToken=++refreshToken;
   const p=$('paramSel').value;
+  let AQI_SNAPSHOT=null;
   $('kpis').querySelectorAll('.kpi').forEach(k=>k.classList.add('skel'));
   $('scoreLive').classList.add('loading');
   const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
@@ -882,11 +910,18 @@ async function refresh(){
       if(fb.series){
         bc.style.display='';
         const ranked=Object.entries(fb.series.mae).sort((a,b)=>a[1]-b[1]);
+        const maxMae=Math.max(...ranked.map(([,v])=>v));
+        // A bare MAE number doesn't communicate "by how much" -- a mini bar
+        // makes the winning margin visually obvious in the same glance,
+        // without turning this into a separate chart or changing the layout.
         $('benchGrid').innerHTML=ranked.map(([m,v],i)=>
           `<div class="objCard cardIn" style="flex:1;min-width:150px;animation-delay:${i*40}ms;${i===0?'border-color:rgba(157,193,255,.55)':''}">
             <div class="l" style="color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px">${fb.methods[m]}</div>
             <div class="v num" style="font-size:22px;font-weight:650;margin:3px 0">${v}</div>
-            <div class="who ${i===0?'ok':''}" style="font-size:11px;font-weight:600">${i===0?'serving · ':''}MAE µg/m³</div></div>`).join('');
+            <div class="who ${i===0?'ok':''}" style="font-size:11px;font-weight:600">${i===0?'serving · ':''}MAE µg/m³</div>
+            <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden">
+              <div style="height:100%;border-radius:99px;width:${Math.max(4,v/maxMae*100)}%;background:${i===0?'var(--blueSolid)':'rgba(169,180,208,.4)'};transition:width .6s cubic-bezier(.2,.8,.2,1)"></div>
+            </div></div>`).join('');
         $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves whichever method wins for this city and pollutant.`;
       }else bc.style.display='none';
     }catch(e){$('bench').style.display='none'}
@@ -905,6 +940,7 @@ async function refresh(){
     try{
       const a=await (await fetch(`/api/aqi?city=${CITY}`)).json();
       if(myToken!==refreshToken)return;
+      AQI_SNAPSHOT=a;
       if(a.aqi!==undefined){
         countUp($('aqiVal'), a.aqi, {decimals:0});
         $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
@@ -947,6 +983,32 @@ async function refresh(){
     }
     countUp($('impCigNum'), imp.cigarettes_per_day_equivalent, {decimals:1});
     countUp($('impYearsNum'), imp.estimated_life_expectancy_years_lost, {decimals:2});
+  }
+  // Category, trend, and human-impact each already exist elsewhere on the
+  // page (badge, KPI arrows, impact card) but nothing combines them into
+  // the single takeaway the app's own pitch promises. Rule-based, not an
+  // LLM call: instant, free, and never inconsistent with the numbers next
+  // to it, matching the same "instant, zero added latency" discipline as
+  // the health guidance panel.
+  if(AQI_SNAPSHOT && AQI_SNAPSHOT.dominant && s.pollutants && s.pollutants[AQI_SNAPSHOT.dominant]
+     && imp.cigarettes_per_day_equivalent!==undefined){
+    const trend=s.pollutants[AQI_SNAPSHOT.dominant].trend;
+    const cat=AQI_SNAPSHOT.category;
+    let sentence;
+    if(cat.key==='good'){
+      // "Good ... and getting worse" reads as a contradiction right before
+      // reassuring someone it's safe -- soften the trend into a caveat
+      // clause instead of conjoining it with the safety statement.
+      const goodTrend=trend==='rising'?', though it is trending upward':trend==='falling'?' and improving further':' and holding steady';
+      sentence=`${CITY}'s air is <b>Good</b> right now${goodTrend} — still safe for everyone to be outside today.`;
+    }else{
+      const trendPhrase=trend==='rising'?'and getting worse':trend==='falling'?'and improving':'and holding steady';
+      sentence=`${CITY}'s air is <b>${cat.label}</b> ${trendPhrase} — today's exposure carries about the same health burden as smoking <b>${imp.cigarettes_per_day_equivalent.toFixed(1)}</b> cigarettes today.`;
+    }
+    $('synthesisText').innerHTML=sentence;
+    $('synthesisBox').style.display='';
+  }else{
+    $('synthesisBox').style.display='none';
   }
   renderHotspots();
   renderWeather();
