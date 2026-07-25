@@ -30,24 +30,46 @@
       radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(185,168,251,.22), transparent 60%)}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
-  .shell{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:104px 4vw 70px}
+  .shell{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:150px 4vw 70px}
 
+  /* Two rows: navTop (logo + search/selectors) always fits on one line;
+     navLinks (all 12 section jumps) is its own horizontally-scrollable
+     strip below it. Previously all of this was one flex row with 12
+     links plus a ~170px search box and two <select>s -- it simply had
+     nowhere to put that much content past a certain width, and either
+     overflowed the rounded container or wrapped ugly. This keeps every
+     link directly clickable (no hidden "More" dropdown) at any width,
+     with a soft edge-fade signaling there's more to scroll instead of a
+     hard, visible scrollbar. */
   nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;width:min(1320px,94vw);
-    display:flex;align-items:center;gap:20px;padding:12px 18px;border-radius:18px;
+    display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-radius:18px;
     background:rgba(15,21,40,.62);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-  .logo{font-weight:700;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none}
+  .navTop{display:flex;align-items:center;gap:20px;width:100%}
+  .logo{font-weight:700;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;color:var(--txt);text-decoration:none;flex:none}
   .logo .dot{width:40px;height:40px;flex:none;object-fit:contain}
   .logo span{color:var(--blueSolid)}
-  .subnav{display:flex;gap:14px;margin-left:18px}
-  .subnav a{color:var(--dim);font-size:12.5px;text-decoration:none;font-family:'Onest'}
-  .subnav a:hover{color:var(--txt)}
-  @media(max-width:940px){.subnav{display:none}}
+  /* Fade mask is dynamic (see updateNavFade()), not a fixed gradient -- a
+     permanent fade on both edges regardless of scroll position clipped the
+     start of "Overview" even when there was nothing to its left to scroll
+     to, caught live while checking this at desktop width. Only fades the
+     edge(s) that actually have more content to reveal. */
+  .navLinks{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+    white-space:nowrap;padding-top:10px;border-top:1px solid var(--line);
+    -webkit-mask-image:var(--navFade,none);mask-image:var(--navFade,none)}
+  .navLinks::-webkit-scrollbar{display:none}
+  .navLinks a{color:var(--dim);font-size:12.5px;text-decoration:none;font-family:'Onest';flex:none;transition:color .15s}
+  .navLinks a:hover{color:var(--txt)}
   @media(max-width:680px){
-    nav{flex-wrap:wrap;row-gap:10px;justify-content:center}
+    .navTop{flex-wrap:wrap;row-gap:10px;justify-content:center}
     nav .right{width:100%;margin-left:0;flex-wrap:wrap}
     .navSearchWrap{flex:1 1 100%}
     .navSearchInput{width:100%;box-sizing:border-box}
     #citySel,#paramSel{flex:1;min-width:0}
+    /* .navTop wraps onto two lines here (search+selects below the logo),
+       making the whole floating nav noticeably taller -- confirmed live,
+       the desktop .shell padding-top left the nav overlapping content
+       below it at this width. */
+    .shell{padding-top:242px}
   }
   html{scroll-behavior:smooth}
   nav .right{margin-left:auto;display:flex;gap:10px;align-items:center}
@@ -72,8 +94,8 @@
   .sectionHead p{color:var(--dim);font-size:14px;margin-top:4px;max-width:520px}
 
   .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-  .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:90px}
-  @media(max-width:680px){.section{scroll-margin-top:170px}}
+  .section{border-top:1px solid var(--line);padding:36px 0 6px;margin-top:10px;scroll-margin-top:135px}
+  @media(max-width:680px){.section{scroll-margin-top:225px}}
   .objCard{position:relative;padding:16px;border-radius:14px;background:rgba(255,255,255,.035);
     border:1px solid var(--line);transition:background .2s,transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
     transform-style:preserve-3d;will-change:transform;appearance:none}
@@ -375,27 +397,29 @@
 
 <div class="shell">
 <nav>
-  <a class="logo" href="/"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></a>
-  <div class="subnav">
-    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#advisory">Advisory</a><a href="#visioncheck">Vision</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
-  </div>
-  <div class="right">
-    <div class="navSearchWrap">
-      <label class="srOnly" for="navSearch">Search cities</label>
-      <input class="navSearchInput" id="navSearch" type="text" autocomplete="off"
-        placeholder="Search a city…" oninput="filterNavSearch(this.value)" onfocus="filterNavSearch(this.value)"
-        onkeydown="navSearchKeydown(event)" role="combobox" aria-expanded="false" aria-autocomplete="list"
-        aria-controls="navSearchDrop" aria-activedescendant="">
-      <div class="navSearchDrop" id="navSearchDrop" role="listbox"></div>
+  <div class="navTop">
+    <a class="logo" href="/"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></a>
+    <div class="right">
+      <div class="navSearchWrap">
+        <label class="srOnly" for="navSearch">Search cities</label>
+        <input class="navSearchInput" id="navSearch" type="text" autocomplete="off"
+          placeholder="Search a city…" oninput="filterNavSearch(this.value)" onfocus="filterNavSearch(this.value)"
+          onkeydown="navSearchKeydown(event)" role="combobox" aria-expanded="false" aria-autocomplete="list"
+          aria-controls="navSearchDrop" aria-activedescendant="">
+        <div class="navSearchDrop" id="navSearchDrop" role="listbox"></div>
+      </div>
+      <label class="srOnly" for="citySel">City</label>
+      <select id="citySel" aria-label="City"></select>
+      <label class="srOnly" for="paramSel">Pollutant</label>
+      <select id="paramSel" aria-label="Pollutant">
+        <option value="pm25">PM2.5</option><option value="pm10">PM10</option>
+        <option value="no2">NO₂</option><option value="o3">O₃</option>
+        <option value="so2">SO₂</option><option value="co">CO</option>
+      </select>
     </div>
-    <label class="srOnly" for="citySel">City</label>
-    <select id="citySel" aria-label="City"></select>
-    <label class="srOnly" for="paramSel">Pollutant</label>
-    <select id="paramSel" aria-label="Pollutant">
-      <option value="pm25">PM2.5</option><option value="pm10">PM10</option>
-      <option value="no2">NO₂</option><option value="o3">O₃</option>
-      <option value="so2">SO₂</option><option value="co">CO</option>
-    </select>
+  </div>
+  <div class="navLinks" id="navLinks">
+    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#advisory">Advisory</a><a href="#visioncheck">Vision</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
 </nav>
 
@@ -819,6 +843,23 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   addEventListener('scroll',update,{passive:true});
   addEventListener('resize',update);
   update();
+})();
+
+(function(){
+  const nl=$('navLinks');
+  if(!nl)return;
+  function updateNavFade(){
+    const canLeft=nl.scrollLeft>1;
+    const canRight=nl.scrollLeft+nl.clientWidth<nl.scrollWidth-1;
+    let mask='none';
+    if(canLeft&&canRight)mask='linear-gradient(to right,transparent,#000 18px,#000 calc(100% - 18px),transparent)';
+    else if(canLeft)mask='linear-gradient(to right,transparent,#000 18px)';
+    else if(canRight)mask='linear-gradient(to right,#000 calc(100% - 18px),transparent)';
+    nl.style.setProperty('--navFade',mask);
+  }
+  nl.addEventListener('scroll',updateNavFade,{passive:true});
+  addEventListener('resize',updateNavFade);
+  updateNavFade();
 })();
 
 /* Delegated 3D tilt for every boxed card (.objCard/.card) -- delegated at
