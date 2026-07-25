@@ -70,9 +70,16 @@ def get_city_snapshot(city: str) -> str:
         return json.dumps({"error": f"no data for city '{city}'", "available": json.loads(list_cities())})
     out = {"city": city, "pollutants": {}}
     for param, grp in d.groupby("parameter"):
-        grp = grp.sort_values("date")
-        last = grp.iloc[-1]
-        prev7 = grp["roll7"].iloc[-8] if len(grp) >= 8 else None
+        grp = grp.sort_values("date").reset_index(drop=True)
+        # Some stations fault into reporting a literal 0.0 for a pollutant
+        # for an extended stretch (seen live: Kochi's CO channel did this
+        # for months while its other pollutants had simply gone silent) --
+        # prefer the latest row that isn't this failure mode, so the agent
+        # doesn't tell a user "CO is 0 and falling" based on a dead sensor.
+        nonzero = grp[grp["mean"] > 0]
+        last = nonzero.iloc[-1] if not nonzero.empty else grp.iloc[-1]
+        last_idx = int(last.name)
+        prev7 = grp["roll7"].iloc[last_idx - 7] if last_idx >= 7 else None
         who = WHO_24H.get(param)
         out["pollutants"][param] = {
             "latest_date": str(last["date"].date()),
@@ -204,10 +211,14 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
             raise LookupError("no forecast rows for winner")
         label = bench["methods"][winner]
         mae_val = entry["mae"][winner]
+        # Same sensor-fault guard as get_city_snapshot(): don't present a
+        # dead-channel zero reading as "where things stand now".
+        d_nonzero = d[d["mean"] > 0]
+        last_row = d_nonzero.iloc[-1] if not d_nonzero.empty else d.iloc[-1]
         return json.dumps({
             "city": city, "parameter": parameter,
-            "last_date": str(d["date"].iloc[-1].date()),
-            "last_value": round(float(d["roll7"].iloc[-1]), 1),
+            "last_date": str(last_row["date"].date()),
+            "last_value": round(float(last_row["roll7"]), 1),
             "method": winner, "method_label": label,
             "backtest_mae": float(mae_val),
             "methods_compared": len(entry["mae"]),

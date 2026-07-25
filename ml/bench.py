@@ -23,6 +23,18 @@ METHOD_LABELS = {
 
 
 def _final_forecast_rows(series: pd.DataFrame, city: str, parameter: str) -> list[dict]:
+    # A station can fault into reporting a literal 0.0 for a pollutant for an
+    # extended trailing stretch (a dead channel, not real air quality --
+    # confirmed live: Kochi's CO channel did this for months while its other
+    # pollutants had simply stopped reporting, a narrower pattern than the
+    # broader same-day all-pollutants-zero fault already filtered out of
+    # data/processed/daily_city.parquet upstream). Truncate to the last
+    # genuine reading before computing the date anchor, residual band, or
+    # handing the series to any forecaster -- otherwise every one of them
+    # anchors on the fault value instead of the real trend.
+    nonzero = series[series["mean"] > 0]
+    if not nonzero.empty:
+        series = series.loc[:nonzero.index[-1]]
     last_date = pd.to_datetime(series["date"]).iloc[-1]
     recent = series.tail(21)
     last_roll = float(series["roll7"].iloc[-1])
@@ -50,6 +62,14 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
     series_out, forecast_rows = [], []
     for (city, parameter), grp in daily.groupby(["city", "parameter"]):
         grp = grp.sort_values("date").reset_index(drop=True)
+        # Truncate trailing sensor-fault zeros (see _final_forecast_rows)
+        # before backtesting too, not just before generating the final
+        # forecast -- otherwise the backtest that picks the winning method
+        # is scored against dead-channel data while the served forecast
+        # isn't, which could pick a winner for the wrong reason.
+        nonzero = grp[grp["mean"] > 0]
+        if not nonzero.empty:
+            grp = grp.loc[:nonzero.index[-1]]
         if len(grp) < MIN_HISTORY:
             continue
         scores = backtest_series(grp, LOCAL_FORECASTERS)
