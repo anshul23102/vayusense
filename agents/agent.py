@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 from google.adk.agents import Agent, SequentialAgent
 
+from .rag import retrieve_guidelines
 from .tools import (
     get_city_snapshot, get_forecast, get_human_impact, get_trend,
     get_worst_stations, get_year_over_year, list_cities,
@@ -93,8 +94,19 @@ decision-ready guidance:
   ('likely', 'projected to', 'may') rather than stating it as a measured fact, and
   keep the same weight of confidence the analyst gave it. Never let a projection
   read as more certain than today's actual measured levels.
+
+Call retrieve_guidelines(query) when the question is about *why a guideline
+number is what it is*, how India's official standard (CPCB NAAQS) compares to
+WHO's health-based guideline, the health burden of air pollution generally, or
+anything else where quoting a real source passage (not just a number the
+analyst reported) would make the answer more credible. Don't call it for
+routine "is it safe today" questions the analyst's numbers already answer --
+only when a cited passage adds something the raw numbers don't. When you do
+use a retrieved passage, cite it inline (e.g. "WHO's 2021 guideline...").
+
 Keep it under 180 words, warm but direct.
 """,
+    tools=[retrieve_guidelines],
 )
 
 root_agent = SequentialAgent(
