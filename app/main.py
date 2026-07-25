@@ -48,6 +48,20 @@ async def sync_processed_data(request: Request, call_next):
     return await call_next(request)
 
 
+@app.middleware("http")
+async def static_cache_control(request: Request, call_next):
+    # StaticFiles already sends ETag/Last-Modified, but with no Cache-Control
+    # header some browsers apply their own heuristic caching and skip
+    # revalidation entirely -- serving a stale benchmark.png (or any other
+    # regenerated asset) straight from disk cache after a redeploy, as
+    # happened live during this session. must-revalidate forces a cheap
+    # conditional GET (304 if unchanged) instead of trusting a stale copy.
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
+    return response
+
+
 class AskBody(BaseModel):
     question: str
     session_id: str | None = None
