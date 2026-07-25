@@ -62,6 +62,38 @@ async def static_cache_control(request: Request, call_next):
     return response
 
 
+# Every third-party origin this app's HTML actually loads from, enumerated by
+# grepping app/templates/*.html rather than guessed -- cdn.plot.ly (charts),
+# unpkg.com (Leaflet, the wind map), fonts.googleapis.com/fonts.gstatic.com
+# (webfont). Templates use inline <script>/style= throughout, so
+# 'unsafe-inline' is required for script-src/style-src -- a stricter,
+# nonce-based CSP isn't a realistic option without rewriting every template's
+# inline JS, which is out of scope here; this still meaningfully restricts
+# object embedding, framing, and where else content can load from.
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://unpkg.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data:; "
+    "connect-src 'self'; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "frame-ancestors 'none'"
+)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = _CSP
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+
 class AskBody(BaseModel):
     question: str
     session_id: str | None = None
