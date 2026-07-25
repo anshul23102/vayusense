@@ -377,7 +377,7 @@
 <nav>
   <a class="logo" href="/"><img class="dot" src="/static/logo-mark.png" alt="" width="28" height="28"><span>VayuSense</span></a>
   <div class="subnav">
-    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
+    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#advisory">Advisory</a><a href="#visioncheck">Vision</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
   <div class="right">
     <div class="navSearchWrap">
@@ -513,6 +513,22 @@
         <button type="button" class="yearChip" id="copyAdvisoryBtn" onclick="copyAdvisory()">Copy</button>
         <button type="button" class="yearChip" onclick="downloadAdvisory()">Download .txt</button>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="visioncheck">
+  <div class="sectionHead"><div class="kicker">Multimodal</div><h2>Does the sky match the number?</h2>
+    <p class="scoreTxt" style="max-width:none">Upload a photo of the sky where you are, and Gemini's vision gives a
+      qualitative read on visibility/haze alongside <span id="visionCityLabel">this city</span>'s real measured AQI:
+      a complement to the sensor data, not a substitute for it.</p></div>
+  <div class="objCard" id="visionCard" style="min-height:70px">
+    <input type="file" id="visionFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none" onchange="onVisionFileChosen(this)">
+    <button type="button" class="yearChip" id="visionUploadBtn" onclick="$('visionFileInput').click()">Upload a sky photo</button>
+    <span id="visionFileName" class="scoreTxt" style="margin-left:10px"></span>
+    <div id="visionOutput" style="display:none;margin-top:16px">
+      <img id="visionPreview" style="max-width:260px;border-radius:12px;border:1px solid var(--line);display:block;margin-bottom:14px">
+      <p id="visionText" style="font-size:13.5px;line-height:1.65;color:var(--txt);margin:0;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px"></p>
     </div>
   </div>
 </section>
@@ -809,11 +825,11 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
    document level so it works on cards rendered after page load (pollutant
    cards, hotspots, forecast bench), not just ones present at first paint. */
 if(!reduceMotion){
-  // #askCard (Ask VayuSense) and #advisoryCard (auto-generated advisory) are
-  // excluded on request -- the tilt reads oddly on cards this tall/text-dense
-  // (live chat log, generated report text), unlike the shorter stat/pollutant
-  // cards it was designed for.
-  const TILT_SELECTOR='.objCard:not(#advisoryCard), .card:not(#askCard)';
+  // #askCard, #advisoryCard, and #visionCard are excluded -- the tilt reads
+  // oddly on cards this tall/text-dense (live chat log, generated report,
+  // uploaded photo + assessment), unlike the shorter stat/pollutant cards
+  // it was designed for.
+  const TILT_SELECTOR='.objCard:not(#advisoryCard):not(#visionCard), .card:not(#askCard)';
   let tiltEl=null;
   document.addEventListener('mousemove',e=>{
     const el=e.target.closest(TILT_SELECTOR);
@@ -1115,6 +1131,7 @@ async function renderWeather(){
 async function renderHotspots(){
   const myToken=refreshToken;
   $('hotspotsCity').textContent=CITY;
+  if($('visionCityLabel'))$('visionCityLabel').textContent=CITY;
   try{
     const stations=await (await fetch(`/api/stations?city=${CITY}`)).json();
     if(myToken!==refreshToken)return;
@@ -1288,6 +1305,30 @@ function downloadAdvisory(){
   a.download=`vayusense_${CITY.toLowerCase()}_advisory.txt`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+async function onVisionFileChosen(input){
+  const file=input.files && input.files[0];
+  if(!file)return;
+  const btn=$('visionUploadBtn');
+  const nameEl=$('visionFileName');
+  const origLabel=btn.textContent;
+  btn.disabled=true;btn.textContent='Analyzing…';
+  nameEl.textContent=file.name;
+  try{
+    const fd=new FormData();
+    fd.append('file', file);
+    const r=await (await fetch(`/api/vision-check?city=${encodeURIComponent(CITY)}`, {method:'POST', body:fd})).json();
+    if(r.error){nameEl.textContent=r.error;return}
+    $('visionPreview').src=URL.createObjectURL(file);
+    $('visionText').textContent=r.assessment;
+    $('visionOutput').style.display='';
+    nameEl.textContent='';
+  }catch(e){
+    nameEl.textContent='Connection error, please try again.';
+  }finally{
+    btn.disabled=false;btn.textContent=origLabel;
+    input.value='';
+  }
 }
 async function ask(){
   if(askBusy)return;

@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from google.adk.agents.run_config import RunConfig, StreamingMode
@@ -24,6 +24,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from agents.advisory import generate_advisory, generate_advisory_batch
+from agents.vision import ALLOWED_MIME_TYPES, MAX_IMAGE_BYTES, assess_sky_photo
 from agents.agent import root_agent
 from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
@@ -489,6 +490,34 @@ def advisory_batch_api():
     per-city requests, and completes in well under a second."""
     results = generate_advisory_batch()
     return {"count": len(results), "advisories": results}
+
+
+@app.post("/api/vision-check")
+async def vision_check_api(city: str = "Delhi", file: UploadFile = File(...)):
+    """Upload a sky/visibility photo and get a qualitative Gemini-vision read
+    on it, in the context of the city's real measured AQI -- see
+    agents/vision.py. Multimodal input, explicitly framed as a complement to
+    the sensor data, never a substitute for it."""
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        return JSONResponse(
+            {"error": f"Unsupported file type '{file.content_type}'. Please upload a JPEG, PNG, WEBP, or HEIC photo."},
+            status_code=400,
+        )
+    image_bytes = await file.read()
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        return JSONResponse(
+            {"error": "That photo is too large (max 8 MB). Please try a smaller image."},
+            status_code=400,
+        )
+    row = _city_aqi(city, allow_fetch=True)
+    if row is None:
+        return JSONResponse({"error": f"no AQI data for city '{city}'"}, status_code=404)
+    try:
+        assessment = assess_sky_photo(image_bytes, file.content_type, city, row["aqi"], row["category"]["label"])
+    except Exception as e:
+        log.exception("vision_check_api() failed for city=%r", city)
+        return JSONResponse({"error": _friendly_llm_error(e)}, status_code=503)
+    return {"city": city, "aqi": row["aqi"], "category": row["category"]["label"], "assessment": assessment}
 
 
 @app.get("/api/health_guidance")
