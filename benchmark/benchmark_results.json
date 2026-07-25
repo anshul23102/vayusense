@@ -1,8 +1,8 @@
 {
-  "rows": 5922378,
-  "cpu_seconds": 9.344,
-  "gpu_seconds": 0.249,
-  "speedup": 37.5,
+  "rows": 10443350,
+  "cpu_seconds": 7.994,
+  "gpu_seconds": 0.19,
+  "speedup": 42.16,
   "gpu": "NVIDIA T4 (Google Colab)",
   "lib": "cuDF / RAPIDS"
 }
