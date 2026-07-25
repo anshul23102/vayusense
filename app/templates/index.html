@@ -567,7 +567,7 @@
 </div>
 <div class="grid">
   <div class="s12">
-    <div class="card">
+    <div class="card" id="askCard">
       <div class="eyebrow"><svg class="ic-i"><use href="#ic-chip"/></svg> Ask VayuSense <span class="tag">ADK multi-agent</span><span class="tag">analyst → advisor</span><button type="button" id="newChatBtn" onclick="resetChat()" style="margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:99px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit">New chat</button></div>
       <div id="chat">
         <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>
@@ -792,7 +792,10 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
    document level so it works on cards rendered after page load (pollutant
    cards, hotspots, forecast bench), not just ones present at first paint. */
 if(!reduceMotion){
-  const TILT_SELECTOR='.objCard, .card';
+  // #askCard (Ask VayuSense) is excluded on request -- the tilt reads oddly
+  // on a card this tall/text-dense with a live chat log and input row inside
+  // it, unlike the shorter stat/pollutant cards it was designed for.
+  const TILT_SELECTOR='.objCard, .card:not(#askCard)';
   let tiltEl=null;
   document.addEventListener('mousemove',e=>{
     const el=e.target.closest(TILT_SELECTOR);
