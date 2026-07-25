@@ -15,8 +15,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 from pydantic import BaseModel
@@ -490,19 +491,33 @@ def benchmark():
     return JSONResponse({"error": "benchmark not yet generated"}, status_code=404)
 
 
+def _friendly_llm_error(e: Exception) -> str:
+    msg = str(e)
+    if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower():
+        return "VayuSense is getting a lot of questions right now (API rate limit). Please wait a few seconds and try again."
+    return "Something went wrong answering that question. Please try again in a moment."
+
+
+def _validate_ask(body: AskBody, request: Request) -> str | None:
+    """Returns a client-facing error string, or None if the request is valid."""
+    question = body.question.strip()
+    if not question:
+        return "Please type a question first."
+    if len(question) > 500:
+        return "That question is too long. Try something shorter."
+    client_id = request.client.host if request.client else "unknown"
+    if _rate_limited(client_id):
+        return "You're asking questions faster than VayuSense can think. Please wait a moment and try again."
+    return None
+
+
 @app.post("/api/ask")
 async def ask(body: AskBody, request: Request):
     question = body.question.strip()
-    if not question:
-        return JSONResponse({"error": "Please type a question first."}, status_code=400)
-    if len(question) > 500:
-        return JSONResponse({"error": "That question is too long. Try something shorter."}, status_code=400)
-    client_id = request.client.host if request.client else "unknown"
-    if _rate_limited(client_id):
-        return JSONResponse(
-            {"error": "You're asking questions faster than VayuSense can think. Please wait a moment and try again."},
-            status_code=429,
-        )
+    err = _validate_ask(body, request)
+    if err:
+        status = 429 if "faster than" in err else 400
+        return JSONResponse({"error": err}, status_code=status)
 
     try:
         session_id = body.session_id or str(uuid.uuid4())
@@ -537,9 +552,57 @@ async def ask(body: AskBody, request: Request):
             )
         return {"answer": answer or analysis, "analysis": analysis, "session_id": session.id, "trace": trace}
     except Exception as e:
-        msg = str(e)
-        if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower():
-            friendly = "VayuSense is getting a lot of questions right now (API rate limit). Please wait a few seconds and try again."
-        else:
-            friendly = "Something went wrong answering that question. Please try again in a moment."
-        return JSONResponse({"error": friendly}, status_code=503)
+        return JSONResponse({"error": _friendly_llm_error(e)}, status_code=503)
+
+
+@app.post("/api/ask/stream")
+async def ask_stream(body: AskBody, request: Request):
+    """Same agent pipeline as /api/ask, but token-by-token over SSE instead of
+    blocking for the full answer -- "real-time inference," concretely: this
+    was previously the single biggest gap against that criterion (verified:
+    the old endpoint had no streaming path of any kind)."""
+    question = body.question.strip()
+    err = _validate_ask(body, request)
+    if err:
+        status = 429 if "faster than" in err else 400
+        return JSONResponse({"error": err}, status_code=status)
+
+    async def gen():
+        def sse(payload: dict) -> str:
+            return f"data: {json.dumps(payload)}\n\n"
+        try:
+            session_id = body.session_id or str(uuid.uuid4())
+            session = await runner.session_service.get_session(
+                app_name="vayusense", user_id="web", session_id=session_id
+            )
+            if session is None:
+                session = await runner.session_service.create_session(
+                    app_name="vayusense", user_id="web", session_id=session_id
+                )
+            yield sse({"type": "session", "session_id": session.id})
+            content = types.Content(role="user", parts=[types.Part.from_text(text=question)])
+            got_answer = False
+            async for event in runner.run_async(
+                user_id="web", session_id=session.id, new_message=content,
+                run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+            ):
+                for call in event.get_function_calls():
+                    yield sse({"type": "tool", "agent": event.author, "tool": call.name,
+                               "args": dict(call.args or {})})
+                # data_analyst's output is internal context for health_advisor,
+                # never shown to the user (same rule as /api/ask) -- only
+                # stream the final agent's text deltas.
+                if event.author != "data_analyst" and event.content and event.content.parts \
+                        and event.content.parts[0].text:
+                    got_answer = True
+                    yield sse({"type": "delta", "text": event.content.parts[0].text,
+                               "partial": bool(event.partial)})
+            if not got_answer:
+                yield sse({"type": "error",
+                           "error": "The agent didn't return an answer. Please try rephrasing your question."})
+            yield sse({"type": "done"})
+        except Exception as e:
+            yield sse({"type": "error", "error": _friendly_llm_error(e)})
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
