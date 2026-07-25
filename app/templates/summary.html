@@ -516,7 +516,13 @@ async function renderWindMap(ranking){
   const container=$('windMapContainer');
   if(!container || typeof L==='undefined'){ return; }
   if(!WIND_MAP){
-    WIND_MAP=L.map(container, {center:[22.5,80], zoom:4, minZoom:3, maxZoom:9, scrollWheelZoom:false, zoomControl:true});
+    // zoom 5 (not fitBounds): windMapContainer is a wide, short box (roughly
+    // 2.2:1), but India's own extent is closer to square -- fitBounds to
+    // India's real bbox has to zoom out until that box's *height* fits,
+    // which drags in a huge amount of extra width (Africa to China) well
+    // past India's borders. A fixed zoom tuned for this container's actual
+    // shape gives a tighter, honestly-India-focused default view instead.
+    WIND_MAP=L.map(container, {center:[22.5,80], zoom:5, minZoom:3, maxZoom:9, scrollWheelZoom:false, zoomControl:true});
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
     }).addTo(WIND_MAP);
