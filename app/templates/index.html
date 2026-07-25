@@ -1108,16 +1108,32 @@ async function renderTrends(){
     const t=await (await fetch(`/api/monthly?city=${CITY}`)).json();
     if(!t.months){$('trends').style.display='none';return}
     $('trends').style.display='';
-    Plotly.newPlot('monthlyChart',[{x:t.months.map(m=>m.month),y:t.months.map(m=>m.avg_aqi),type:'bar',
-      marker:{color:t.months.map(m=>RAMP[m.key]),line:{width:0}},hovertemplate:'%{x}<br>AQI %{y} (%{customdata})<extra></extra>',
-      customdata:t.months.map(m=>bandOf(m.avg_aqi).label)}],
+    const months=t.months;
+    const peakIdx=months.findIndex(m=>m.month===t.most_polluted.month);
+    const troughIdx=months.findIndex(m=>m.month===t.least_polluted.month);
+    const fm=m=>{const [y,mo]=m.split('-');return MONTHS[+mo-1]+' '+y};
+    // The peak/trough months are already called out in the two cards below --
+    // tie that story directly to the chart instead of leaving the bars as an
+    // unannotated wall of color: a slightly thicker, brighter outline on
+    // those two bars plus a small on-chart label pointing at each.
+    const outlineWidths=months.map((_,i)=>(i===peakIdx||i===troughIdx)?2:0);
+    const outlineColors=months.map((_,i)=>i===peakIdx?'#ff8a9f':i===troughIdx?'#6ffcb8':'rgba(0,0,0,0)');
+    Plotly.newPlot('monthlyChart',[{x:months.map(m=>m.month),y:months.map(m=>m.avg_aqi),type:'bar',
+      marker:{color:months.map(m=>RAMP[m.key]),line:{width:outlineWidths,color:outlineColors},cornerradius:5},
+      hovertemplate:'%{x}<br>AQI %{y} (%{customdata})<extra></extra>',
+      customdata:months.map(m=>bandOf(m.avg_aqi).label)}],
       {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a9b4d0',family:'Onest',size:12},
-       margin:{t:6,r:10,b:60,l:42},yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'avg AQI'},xaxis:{tickangle:-40},
+       margin:{t:34,r:10,b:60,l:42},yaxis:{gridcolor:'rgba(255,255,255,.04)',title:'avg AQI'},xaxis:{tickangle:-40},
        hoverlabel:{bgcolor:'#1c2540',bordercolor:'rgba(255,255,255,.15)',font:{color:'#f3f6fd',family:'Onest',size:12}},
-       transition:{duration:250,easing:'cubic-in-out'}},
+       transition:{duration:250,easing:'cubic-in-out'},
+       annotations:[
+         peakIdx>=0?{x:months[peakIdx].month,y:months[peakIdx].avg_aqi,text:`▲ worst · ${fm(months[peakIdx].month)}`,
+           showarrow:false,yanchor:'bottom',yshift:6,font:{color:'#ff8a9f',size:10.5,family:'Onest'}}:null,
+         troughIdx>=0?{x:months[troughIdx].month,y:months[troughIdx].avg_aqi,text:`▼ best · ${fm(months[troughIdx].month)}`,
+           showarrow:false,yanchor:'bottom',yshift:6,font:{color:'#6ffcb8',size:10.5,family:'Onest'}}:null,
+       ].filter(Boolean)},
       {displayModeBar:false});
     PLOT_HOVER_HOOK('monthlyChart');
-    const fm=m=>{const [y,mo]=m.split('-');return MONTHS[+mo-1]+' '+y};
     $('mostMonth').innerHTML=`<div style="font-size:11px;color:var(--dim)">Most polluted month</div><div style="font-size:24px;font-weight:600;margin:3px 0">${t.most_polluted.avg_aqi}</div><div style="font-size:12px;color:var(--dim)">${fm(t.most_polluted.month)}</div>`;
     $('mostMonth').style.borderLeft=`3px solid ${RAMP[bandOf(t.most_polluted.avg_aqi).key]}`;
     $('leastMonth').innerHTML=`<div style="font-size:11px;color:var(--dim)">Least polluted month</div><div style="font-size:24px;font-weight:600;margin:3px 0">${t.least_polluted.avg_aqi}</div><div style="font-size:12px;color:var(--dim)">${fm(t.least_polluted.month)}</div>`;
