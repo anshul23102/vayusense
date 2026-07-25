@@ -20,7 +20,12 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-OPENAQ_API_KEY = os.environ["OPENAQ_API_KEY"]
+# .get(), not [] -- refresh_incremental.py imports this module unconditionally
+# and is designed to keep working with no key set at all (falls back to
+# cached location IDs); a bare os.environ["OPENAQ_API_KEY"] would crash the
+# whole nightly job with a raw KeyError the moment the var is ever unset,
+# defeating that fallback entirely.
+OPENAQ_API_KEY = os.environ.get("OPENAQ_API_KEY", "")
 HEADERS = {"X-API-Key": OPENAQ_API_KEY}
 
 CITY_QUERIES = {
@@ -123,6 +128,20 @@ def run_pipeline(df):
         ["mean", "max", "count"]
     ).reset_index()
     daily["date"] = daily["date"].dt.tz_localize(None)
+    # Some stations fault into reporting a literal 0.0 for every tracked
+    # pollutant simultaneously on a given day -- not a real "spotless air"
+    # reading, a feed/sensor fault (caught live: Kochi's station did this
+    # for ~4 months straight, Apr-Jun 2026, silently served as a fake
+    # "Good, AQI 0" result the entire time). Drop any city+date where every
+    # tracked parameter is present and reads exactly zero; a single
+    # legitimately low/zero reading for one pollutant is left alone.
+    pivot = daily.pivot_table(index=["city", "date"], columns="parameter", values="mean")
+    if set(PARAMS) <= set(pivot.columns):
+        all_zero = (pivot[sorted(PARAMS)] == 0).all(axis=1)
+        bad_combos = set(pivot[all_zero].index)
+        if bad_combos:
+            mask = daily.set_index(["city", "date"]).index.isin(bad_combos)
+            daily = daily[~mask].reset_index(drop=True)
     pm = d[d["parameter"] == "pm25"]
     league = (
         pm.groupby(["city", "location"], as_index=False)["value"]

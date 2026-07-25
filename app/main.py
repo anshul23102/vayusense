@@ -277,7 +277,16 @@ def _archive_concs(city: str) -> tuple[dict, dict, str] | None:
         return None
     concs, latest = {}, None
     for param, grp in d.groupby("parameter"):
-        row = grp.sort_values("date").iloc[-1]
+        grp = grp.sort_values("date")
+        # Some stations fault into reporting a literal 0.0 for every
+        # pollutant for an extended stretch (seen live: Kochi's station did
+        # this for ~4 months, Apr-Jun 2026, which meant the "latest" row was
+        # always the fault reading -- served as a fake "Good, AQI 0" result
+        # the entire time instead of the last genuine measurement). Prefer
+        # the latest row that isn't this failure mode; only fall back to a
+        # zero row if a parameter has literally never had a real reading.
+        nonzero = grp[grp["mean"] > 0]
+        row = nonzero.iloc[-1] if not nonzero.empty else grp.iloc[-1]
         concs[param] = float(row["mean"])
         latest = row["date"] if latest is None or row["date"] > latest else latest
     return concs, dict(ARCHIVE_UNITS), str(latest.date())
