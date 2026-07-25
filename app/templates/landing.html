@@ -197,7 +197,7 @@
     a clinic bracing for admissions, a city planner drafting tomorrow's advisory.</p>
   <div class="heroBtns reveal d4">
     <a class="btn primary" href="/dashboard">See your city's air →</a>
-    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> 37.5× faster on GPU: see how</a>
+    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> <span class="js-gpu-speedup">37.5×</span> faster on GPU: see how</a>
   </div>
   <div class="searchWrap reveal d4">
     <input class="searchInput" id="citySearch" type="text" autocomplete="off"
@@ -209,7 +209,7 @@
   </div>
   <div class="statRow reveal d4">
     <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>25,347,842</b> readings analyzed</div>
-    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b>37.5×</b> faster with NVIDIA</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b class="js-gpu-speedup">37.5×</b> faster with NVIDIA</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>36</b> cities · <b>6</b> pollutants</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-chip"/></svg> <b>2</b> reasoning agents</div>
   </div>
@@ -247,7 +247,7 @@
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
     <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-bolt"/></svg></div><h3>Accelerated by NVIDIA</h3>
-      <p>Clean → aggregate → trend → anomaly-detect, over 5.9M OpenAQ readings, done in <b class="nvg">0.25s on GPU (cuDF)</b> instead of 9.34s on CPU. Fresh insight, every time you ask.</p></div>
+      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 5.9M OpenAQ readings, done in <b class="nvg">0.25s on GPU (cuDF)</b> instead of 9.34s on CPU. Fresh insight, every time you ask.</p></div>
     <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-chip"/></svg></div><h3>Reasoned by Google ADK + Gemini</h3>
       <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
     <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-target"/></svg></div><h3>Built to be used, not admired</h3>
@@ -257,17 +257,17 @@
 
 <section id="bench">
   <div class="kicker reveal">The acceleration, proven</div>
-  <h2 class="reveal d1"><span class="big nvg">37.5×</span> faster than pandas.</h2>
-  <p class="lead reveal d2">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
+  <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">37.5×</span> faster than pandas.</h2>
+  <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
     can shift by the hour, a 9-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision. This is the original proof run, on the first
     4 cities; the live dataset has since grown to 36 cities (one per state, Goa excepted -- verified zero real OpenAQ stations there) and over 25M readings without needing to re-earn that speedup.</p>
   <div class="benchWrap">
     <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
     <div class="rows">
-      <div class="row reveal"><span>Dataset</span><b>5,922,378 readings · 44 stations</b></div>
-      <div class="row reveal d1"><span>pandas (CPU)</span><b>9.34 s</b></div>
-      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg">0.25 s</b></div>
+      <div class="row reveal"><span>Dataset</span><b id="gpuDatasetRow">5,922,378 readings · 44 stations</b></div>
+      <div class="row reveal d1"><span>pandas (CPU)</span><b id="gpuCpuRow">9.34 s</b></div>
+      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg" id="gpuGpuRow">0.25 s</b></div>
       <div class="row stack reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
     </div>
   </div>
@@ -302,20 +302,23 @@ const LANDING_DATA={cities:[],ranking:[],bench:null};
 function goToCity(name){ location.href=`/city/${encodeURIComponent(name.toLowerCase())}`; }
 async function loadLandingData(){
   try{
-    const [cities, aqi, bench, impact] = await Promise.all([
+    const [cities, aqi, bench, impact, gpu] = await Promise.all([
       fetch('/api/cities').then(r=>r.json()),
       fetch('/api/aqi?city=Delhi').then(r=>r.json()),
       fetch('/api/forecast_bench?city=Delhi&parameter=pm25').then(r=>r.json()),
       fetch('/api/impact?city=Delhi').then(r=>r.json()),
+      fetch('/api/benchmark').then(r=>r.json()),
     ]);
     LANDING_DATA.cities=cities;
     LANDING_DATA.ranking=aqi.ranking||[];
     LANDING_DATA.bench=bench;
     LANDING_DATA.impact=impact;
+    LANDING_DATA.gpu=gpu;
     renderShowcase();
     renderSearch();
     renderCityGrid();
     renderImpact();
+    renderGpuBench();
   }catch(e){ /* every render* function below no-ops gracefully if its data is missing */ }
 }
 function renderImpact(){
@@ -329,6 +332,38 @@ function renderImpact(){
   if(lead)lead.textContent=`${cigs} cigarettes`;
   if(card1)card1.textContent=`${cigs} cigarettes / day`;
   if(card2)card2.textContent=`~${yrs} years`;
+}
+function renderGpuBench(){
+  // /api/benchmark already served the real numbers -- this file previously
+  // hardcoded the original 4-city proof-run copy instead of reading it, so
+  // a re-run of the notebook never reached the page. Fill every static
+  // mention from the live JSON; if it's ever missing or mid-regeneration,
+  // the original honest static copy (about the first proof run) stays put.
+  const g=LANDING_DATA.gpu;
+  if(!g || g.error)return;
+  const speedup=`${g.speedup}×`;
+  const rows=g.rows.toLocaleString();
+  document.querySelectorAll('.js-gpu-speedup').forEach(el=>el.textContent=speedup);
+  document.querySelectorAll('.js-gpu-rows').forEach(el=>el.textContent=rows);
+  const dataset=document.getElementById('gpuDatasetRow');
+  if(dataset)dataset.textContent=`${rows} readings`;
+  const cpuRow=document.getElementById('gpuCpuRow');
+  if(cpuRow)cpuRow.textContent=`${g.cpu_seconds} s`;
+  const gpuRow=document.getElementById('gpuGpuRow');
+  if(gpuRow)gpuRow.textContent=`${g.gpu_seconds} s`;
+  const howCard=document.getElementById('gpuHowCard');
+  if(howCard)howCard.innerHTML=`Clean → aggregate → trend → anomaly-detect, over ${rows} OpenAQ readings, done in <b class="nvg">${g.gpu_seconds}s on GPU (cuDF)</b> instead of ${g.cpu_seconds}s on CPU. Fresh insight, every time you ask.`;
+  // The static lead honestly discloses this was the original 4-city proof
+  // run, not yet re-earned on the full dataset -- that caveat is only true
+  // while benchmark_results.json is still the original 5,922,378-row run.
+  // Once the notebook is actually re-run on the current ~25M-row archive,
+  // g.rows changes and this swaps in a lead that matches the real dataset,
+  // instead of silently keeping a disclaimer that's no longer accurate.
+  if(g.rows===5922378)return;
+  const lead=document.getElementById('gpuBenchLead');
+  if(lead)lead.innerHTML=`Same pipeline. Same ${rows} rows. Timed honestly, side by side. When air quality
+    can shift by the hour, a ${g.cpu_seconds}-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
+    buys back: the moment between a question and a decision.`;
 }
 function renderShowcase(){
   const grid=document.getElementById('showcaseGrid');
