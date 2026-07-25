@@ -500,6 +500,23 @@
   <div class="grid" id="solutionsGrid"></div>
 </section>
 
+<section class="section reveal" id="advisory">
+  <div class="sectionHead"><div class="kicker">Automation</div><h2>Auto-generated public advisory</h2>
+    <p class="scoreTxt" style="max-width:none">One click synthesizes today's AQI, condition-specific guidance, and
+      forecast outlook into a ready-to-publish notice for a school, clinic, or city office -- instant and free,
+      rule-based rather than an LLM call, so it can run for every tracked city at once with no added cost.</p></div>
+  <div class="objCard" style="min-height:70px">
+    <button type="button" class="yearChip" id="genAdvisoryBtn" onclick="generateAdvisory()">Generate today's advisory</button>
+    <div id="advisoryOutput" style="display:none;margin-top:16px">
+      <pre id="advisoryText" style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;line-height:1.65;color:var(--txt);margin:0;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px"></pre>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button type="button" class="yearChip" id="copyAdvisoryBtn" onclick="copyAdvisory()">Copy</button>
+        <button type="button" class="yearChip" onclick="downloadAdvisory()">Download .txt</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section reveal" id="trend">
 <div class="sectionHead">
   <div class="kicker">Trend</div>
@@ -1242,6 +1259,34 @@ function renderTrace(trace){
     return `<span class="traceChip">${esc(t.tool)}${args?`(${esc(args)})`:''}</span>`;
   }).join('');
   return chips?`<div class="traceRow"><span class="traceLabel">Data used</span>${chips}</div>`:'';
+}
+async function generateAdvisory(){
+  const btn=$('genAdvisoryBtn');
+  btn.disabled=true;const origLabel=btn.textContent;btn.textContent='Generating…';
+  try{
+    const r=await (await fetch(`/api/advisory?city=${encodeURIComponent(CITY)}`)).json();
+    if(r.error){$('advisoryOutput').style.display='none';btn.textContent='Not enough data for this city';return}
+    $('advisoryText').textContent=r.text;
+    $('advisoryOutput').style.display='';
+    btn.textContent='Regenerate';
+  }catch(e){
+    btn.textContent='Something went wrong -- try again';
+  }finally{
+    btn.disabled=false;
+  }
+}
+function copyAdvisory(){
+  navigator.clipboard.writeText($('advisoryText').textContent);
+  const b=$('copyAdvisoryBtn');const orig=b.textContent;
+  b.textContent='Copied!';setTimeout(()=>{b.textContent=orig},1500);
+}
+function downloadAdvisory(){
+  const blob=new Blob([$('advisoryText').textContent],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`vayusense_${CITY.toLowerCase()}_advisory.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 async function ask(){
   if(askBusy)return;

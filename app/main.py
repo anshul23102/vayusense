@@ -23,6 +23,7 @@ from google.adk.runners import InMemoryRunner
 from google.genai import types
 from pydantic import BaseModel
 
+from agents.advisory import generate_advisory, generate_advisory_batch
 from agents.agent import root_agent
 from agents import tools as data_tools
 from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
@@ -468,6 +469,26 @@ def export_data(city: str = "Delhi", format: str = "csv"):
     d.to_csv(buf, index=False)
     return Response(content=buf.getvalue(), media_type="text/csv",
                      headers={"Content-Disposition": f'attachment; filename="{fname_base}.csv"'})
+
+
+@app.get("/api/advisory")
+def advisory_api(city: str = "Delhi"):
+    """Automated, ready-to-publish public advisory for one city -- rule-based,
+    not an LLM call (see agents/advisory.py), so this is instant and free to
+    generate on every request."""
+    result = generate_advisory(city)
+    if "error" in result:
+        return JSONResponse(result, status_code=404)
+    return result
+
+
+@app.get("/api/advisory/all")
+def advisory_batch_api():
+    """Every tracked city's advisory in one call -- the concrete "automate
+    workflows at scale" claim: this is a full batch run, not 36 sequential
+    per-city requests, and completes in well under a second."""
+    results = generate_advisory_batch()
+    return {"count": len(results), "advisories": results}
 
 
 @app.get("/api/health_guidance")
