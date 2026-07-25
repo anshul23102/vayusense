@@ -156,6 +156,10 @@
   .bot.thinking i{display:inline-block;animation:blink 1.2s infinite}
   @keyframes blink{50%{opacity:.2}}
   .bot.error{background:rgba(255,138,163,.08);border-color:rgba(255,138,163,.35)}
+  .traceRow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+  .traceLabel{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);font-weight:700;margin-right:2px}
+  .traceChip{font-size:10.5px;font-family:'SF Mono',ui-monospace,monospace;color:var(--blueSolid);
+    background:rgba(157,193,255,.08);border:1px solid rgba(157,193,255,.22);border-radius:6px;padding:2px 7px}
   .askrow{display:flex;gap:10px;margin-top:14px}
   .askrow input{flex:1;background:rgba(255,255,255,.055);color:var(--txt);border:1px solid var(--line);border-radius:14px;
     padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
@@ -1224,6 +1228,18 @@ function resetChat(){
 }
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function mdToHtml(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^\s*\*\s+/gm,'• ')}
+// "Explainable AI" made concrete: not a claim the answer is grounded, a
+// literal list of the real tool calls (name + args) the agents made to
+// produce it, straight from the ADK event stream -- see /api/ask in
+// app/main.py. Escaped via esc() since args come from live model output.
+function renderTrace(trace){
+  if(!trace || !trace.length)return'';
+  const chips=trace.filter(t=>t.tool).map(t=>{
+    const args=Object.values(t.args||{}).map(String).join(', ');
+    return `<span class="traceChip">${esc(t.tool)}${args?`(${esc(args)})`:''}</span>`;
+  }).join('');
+  return chips?`<div class="traceRow"><span class="traceLabel">Data used</span>${chips}</div>`:'';
+}
 async function ask(){
   if(askBusy)return;
   const q=$('q').value.trim();if(!q)return;
@@ -1237,7 +1253,7 @@ async function ask(){
     if(r.session_id)SESSION_ID=r.session_id;
     chat.lastElementChild.classList.remove('thinking');
     if(r.error)chat.lastElementChild.classList.add('error');
-    chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.');
+    chat.lastElementChild.innerHTML=mdToHtml(r.error||r.answer||'No answer.')+renderTrace(r.trace);
   }catch(e){chat.lastElementChild.classList.remove('thinking');chat.lastElementChild.classList.add('error');chat.lastElementChild.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }

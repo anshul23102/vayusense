@@ -514,10 +514,17 @@ async def ask(body: AskBody, request: Request):
                 app_name="vayusense", user_id="web", session_id=session_id
             )
         content = types.Content(role="user", parts=[types.Part.from_text(text=question)])
-        answer, analysis = "", ""
+        answer, analysis, trace = "", "", []
         async for event in runner.run_async(
             user_id="web", session_id=session.id, new_message=content
         ):
+            # Every tool call the agents actually make, in call order -- this is
+            # what "explainable AI" means here in concrete terms: not a claim
+            # that the answer is grounded, a literal list of the real function
+            # calls (name + args) that produced it, so a user can see this
+            # wasn't free-form generation over the question alone.
+            for call in event.get_function_calls():
+                trace.append({"agent": event.author, "tool": call.name, "args": dict(call.args or {})})
             if event.content and event.content.parts and event.content.parts[0].text:
                 if event.author == "data_analyst":
                     analysis = event.content.parts[0].text
@@ -528,7 +535,7 @@ async def ask(body: AskBody, request: Request):
                 {"error": "The agent didn't return an answer. Please try rephrasing your question."},
                 status_code=502,
             )
-        return {"answer": answer or analysis, "analysis": analysis, "session_id": session.id}
+        return {"answer": answer or analysis, "analysis": analysis, "session_id": session.id, "trace": trace}
     except Exception as e:
         msg = str(e)
         if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower():
