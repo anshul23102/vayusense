@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import time
 import uuid
 from collections import defaultdict, deque
@@ -29,6 +30,7 @@ from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citat
 from agents.solutions import citation as solutions_citation, get_solutions
 from app import card, data_sync, live, weather, wind
 
+log = logging.getLogger("vayusense.main")
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="VayuSense")
 app.mount("/static", StaticFiles(directory=ROOT / "app" / "static"), name="static")
@@ -552,6 +554,7 @@ async def ask(body: AskBody, request: Request):
             )
         return {"answer": answer or analysis, "analysis": analysis, "session_id": session.id, "trace": trace}
     except Exception as e:
+        log.exception("ask() failed for question=%r", question)
         return JSONResponse({"error": _friendly_llm_error(e)}, status_code=503)
 
 
@@ -602,6 +605,7 @@ async def ask_stream(body: AskBody, request: Request):
                            "error": "The agent didn't return an answer. Please try rephrasing your question."})
             yield sse({"type": "done"})
         except Exception as e:
+            log.exception("ask_stream() failed for question=%r", question)
             yield sse({"type": "error", "error": _friendly_llm_error(e)})
 
     return StreamingResponse(gen(), media_type="text/event-stream",
