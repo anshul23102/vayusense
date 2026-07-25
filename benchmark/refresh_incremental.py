@@ -56,6 +56,59 @@ def _upload_parquet(bucket, fname: str) -> None:
     print(f"uploaded {fname} to GCS", flush=True)
 
 
+def _cached_locations_for(cities: set[str]) -> dict[int, tuple[str, str]]:
+    """Fall back to previously-discovered station IDs (ingest/live_locations.json,
+    built by ingest/discover_live_locations.py for app/live.py's live lookups)
+    instead of a fresh /v3/locations call. Covers only the cities that were
+    ever discovered live before -- currently 20 of 36 -- but needs no API key
+    at all, since the archive download itself (the actual data pull) is
+    unauthenticated. The station "name" isn't tracked in this cache; it's
+    only used for logging here, so the city name is used as a placeholder --
+    downstream station-league grouping uses the CSV's own "location" column,
+    not this dict's values."""
+    import json
+    path = Path(__file__).resolve().parent.parent / "ingest" / "live_locations.json"
+    if not path.exists():
+        return {}
+    raw = json.loads(path.read_text())
+    locations = {}
+    for city in cities:
+        for entry in raw.get(city, []):
+            locations[entry["location_id"]] = (city, city)
+    return locations
+
+
+def _discover_locations(cities_needing_refresh: dict) -> dict[int, tuple[str, str]]:
+    """Live /v3/locations discovery when a working API key is available;
+    otherwise (no key, or the key/account is rejected -- e.g. suspended)
+    fall back to the cached location-ID list so the refresh can still run
+    for cities we've already discovered, without ever hitting the API."""
+    api_key = os.environ.get("OPENAQ_API_KEY", "").strip()
+    if not api_key:
+        print("No OPENAQ_API_KEY set -- using cached location IDs only", flush=True)
+        return _cached_locations_for(set(cities_needing_refresh))
+
+    import requests
+    locations = {}
+    try:
+        for city in cities_needing_refresh:
+            q = CITY_QUERIES[city]
+            r = requests.get(
+                "https://api.openaq.org/v3/locations",
+                params={"coordinates": q["coordinates"], "radius": q["radius"], "limit": 100},
+                headers=HEADERS, timeout=30,
+            )
+            r.raise_for_status()
+            results = r.json()["results"]
+            results.sort(key=lambda x: len(x.get("sensors", [])), reverse=True)
+            for loc in results[:12]:
+                locations[loc["id"]] = (city, loc["name"])
+        return locations
+    except Exception as e:
+        print(f"Live discovery failed ({e}) -- falling back to cached location IDs", flush=True)
+        return _cached_locations_for(set(cities_needing_refresh))
+
+
 def main() -> None:
     from google.cloud import storage
 
@@ -86,21 +139,12 @@ def main() -> None:
     print(f"Cities needing refresh: {cities_needing_refresh}", flush=True)
 
     print("\n=== 1) Discovering stations for cities needing refresh ===", flush=True)
-    import requests
-    locations = {}
-    for city in cities_needing_refresh:
-        q = CITY_QUERIES[city]
-        r = requests.get(
-            "https://api.openaq.org/v3/locations",
-            params={"coordinates": q["coordinates"], "radius": q["radius"], "limit": 100},
-            headers=HEADERS, timeout=30,
-        )
-        r.raise_for_status()
-        results = r.json()["results"]
-        results.sort(key=lambda x: len(x.get("sensors", [])), reverse=True)
-        for loc in results[:12]:
-            locations[loc["id"]] = (city, loc["name"])
+    locations = _discover_locations(cities_needing_refresh)
     print(f"Total stations: {len(locations)}", flush=True)
+    if not locations:
+        print("No stations available (live discovery unavailable and no cached "
+              "IDs for these cities) -- nothing to do.", flush=True)
+        return
 
     print("\n=== 2) Listing archive files for the years that might have new days ===", flush=True)
     years_needed = sorted({last_date_by_city.get(c, today).year for c in cities_needing_refresh} | {today.year})
