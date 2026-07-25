@@ -75,12 +75,15 @@ async def static_cache_control(request: Request, call_next):
 # nonce-based CSP isn't a realistic option without rewriting every template's
 # inline JS, which is out of scope here; this still meaningfully restricts
 # object embedding, framing, and where else content can load from.
+# img-src needs blob: for the vision-check feature's photo preview
+# (URL.createObjectURL) -- caught live: without it, the preview silently
+# failed to render (confirmed with real image bytes, not just bad test data).
 _CSP = (
     "default-src 'self'; "
     "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://unpkg.com; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
     "font-src 'self' https://fonts.gstatic.com; "
-    "img-src 'self' data:; "
+    "img-src 'self' data: blob:; "
     "connect-src 'self'; "
     "object-src 'none'; "
     "base-uri 'self'; "
@@ -104,20 +107,30 @@ class AskBody(BaseModel):
     session_id: str | None = None
 
 
-# In-process sliding-window rate limit for the LLM-backed /api/ask endpoint --
-# guards against a cost-bomb from unrestricted Gemini calls. Per-process only
-# (fine for a single Cloud Run instance; not a distributed limiter).
+# In-process sliding-window rate limit for endpoints that trigger a real,
+# billed Gemini call -- guards against a cost-bomb from unrestricted use.
+# Per-process only (fine for a single Cloud Run instance; not a distributed
+# limiter). Separate buckets per endpoint so vision-check (an image call,
+# heavier per-request) doesn't share a budget with ask (text chat) --
+# tripping one doesn't silently eat into the other's allowance.
 ASK_RATE_LIMIT = 8          # max requests
 ASK_RATE_WINDOW = 60        # per this many seconds, per client IP
 _ask_hits: dict[str, deque] = defaultdict(deque)
 
+VISION_RATE_LIMIT = 5
+VISION_RATE_WINDOW = 60
+_vision_hits: dict[str, deque] = defaultdict(deque)
 
-def _rate_limited(client_id: str) -> bool:
+
+def _rate_limited(client_id: str, hits_by_client: dict[str, deque] = None,
+                   limit: int = ASK_RATE_LIMIT, window: int = ASK_RATE_WINDOW) -> bool:
+    if hits_by_client is None:
+        hits_by_client = _ask_hits
     now = time.time()
-    hits = _ask_hits[client_id]
-    while hits and now - hits[0] > ASK_RATE_WINDOW:
+    hits = hits_by_client[client_id]
+    while hits and now - hits[0] > window:
         hits.popleft()
-    if len(hits) >= ASK_RATE_LIMIT:
+    if len(hits) >= limit:
         return True
     hits.append(now)
     return False
@@ -493,11 +506,17 @@ def advisory_batch_api():
 
 
 @app.post("/api/vision-check")
-async def vision_check_api(city: str = "Delhi", file: UploadFile = File(...)):
+async def vision_check_api(request: Request, city: str = "Delhi", file: UploadFile = File(...)):
     """Upload a sky/visibility photo and get a qualitative Gemini-vision read
     on it, in the context of the city's real measured AQI -- see
     agents/vision.py. Multimodal input, explicitly framed as a complement to
     the sensor data, never a substitute for it."""
+    client_id = request.client.host if request.client else "unknown"
+    if _rate_limited(client_id, _vision_hits, VISION_RATE_LIMIT, VISION_RATE_WINDOW):
+        return JSONResponse(
+            {"error": "Too many photo uploads right now. Please wait a moment and try again."},
+            status_code=429,
+        )
     if file.content_type not in ALLOWED_MIME_TYPES:
         return JSONResponse(
             {"error": f"Unsupported file type '{file.content_type}'. Please upload a JPEG, PNG, WEBP, or HEIC photo."},
