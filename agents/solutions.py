@@ -38,10 +38,10 @@ STATUS_TABLE = {
         "poor": {"status": "Optional", "tip": "Carry one for extended outdoor time."},
         "unhealthy": {"status": "Recommended", "tip": "Wear one for any outdoor activity."},
         "severe": {"status": "Must", "tip": "Wear a well-fitted N95 for all outdoor exposure."},
-        "hazardous": {"status": "Must", "tip": "Wear a well-fitted N95 outdoors — no exceptions."},
+        "hazardous": {"status": "Must", "tip": "Wear a well-fitted N95 outdoors; no exceptions."},
     },
     "stay_indoor": {
-        "good": {"status": "Not needed", "tip": "No restrictions — enjoy the outdoors."},
+        "good": {"status": "Not needed", "tip": "No restrictions; enjoy the outdoors."},
         "moderate": {"status": "Optional", "tip": "Fine to be outside; sensitive groups take care."},
         "poor": {"status": "Recommended", "tip": "Limit long outdoor stretches."},
         "unhealthy": {"status": "Advised", "tip": "Stay indoors during peak hours."},

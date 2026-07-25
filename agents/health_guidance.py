@@ -22,7 +22,7 @@ GUIDANCE = {
         "good": {
             "summary": "Air quality poses little or no risk today.",
             "dos": ["Enjoy normal outdoor activities", "Ventilate your home by opening windows"],
-            "donts": ["Don't assume tomorrow will be the same — check back daily", "Don't skip ventilating indoor spaces"],
+            "donts": ["Don't assume tomorrow will be the same; check back daily", "Don't skip ventilating indoor spaces"],
         },
         "moderate": {
             "summary": "Acceptable for most people; unusually sensitive individuals should ease off.",
@@ -52,7 +52,7 @@ GUIDANCE = {
     },
     "children": {
         "good": {
-            "summary": "No restrictions — outdoor play is safe.",
+            "summary": "No restrictions: outdoor play is safe.",
             "dos": ["Let kids play outside freely", "Use this window for outdoor sports practice"],
             "donts": ["Don't cancel outdoor plans out of caution today"],
         },
@@ -69,7 +69,7 @@ GUIDANCE = {
         "unhealthy": {
             "summary": "Move recess and sports practice indoors where possible.",
             "dos": ["Move recess and PE indoors", "Offer indoor alternatives for active play"],
-            "donts": ["Don't hold outdoor sports practice", "Don't assume kids will self-report discomfort — check in"],
+            "donts": ["Don't hold outdoor sports practice", "Don't assume kids will self-report discomfort; check in"],
         },
         "severe": {
             "summary": "Keep children indoors; schools should suspend outdoor activities.",
@@ -136,7 +136,7 @@ GUIDANCE = {
             "donts": ["Don't exert yourself outdoors", "Don't go out without pre-treating if advised by your doctor"],
         },
         "severe": {
-            "summary": "Stay indoors with air filtration — this can provoke attacks even at rest.",
+            "summary": "Stay indoors with air filtration: this can provoke attacks even at rest.",
             "dos": ["Stay indoors with air filtration running", "Keep emergency medication within reach at all times"],
             "donts": ["Don't go outdoors even briefly", "Don't assume rest alone prevents a flare-up at this level"],
         },
@@ -150,7 +150,7 @@ GUIDANCE = {
         "good": {
             "summary": "No added cardiovascular risk from air quality today.",
             "dos": ["Continue normal activity levels"],
-            "donts": ["Don't alter your routine — no added risk today"],
+            "donts": ["Don't alter your routine; no added risk today"],
         },
         "moderate": {
             "summary": "Low added risk; normal routines can continue.",
@@ -158,12 +158,12 @@ GUIDANCE = {
             "donts": ["Don't ignore new or unusual chest discomfort"],
         },
         "poor": {
-            "summary": "Reduce strenuous outdoor activity — added strain on the cardiovascular system.",
+            "summary": "Reduce strenuous outdoor activity: it adds strain on the cardiovascular system.",
             "dos": ["Reduce strenuous outdoor activity", "Choose lighter activity over intense exercise"],
             "donts": ["Don't do intense outdoor cardio", "Don't ignore palpitations during exertion"],
         },
         "unhealthy": {
-            "summary": "Avoid outdoor exertion — linked to increased risk of cardiac events.",
+            "summary": "Avoid outdoor exertion: linked to increased risk of cardiac events.",
             "dos": ["Avoid outdoor exertion entirely", "Move any necessary activity indoors"],
             "donts": ["Don't exercise outdoors", "Don't dismiss unusual shortness of breath"],
         },

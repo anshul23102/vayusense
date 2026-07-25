@@ -67,7 +67,7 @@ def generate_advisory(city: str) -> dict:
 
     general = GUIDANCE["general"][cat_key]
     lines = [
-        f"{city.upper()} AIR QUALITY ADVISORY — "
+        f"{city.upper()} AIR QUALITY ADVISORY, "
         f"{datetime.now(timezone.utc).strftime('%B %d, %Y')}",
         "",
         f"Current status: {cat['label']} (AQI {snap['aqi']}), driven by {dominant.upper()}."
@@ -81,14 +81,14 @@ def generate_advisory(city: str) -> dict:
     lines += [f"  ✗ {d}" for d in general["donts"]]
 
     if cat_key in ELEVATED_RISK_CATEGORIES:
-        lines += ["", "Sensitive groups — additional precautions:"]
+        lines += ["", "Sensitive groups needing additional precautions:"]
         for cond in SENSITIVE_CONDITIONS:
             g = GUIDANCE[cond][cat_key]
             lines.append(f"  {CONDITION_LABELS[cond]}: {g['summary']}")
 
     lines += [
         "",
-        "— Issued by VayuSense, automated air-quality decision intelligence.",
+        "Issued by VayuSense, automated air-quality decision intelligence.",
         "Basis: EPA-method AQI from real archived sensor data (OpenAQ). "
         "Guidance keyed to WHO Air Quality Guidelines and US EPA sensitive-group thresholds.",
     ]

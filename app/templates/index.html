@@ -477,7 +477,7 @@
 
 <section class="section reveal" id="hotspots">
   <div class="sectionHead"><div class="kicker">Zoom in</div><h2>Pollution hotspots</h2>
-  <p class="scoreTxt">Individual monitoring stations within <span id="hotspotsCity">this city</span>, ranked by historical average PM2.5 — not every part of a city breathes the same air.</p></div>
+  <p class="scoreTxt">Individual monitoring stations within <span id="hotspotsCity">this city</span>, ranked by historical average PM2.5: not every part of a city breathes the same air.</p></div>
   <div class="grid" id="hotspotsGrid"></div>
 </section>
 
@@ -503,9 +503,9 @@
 <section class="section reveal" id="advisory">
   <div class="sectionHead"><div class="kicker">Automation</div><h2>Auto-generated public advisory</h2>
     <p class="scoreTxt" style="max-width:none">One click synthesizes today's AQI, condition-specific guidance, and
-      forecast outlook into a ready-to-publish notice for a school, clinic, or city office -- instant and free,
+      forecast outlook into a ready-to-publish notice for a school, clinic, or city office: instant and free,
       rule-based rather than an LLM call, so it can run for every tracked city at once with no added cost.</p></div>
-  <div class="objCard" style="min-height:70px">
+  <div class="objCard" id="advisoryCard" style="min-height:70px">
     <button type="button" class="yearChip" id="genAdvisoryBtn" onclick="generateAdvisory()">Generate today's advisory</button>
     <div id="advisoryOutput" style="display:none;margin-top:16px">
       <pre id="advisoryText" style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;line-height:1.65;color:var(--txt);margin:0;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px"></pre>
@@ -635,7 +635,7 @@ const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chenna
   Lucknow:'ic-lucknow',Patna:'ic-patna',Jaipur:'ic-jaipur',Surat:'ic-surat',Kanpur:'ic-kanpur',Nagpur:'ic-nagpur',Indore:'ic-indore',Bhopal:'ic-bhopal',Visakhapatnam:'ic-visakhapatnam',Vadodara:'ic-vadodara',Coimbatore:'ic-coimbatore',Nashik:'ic-nashik',};
 function cityIcon(c){return CITY_ICON[c]||'ic-generic'}
 function syncCityUrl(c){
-  document.title = `VayuSense — ${c} Air Quality`;
+  document.title = `VayuSense: ${c} Air Quality`;
   const path = '/city/' + c.toLowerCase();
   if(location.pathname !== path) history.pushState({city:c}, '', path);
 }
@@ -645,7 +645,7 @@ addEventListener('popstate', ()=>{
   const slug = m[1].toLowerCase();
   const opts = [...$('citySel').options].map(o=>o.value);
   const match = opts.find(c=>c.toLowerCase()===slug);
-  if(match){ CITY=match; $('citySel').value=match; document.title=`VayuSense — ${match} Air Quality`; refresh(); renderCalendar(); renderTrends(); }
+  if(match){ CITY=match; $('citySel').value=match; document.title=`VayuSense: ${match} Air Quality`; refresh(); renderCalendar(); renderTrends(); }
 });
 const HEALTH_ICON={general:'ic-lungs',children:'ic-child',elderly:'ic-elder',asthma:'ic-asthma',heart:'ic-heart',outdoor_workers:'ic-worker'};
 let HEALTH_DATA=null, ACTIVE_CONDITION='general', CURRENT_CATEGORY_KEY='moderate';
@@ -809,10 +809,11 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
    document level so it works on cards rendered after page load (pollutant
    cards, hotspots, forecast bench), not just ones present at first paint. */
 if(!reduceMotion){
-  // #askCard (Ask VayuSense) is excluded on request -- the tilt reads oddly
-  // on a card this tall/text-dense with a live chat log and input row inside
-  // it, unlike the shorter stat/pollutant cards it was designed for.
-  const TILT_SELECTOR='.objCard, .card:not(#askCard)';
+  // #askCard (Ask VayuSense) and #advisoryCard (auto-generated advisory) are
+  // excluded on request -- the tilt reads oddly on cards this tall/text-dense
+  // (live chat log, generated report text), unlike the shorter stat/pollutant
+  // cards it was designed for.
+  const TILT_SELECTOR='.objCard:not(#advisoryCard), .card:not(#askCard)';
   let tiltEl=null;
   document.addEventListener('mousemove',e=>{
     const el=e.target.closest(TILT_SELECTOR);
@@ -1024,10 +1025,10 @@ async function refresh(){
       // reassuring someone it's safe -- soften the trend into a caveat
       // clause instead of conjoining it with the safety statement.
       const goodTrend=trend==='rising'?', though it is trending upward':trend==='falling'?' and improving further':' and holding steady';
-      sentence=`${CITY}'s air is <b>Good</b> right now${goodTrend} — still safe for everyone to be outside today.`;
+      sentence=`${CITY}'s air is <b>Good</b> right now${goodTrend}; still safe for everyone to be outside today.`;
     }else{
       const trendPhrase=trend==='rising'?'and getting worse':trend==='falling'?'and improving':'and holding steady';
-      sentence=`${CITY}'s air is <b>${cat.label}</b> ${trendPhrase} — today's exposure carries about the same health burden as smoking <b>${imp.cigarettes_per_day_equivalent.toFixed(1)}</b> cigarettes today.`;
+      sentence=`${CITY}'s air is <b>${cat.label}</b> ${trendPhrase}; today's exposure carries about the same health burden as smoking <b>${imp.cigarettes_per_day_equivalent.toFixed(1)}</b> cigarettes today.`;
     }
     $('synthesisText').innerHTML=sentence;
     $('synthesisBox').style.display='';
@@ -1270,7 +1271,7 @@ async function generateAdvisory(){
     $('advisoryOutput').style.display='';
     btn.textContent='Regenerate';
   }catch(e){
-    btn.textContent='Something went wrong -- try again';
+    btn.textContent='Something went wrong, try again';
   }finally{
     btn.disabled=false;
   }

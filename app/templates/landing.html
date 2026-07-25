@@ -263,7 +263,7 @@
   <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
     can shift by the hour, a 9-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision. This is the original proof run, on the first
-    4 cities; the live dataset has since grown to 36 cities (one per state, Goa excepted -- verified zero real OpenAQ stations there) and over 25M readings without needing to re-earn that speedup.</p>
+    4 cities; the live dataset has since grown to 36 cities (one per state, Goa excepted: verified zero real OpenAQ stations there) and over 25M readings without needing to re-earn that speedup.</p>
   <div class="benchWrap">
     <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
     <div class="rows">
@@ -391,8 +391,8 @@ function renderShowcase(){
       See the full ranking on the dashboard.</p></div>`);
   }
   tiles.push(`<div class="showTile reveal d3"><div class="ic"><svg><use href="#ic-heart"/></svg></div>
-    <h3>Guidance by condition</h3><p>Instant, rule-based advice for six groups — children, elderly, asthma,
-    heart conditions, outdoor workers, and general — keyed to WHO/EPA thresholds. Zero added latency: no
+    <h3>Guidance by condition</h3><p>Instant, rule-based advice for six groups: children, elderly, asthma,
+    heart conditions, outdoor workers, and general, keyed to WHO/EPA thresholds. Zero added latency: no
     model call per click.</p></div>`);
   grid.innerHTML=tiles.join('');
   document.querySelectorAll('#showcaseGrid .reveal').forEach(el=>io.observe(el));

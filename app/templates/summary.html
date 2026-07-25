@@ -314,7 +314,7 @@
 
 <section class="section reveal" id="yoyRanking">
   <div class="sectionHead"><div class="kicker">Year over year</div><h2>Who's actually improving?</h2>
-    <p class="scoreTxt">Trailing 7-day average AQI vs the same calendar week last year, across all 36 cities, from the real archive — not a live snapshot.</p></div>
+    <p class="scoreTxt">Trailing 7-day average AQI vs the same calendar week last year, across all 36 cities, from the real archive: not a live snapshot.</p></div>
   <div class="yoyRankGrid" id="yoyRankGrid"></div>
 </section>
 
@@ -325,7 +325,7 @@
   <p class="scoreTxt" id="windMapNote" style="margin-top:10px;max-width:none"></p>
 </section>
 
-<p class="foot">Want the full instrument panel — pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
+<p class="foot">Want the full instrument panel: pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -587,7 +587,7 @@ async function renderWindMap(ranking){
   }
   try{
     const grid=await (await fetch('/api/wind-grid')).json();
-    if(grid.error) { $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.'; return; }
+    if(grid.error) { $('windMapNote').textContent='Wind data temporarily unavailable, showing city markers only.'; return; }
     if(WIND_LAYER){ WIND_MAP.removeLayer(WIND_LAYER); }
     WIND_LAYER=L.velocityLayer({
       displayValues:true,
@@ -603,7 +603,7 @@ async function renderWindMap(ranking){
     setTimeout(()=>{ if(WIND_LAYER && WIND_LAYER.onDrawLayer) WIND_LAYER.onDrawLayer(); }, 50);
     $('windMapNote').textContent=`Wind field refreshed: ${grid[0]?.header?.refTime||''}`;
   }catch(e){
-    $('windMapNote').textContent='Wind data temporarily unavailable — showing city markers only.';
+    $('windMapNote').textContent='Wind data temporarily unavailable, showing city markers only.';
   }
 }
 
