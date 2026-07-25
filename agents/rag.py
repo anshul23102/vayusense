@@ -120,7 +120,13 @@ CORPUS = [
 ]
 
 
+@lru_cache(maxsize=1)
 def _client():
+    # A fresh genai.Client() per call was the actual cause of a real
+    # production failure -- "RuntimeError: Cannot send a request, as the
+    # client has been closed." (its transport appears to get torn down
+    # between calls when constructed repeatedly). One cached instance for
+    # the process lifetime, matching the SDK's own recommended usage.
     from google import genai
     return genai.Client()
 
