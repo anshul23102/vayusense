@@ -56,6 +56,7 @@
   .navSearchDrop.on{display:block}
   .navSearchItem{padding:9px 14px;font-size:13px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:9px}
   .navSearchItem:hover,.navSearchItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .navSearchItem:active{background:rgba(157,193,255,.16)}
   .navSearchItem svg{width:14px;height:14px}
 
   .sectionHead{margin:52px 0 20px}
@@ -133,6 +134,7 @@
   .cityRow{display:flex;align-items:center;gap:14px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s,padding-left .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:first-child{border-top:none}
   .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
+  .cityRow:active{background:rgba(157,193,255,.07)}
   .cityRow:focus-visible{outline:2px solid var(--blueSolid);outline-offset:-2px;border-radius:8px}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
@@ -163,7 +165,7 @@
     30%{opacity:.7}100%{transform:translate(-50%,-24px) scale(1.3);opacity:0}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .cardIn{animation:cardIn .35s cubic-bezier(.2,.8,.2,1) both}
+  .cardIn{animation:cardIn .35s cubic-bezier(.2,.8,.2,1) backwards}
   .liveRegion{transition:opacity .25s ease}
   .liveRegion.loading{opacity:.45}
 

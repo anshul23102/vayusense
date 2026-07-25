@@ -68,6 +68,7 @@
   .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:16px;font-weight:600;
     font-size:16px;text-decoration:none;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s}
   .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:scale(.96);transition-duration:.08s}
   .btn.primary{color:#071023;background:linear-gradient(135deg,#e3ecff,#7fb0ff);box-shadow:0 10px 34px rgba(157,193,255,.4)}
   .btn.primary:hover{background:linear-gradient(135deg,#f2f7ff,#cfe0ff);box-shadow:var(--shadow-hover),0 10px 34px rgba(157,193,255,.5)}
   .btn.ghost{color:var(--txt);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
@@ -112,6 +113,7 @@
   .searchDrop.on{display:block}
   .searchItem{padding:10px 16px;font-size:13.5px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:10px}
   .searchItem:hover,.searchItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .searchItem:active{background:rgba(157,193,255,.16)}
   .searchItem svg{width:15px;height:15px}
   .card h3{font-size:19px;margin-bottom:10px}
   .card p{color:var(--dim);font-size:14.5px;line-height:1.6}
@@ -491,15 +493,18 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
    reduced motion (parallax-style rotation). */
 if(!reduceMotion){
   const TILT_SELECTOR='.tilt, .showTile';
-  let tiltEl=null;
+  let tiltEl=null,tiltPressed=false;
   document.addEventListener('mousemove',e=>{
     const el=e.target.closest(TILT_SELECTOR);
     if(el){
       const r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
       /* Rotation alone reads as parallax proportional to card size, so small
          tiles barely show it. Scale is size-independent -- keeps every card
-         family feeling equally tactile regardless of footprint. */
-      el.style.transform=`perspective(850px) rotateY(${x*9}deg) rotateX(${-y*9}deg) translateY(-3px) scale(1.025) translateZ(0)`;
+         family feeling equally tactile regardless of footprint. A plain CSS
+         :active would be silently overridden every tick by this inline
+         transform, so the press-state scale is applied here instead. */
+      const scale=tiltPressed?0.97:1.025;
+      el.style.transform=`perspective(850px) rotateY(${x*9}deg) rotateX(${-y*9}deg) translateY(-3px) scale(${scale}) translateZ(0)`;
       tiltEl=el;
     }else if(tiltEl){
       tiltEl.style.transform='';
@@ -507,6 +512,8 @@ if(!reduceMotion){
     }
   });
   document.addEventListener('mouseleave',()=>{if(tiltEl){tiltEl.style.transform='';tiltEl=null}});
+  document.addEventListener('mousedown',e=>{if(e.target.closest(TILT_SELECTOR))tiltPressed=true});
+  document.addEventListener('mouseup',()=>{tiltPressed=false});
 }
 
 (function(){
