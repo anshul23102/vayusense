@@ -241,8 +241,12 @@ def _finish(raw):
     hourly_merged = pd.concat([hourly_old, hourly_new], ignore_index=True).drop_duplicates(
         subset=["city", "parameter", "hour"], keep="last"
     )
-    league_merged = pd.concat([league_old, league_new], ignore_index=True).sort_values(
-        "value", ascending=False
+    # See refresh_incremental.py: dedupe by station so repeated runs don't
+    # pile up multiple rows for the same physical station.
+    league_merged = (
+        pd.concat([league_old, league_new], ignore_index=True)
+        .groupby(["city", "location"], as_index=False)["value"].mean()
+        .sort_values("value", ascending=False)
     )
 
     daily_merged.to_parquet("data/processed/daily_city.parquet", index=False)

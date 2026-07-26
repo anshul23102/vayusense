@@ -202,8 +202,15 @@ def main() -> None:
     hourly_merged = pd.concat([hourly_old, hourly_new], ignore_index=True).drop_duplicates(
         subset=["city", "parameter", "hour"], keep="last"
     )
-    league_merged = pd.concat([league_old, league_new], ignore_index=True).sort_values(
-        "value", ascending=False
+    # Each incremental run's league_new is a per-station PM2.5 mean over just
+    # that run's new date window; concatenating runs without deduping leaves
+    # the same physical station as multiple rows (one per past refresh), which
+    # crowds out genuinely distinct stations from get_worst_stations()'s
+    # top-N. Re-collapse to one row per station on every merge.
+    league_merged = (
+        pd.concat([league_old, league_new], ignore_index=True)
+        .groupby(["city", "location"], as_index=False)["value"].mean()
+        .sort_values("value", ascending=False)
     )
 
     daily_merged.to_parquet(DATA_DIR / "daily_city.parquet", index=False)
