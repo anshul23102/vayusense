@@ -54,8 +54,12 @@
 
   .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
     text-align:center;padding:120px 6vw 60px}
-  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:99px;font-size:13px;
+  .chip{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 8px;
+    padding:8px 16px;border-radius:99px;font-size:13px;
     color:var(--dim);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
+  /* Each phrase stays whole: narrow viewports were breaking "Multi-agent"
+     across two lines and stranding the separator at the end of a line. */
+  .chipSeg{white-space:nowrap}
   .chip b{color:var(--nv)}
   .chip .pulse{width:7px;height:7px;border-radius:50%;background:var(--nv);animation:pulse 1.8s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(138,209,46,.5)}70%{box-shadow:0 0 0 9px rgba(138,209,46,0)}100%{box-shadow:0 0 0 0 rgba(138,209,46,0)}}
@@ -192,7 +196,7 @@
 
 <div class="hero">
   <div class="kicker reveal on" style="text-align:center">VAYUSENSE</div>
-  <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b><span class="js-archive-readings">35.4M</span> real sensor readings</b></div>
+  <div class="chip reveal on"><span class="pulse"></span><span class="chipSeg">GPU-accelerated · Multi-agent AI</span><b class="chipSeg"><span class="js-archive-readings">35.4M</span> real sensor readings</b></div>
   <h1><span class="soft reveal d1">Know when the</span><br><span class="blue reveal d2">air is safe.</span></h1>
   <p class="sub reveal d3">Every breath in Delhi carries a cost most dashboards never show you. VayuSense turns
     millions of raw sensor readings into one honest answer, for a parent deciding on sports practice,
