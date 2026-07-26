@@ -103,6 +103,14 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # HTML carries the app's markup, CSS and JS inline, so a stale copy pins a
+    # visitor to an old build. With no cache directive at all, browsers fall
+    # back to heuristic caching and can serve that stale copy for a long time
+    # (Safari is especially sticky about it). "no-cache" still lets the browser
+    # keep the response, it just has to revalidate before reusing it, so this
+    # costs a 304 rather than a full refetch. /static keeps its own policy.
+    if response.headers.get("content-type", "").startswith("text/html"):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 
 
