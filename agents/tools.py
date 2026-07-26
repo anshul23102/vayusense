@@ -274,7 +274,7 @@ def get_worst_stations(city: str, top_n: int = 5) -> str:
     return json.dumps([{"station": r.location, "avg_pm25": round(float(r.value), 1)} for r in d.itertuples()])
 
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)  # must exceed the 36 tracked cities, or a full sweep thrashes
 def _daily_overall_aqi_cached(city_key: str) -> tuple:
     """Per-day EPA-method overall AQI for a city, across its FULL archived
     history (all years) -- the same aggregation calendar_api/monthly_api use

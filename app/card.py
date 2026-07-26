@@ -11,6 +11,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from agents.aqi import pollutant_label
+
 FONTS = Path(__file__).resolve().parent / "static" / "fonts"
 W, H = 1200, 630
 
@@ -51,7 +53,8 @@ def _vertical_gradient(w: int, h: int, top: tuple, bottom: tuple) -> Image.Image
 
 def render_card(*, city: str, aqi: int, category_key: str, category_label: str,
                  dominant: str, source: str, updated: str,
-                 cigarettes_per_day: float, years_lost: float) -> bytes:
+                 cigarettes_per_day: float, years_lost: float,
+                 site_host: str = "") -> bytes:
     color = RAMP.get(category_key, RAMP["moderate"])
     img = _vertical_gradient(W, H, NIGHT_BG, NIGHT_BG_DEEP).convert("RGBA")
 
@@ -117,13 +120,18 @@ def render_card(*, city: str, aqi: int, category_key: str, category_label: str,
     d.text((stat_x, 262), "cigarettes/day equivalent", font=_font("regular", 18), fill=MIST)
     d.text((stat_x, 320), f"{years_lost}", font=_font("bold", 46), fill=INK)
     d.text((stat_x, 372), "years life expectancy impact", font=_font("regular", 18), fill=MIST)
-    d.text((stat_x, 420), f"Driven by {dominant.upper()}", font=_font("semibold", 16), fill=MIST)
+    d.text((stat_x, 420), f"Driven by {pollutant_label(dominant)}", font=_font("semibold", 16), fill=MIST)
 
     # Footer.
     d.line([(64, 578), (1136, 578)], fill=(255, 255, 255, 30), width=1)
     src_label = "LIVE" if source == "live" else "ARCHIVE"
-    d.text((64, 592), f"{src_label} · OpenAQ archive, GPU-processed · vayusense.app",
-            font=_font("regular", 16), fill=MIST)
+    # The host is passed in from the live request rather than hardcoded: this
+    # card is the artifact people share, and it previously printed a domain
+    # that was never registered and does not resolve.
+    footer = f"{src_label} · OpenAQ archive, GPU-processed"
+    if site_host:
+        footer += f" · {site_host}"
+    d.text((64, 592), footer, font=_font("regular", 16), fill=MIST)
 
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")

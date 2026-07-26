@@ -551,7 +551,7 @@
     <button type="button" class="yearChip" id="visionUploadBtn" onclick="$('visionFileInput').click()">Upload a sky photo</button>
     <span id="visionFileName" class="scoreTxt" style="margin-left:10px"></span>
     <div id="visionOutput" style="display:none;margin-top:16px">
-      <img id="visionPreview" style="max-width:260px;border-radius:12px;border:1px solid var(--line);display:block;margin-bottom:14px">
+      <img id="visionPreview" alt="The sky photo you uploaded" style="max-width:260px;border-radius:12px;border:1px solid var(--line);display:block;margin-bottom:14px">
       <p id="visionText" style="font-size:13.5px;line-height:1.65;color:var(--txt);margin:0;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px"></p>
     </div>
   </div>
@@ -578,7 +578,7 @@
         <div class="big" id="speedup">-</div>
         <small><span id="benchRows"></span><br><span id="benchTimes"></span><br>RAPIDS cuDF vs pandas · T4 GPU</small>
       </div>
-      <img src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time: pandas on CPU took 9.34 seconds versus cuDF on an NVIDIA T4 GPU at 0.25 seconds, a 37.5 times speedup" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
+      <img src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time over 10,443,350 sensor readings: pandas on CPU took 7.99 seconds versus cuDF on an NVIDIA T4 GPU at 0.19 seconds, a 42.2 times speedup" style="width:100%;margin-top:14px;border-radius:14px;border:1px solid var(--line)" onerror="this.style.display='none'">
     </div>
   </div>
 </div>
@@ -664,6 +664,10 @@ function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{k
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
 const POLL_ICON={pm25:'ic-pm25',pm10:'ic-pm10',co:'ic-co',so2:'ic-so2',no2:'ic-no2',o3:'ic-o3'};
 const POLL_UNITS={co:'mg/m³'};
+// The API reports the archive's internal unit codes (see agents/aqi.py
+// ARCHIVE_UNITS); map them to their display form so raw codes never surface.
+const UNIT_LABELS={ugm3:'µg/m³',mgm3:'mg/m³',ppb:'ppb',ppm:'ppm'};
+function unitLabel(u){ return UNIT_LABELS[u]||u; }
 const MOOD_SYMBOL={good:'mood-good',moderate:'mood-good',poor:'mood-uneasy',unhealthy:'mood-uneasy',severe:'mood-cough',hazardous:'mood-cough'};
 function renderMoodChar(color){
   const sym='#'+(MOOD_SYMBOL[CURRENT_CATEGORY_KEY]||'mood-uneasy');
@@ -1045,7 +1049,7 @@ async function refresh(){
         $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub],i)=>{
           const b=bandOf(sub); const sv=s.pollutants[p]||{};
           const conc=a.concs&&a.concs[p]!==undefined?a.concs[p]:(sv.daily_mean!==undefined?sv.daily_mean:'–');
-          const unit=(a.units&&a.units[p])||POLL_UNITS[p]||'µg/m³';
+          const unit=unitLabel((a.units&&a.units[p])||POLL_UNITS[p]||'µg/m³');
           return `<div class="s4"><button type="button" class="objCard cardIn" style="animation-delay:${i*40}ms;border-left:3px solid ${b.color};width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit"
             onclick="$('paramSel').value='${p}';$('paramSel').dispatchEvent(new Event('change'));$('trend').scrollIntoView({behavior:'smooth'})">
             <div class="cardIcon" style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;background:${b.color}1f;color:${b.color}"><svg style="width:20px;height:20px"><use href="#${POLL_ICON[p]||'ic-pm25'}"/></svg></div>
@@ -1183,7 +1187,7 @@ async function renderHotspots(){
       const b=bandOf(overallFromPm25(st.avg_pm25));
       return `<div class="s6"><div class="objCard cardIn" style="animation-delay:${i*40}ms;border-left:3px solid ${b.color}">
         <div style="color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px">Hotspot #${i+1}</div>
-        <div style="font-size:15px;margin:4px 0 6px">${st.station}</div>
+        <div style="font-size:15px;margin:4px 0 6px">${esc(st.station)}</div>
         <div class="num" style="font-size:22px;font-weight:600">${st.avg_pm25}<span style="font-size:12px;color:var(--dim);font-family:'Onest'"> µg/m³ PM2.5 (avg)</span></div>
         <div style="font-size:12px;margin-top:4px"><span style="color:${textSafeColor(b.key,b.color)}">● ${b.label}</span></div>
       </div></div>`;

@@ -27,7 +27,8 @@ from agents.advisory import generate_advisory, generate_advisory_batch
 from agents.vision import ALLOWED_MIME_TYPES, MAX_IMAGE_BYTES, assess_sky_photo
 from agents.agent import root_agent
 from agents import tools as data_tools
-from agents.aqi import ARCHIVE_UNITS, category as aqi_category, overall_aqi
+from agents.aqi import (ARCHIVE_UNITS, category as aqi_category, overall_aqi,
+                        pollutant_label as aqi_pollutant_label)
 from agents.health_guidance import CONDITIONS, CONDITION_LABELS, GUIDANCE, citation as health_citation
 from agents.solutions import citation as solutions_citation, get_solutions
 from app import card, data_sync, live, weather, wind
@@ -68,9 +69,12 @@ async def static_cache_control(request: Request, call_next):
 
 
 # Every third-party origin this app's HTML actually loads from, enumerated by
-# grepping app/templates/*.html rather than guessed -- cdn.plot.ly (charts),
-# unpkg.com (Leaflet, the wind map), fonts.googleapis.com/fonts.gstatic.com
-# (webfont). Templates use inline <script>/style= throughout, so
+# grepping app/templates/*.html rather than guessed -- cdn.plot.ly (charts) and
+# fonts.googleapis.com/fonts.gstatic.com (webfont). Leaflet used to come from
+# unpkg.com; it is now vendored under /static/vendor/leaflet alongside its
+# plugins, so that origin is gone from the policy entirely rather than left
+# trusted for a script the app no longer fetches.
+# Templates use inline <script>/style= throughout, so
 # 'unsafe-inline' is required for script-src/style-src -- a stricter,
 # nonce-based CSP isn't a realistic option without rewriting every template's
 # inline JS, which is out of scope here; this still meaningfully restricts
@@ -80,8 +84,8 @@ async def static_cache_control(request: Request, call_next):
 # failed to render (confirmed with real image bytes, not just bad test data).
 _CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://unpkg.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+    "script-src 'self' 'unsafe-inline' https://cdn.plot.ly; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' https://fonts.gstatic.com; "
     "img-src 'self' data: blob:; "
     "connect-src 'self'; "
@@ -122,11 +126,29 @@ VISION_RATE_WINDOW = 60
 _vision_hits: dict[str, deque] = defaultdict(deque)
 
 
+def _client_id(request: Request) -> str:
+    """Identify the caller for rate-limiting. Behind Cloud Run's front end
+    request.client.host is the proxy, not the user, so every caller would
+    otherwise share one bucket and strangers' traffic would 429 real users.
+    The left-most X-Forwarded-For entry is the originating client; it is
+    client-settable in general, but Cloud Run appends the true peer and
+    rewrites the header, so on this deployment it is trustworthy."""
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
 def _rate_limited(client_id: str, hits_by_client: dict[str, deque] = None,
                    limit: int = ASK_RATE_LIMIT, window: int = ASK_RATE_WINDOW) -> bool:
     if hits_by_client is None:
         hits_by_client = _ask_hits
     now = time.time()
+    # Drop buckets that have fully aged out, so a stream of one-shot IPs
+    # can't grow this map without bound.
+    if len(hits_by_client) > 4096:
+        for k in [k for k, v in hits_by_client.items() if not v or now - v[-1] > window]:
+            del hits_by_client[k]
     hits = hits_by_client[client_id]
     while hits and now - hits[0] > window:
         hits.popleft()
@@ -158,7 +180,7 @@ def city_page(slug: str):
     if row is not None:
         title = f"{match} air quality: {row['aqi']} AQI ({row['category']['label']}) | VayuSense"
         desc = (f"{match}'s AQI is {row['aqi']} ({row['category']['label']}), driven by "
-                f"{row['dominant'].upper()}. Real-time, GPU-processed air quality intelligence.")
+                f"{aqi_pollutant_label(row['dominant'])}. Real-time, GPU-processed air quality intelligence.")
         image = f"/city/{slug.lower()}/card.png"
         meta = (
             f'<meta property="og:title" content="{title}">'
@@ -175,7 +197,7 @@ def city_page(slug: str):
 
 
 @app.get("/city/{slug}/card.png")
-def city_card(slug: str):
+def city_card(slug: str, request: Request):
     cities = json.loads(data_tools.list_cities())
     match = next((c for c in cities if c.lower() == slug.lower()), None)
     if match is None:
@@ -190,6 +212,7 @@ def city_card(slug: str):
         source=row["source"], updated=row["last_updated"],
         cigarettes_per_day=imp.get("cigarettes_per_day_equivalent", 0),
         years_lost=imp.get("estimated_life_expectancy_years_lost", 0),
+        site_host=request.url.hostname or "",
     )
     return Response(content=png, media_type="image/png",
                      headers={"Cache-Control": "public, max-age=1800"})
@@ -295,6 +318,12 @@ def _yoy_ranking_cached(window: int) -> tuple:
 
 @app.get("/api/yoy_ranking")
 def yoy_ranking(window: int = 7):
+    # get_year_over_year() clamps to 1..30 internally, so every out-of-range
+    # value yields an identical result -- but the cache is keyed on what it
+    # is handed, so clamping here too keeps an unbounded query parameter from
+    # minting unbounded distinct cache keys and forcing a full 36-city
+    # recompute per novel value.
+    window = max(1, min(window, 30))
     rows = _yoy_ranking_cached(window)
     return {
         "window_days": window,
@@ -401,9 +430,10 @@ def invalidate_all_caches() -> None:
     data_tools.invalidate_caches()
     _daily_overall_cached.cache_clear()
     _yoy_ranking_cached.cache_clear()
+    _archive_reading_total.cache_clear()
 
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)  # must exceed the 36 tracked cities, or a full sweep thrashes
 def _daily_overall_cached(city_key: str) -> tuple:
     df = data_tools._daily()
     d = df[df["city"].str.lower() == city_key]
@@ -511,7 +541,7 @@ async def vision_check_api(request: Request, city: str = "Delhi", file: UploadFi
     on it, in the context of the city's real measured AQI -- see
     agents/vision.py. Multimodal input, explicitly framed as a complement to
     the sensor data, never a substitute for it."""
-    client_id = request.client.host if request.client else "unknown"
+    client_id = _client_id(request)
     if _rate_limited(client_id, _vision_hits, VISION_RATE_LIMIT, VISION_RATE_WINDOW):
         return JSONResponse(
             {"error": "Too many photo uploads right now. Please wait a moment and try again."},
@@ -522,12 +552,19 @@ async def vision_check_api(request: Request, city: str = "Delhi", file: UploadFi
             {"error": f"Unsupported file type '{file.content_type}'. Please upload a JPEG, PNG, WEBP, or HEIC photo."},
             status_code=400,
         )
-    image_bytes = await file.read()
+    # Reject on the declared length before touching the body, then read at most
+    # one byte past the cap: a bare post-hoc len() check would already have
+    # spooled an arbitrarily large upload to memory/disk before rejecting it.
+    too_large = JSONResponse(
+        {"error": "That photo is too large (max 8 MB). Please try a smaller image."},
+        status_code=400,
+    )
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_IMAGE_BYTES:
+        return too_large
+    image_bytes = await file.read(MAX_IMAGE_BYTES + 1)
     if len(image_bytes) > MAX_IMAGE_BYTES:
-        return JSONResponse(
-            {"error": "That photo is too large (max 8 MB). Please try a smaller image."},
-            status_code=400,
-        )
+        return too_large
     row = _city_aqi(city, allow_fetch=True)
     if row is None:
         return JSONResponse({"error": f"no AQI data for city '{city}'"}, status_code=404)
@@ -554,11 +591,22 @@ def solutions_api(category: str = "moderate"):
     return {"category": category, "solutions": solutions, "citation": solutions_citation()}
 
 
+@lru_cache(maxsize=1)
+def _archive_reading_total() -> int:
+    """Total raw sensor readings behind the whole archive, summed from each
+    daily aggregate's own observation count. Computed rather than hardcoded:
+    the landing page previously stated two different, unsourced totals that
+    contradicted each other and both understated the real figure."""
+    return int(data_tools._daily()["count"].sum())
+
+
 @app.get("/api/benchmark")
 def benchmark():
     f = ROOT / "benchmark" / "benchmark_results.json"
     if f.exists():
-        return json.loads(f.read_text())
+        payload = json.loads(f.read_text())
+        payload["archive_readings"] = _archive_reading_total()
+        return payload
     return JSONResponse({"error": "benchmark not yet generated"}, status_code=404)
 
 
@@ -576,7 +624,7 @@ def _validate_ask(body: AskBody, request: Request) -> str | None:
         return "Please type a question first."
     if len(question) > 500:
         return "That question is too long. Try something shorter."
-    client_id = request.client.host if request.client else "unknown"
+    client_id = _client_id(request)
     if _rate_limited(client_id):
         return "You're asking questions faster than VayuSense can think. Please wait a moment and try again."
     return None

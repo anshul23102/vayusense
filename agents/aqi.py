@@ -36,6 +36,21 @@ ARCHIVE_UNITS = {"pm25": "ugm3", "pm10": "ugm3", "no2": "ugm3",
 _UNIT_ALIASES = {"µg/m³": "ugm3", "ug/m3": "ugm3", "mg/m³": "mgm3", "mg/m3": "mgm3",
                  "ppb": "ppb", "ppm": "ppm", "ugm3": "ugm3", "mgm3": "mgm3"}
 
+# Display names for the internal pollutant codes. A bare .upper() renders
+# "pm25" as "PM25", which is wrong anywhere a human reads it.
+POLLUTANT_LABELS = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO2",
+                    "o3": "O3", "so2": "SO2", "co": "CO"}
+# Display forms of the archive's unit codes, for the same reason.
+UNIT_LABELS = {"ugm3": "µg/m³", "mgm3": "mg/m³", "ppb": "ppb", "ppm": "ppm"}
+
+
+def pollutant_label(code: str) -> str:
+    return POLLUTANT_LABELS.get((code or "").lower(), (code or "").upper())
+
+
+def unit_label(code: str) -> str:
+    return UNIT_LABELS.get((code or "").lower(), code)
+
 
 def to_epa_unit(parameter: str, value: float, unit: str = "ugm3") -> float | None:
     """Convert a concentration to the EPA unit for its parameter (25 C, 1 atm)."""

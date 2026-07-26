@@ -192,14 +192,14 @@
 
 <div class="hero">
   <div class="kicker reveal on" style="text-align:center">VAYUSENSE</div>
-  <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b>17.1M real sensor readings</b></div>
+  <div class="chip reveal on"><span class="pulse"></span> GPU-accelerated · Multi-agent AI · <b><span class="js-archive-readings">35.4M</span> real sensor readings</b></div>
   <h1><span class="soft reveal d1">Know when the</span><br><span class="blue reveal d2">air is safe.</span></h1>
   <p class="sub reveal d3">Every breath in Delhi carries a cost most dashboards never show you. VayuSense turns
     millions of raw sensor readings into one honest answer, for a parent deciding on sports practice,
     a clinic bracing for admissions, a city planner drafting tomorrow's advisory.</p>
   <div class="heroBtns reveal d4">
     <a class="btn primary" href="/dashboard">See your city's air →</a>
-    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> <span class="js-gpu-speedup">37.5×</span> faster on GPU: see how</a>
+    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> <span class="js-gpu-speedup">42.16×</span> faster on GPU: see how</a>
   </div>
   <div class="searchWrap reveal d4">
     <input class="searchInput" id="citySearch" type="text" autocomplete="off"
@@ -210,8 +210,8 @@
     <div class="searchDrop" id="searchDrop" role="listbox"></div>
   </div>
   <div class="statRow reveal d4">
-    <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b>25,347,842</b> readings analyzed</div>
-    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b class="js-gpu-speedup">37.5×</b> faster with NVIDIA</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b class="js-archive-readings-full">35,391,063</b> readings analyzed</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b class="js-gpu-speedup">42.16×</b> faster with NVIDIA</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>36</b> cities · <b>6</b> pollutants</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-chip"/></svg> <b>2</b> reasoning agents</div>
   </div>
@@ -260,16 +260,15 @@
 <section id="bench">
   <div class="kicker reveal">The acceleration, proven</div>
   <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">37.5×</span> faster than pandas.</h2>
-  <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 5.9 million rows. Timed honestly, side by side. When air quality
-    can shift by the hour, a 9-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
-    buys back: the moment between a question and a decision. This is the original proof run, on the first
-    4 cities; the live dataset has since grown to 36 cities (one per state, Goa excepted: verified zero real OpenAQ stations there) and over 25M readings without needing to re-earn that speedup.</p>
+  <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 10,443,350 rows. Timed honestly, side by side. When air quality
+    can shift by the hour, a 7.994-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
+    buys back: the moment between a question and a decision.</p>
   <div class="benchWrap">
-    <img class="benchImg reveal" src="/static/benchmark.png" alt="cuDF vs pandas benchmark">
+    <img class="benchImg reveal" src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time over 10,443,350 sensor readings: pandas on CPU took 7.99 seconds versus cuDF on an NVIDIA T4 GPU at 0.19 seconds, a 42.2 times speedup">
     <div class="rows">
-      <div class="row reveal"><span>Dataset</span><b id="gpuDatasetRow">5,922,378 readings · 44 stations</b></div>
-      <div class="row reveal d1"><span>pandas (CPU)</span><b id="gpuCpuRow">9.34 s</b></div>
-      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg" id="gpuGpuRow">0.25 s</b></div>
+      <div class="row reveal"><span>Dataset</span><b id="gpuDatasetRow">10,443,350 readings</b></div>
+      <div class="row reveal d1"><span>pandas (CPU)</span><b id="gpuCpuRow">7.994 s</b></div>
+      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg" id="gpuGpuRow">0.19 s</b></div>
       <div class="row stack reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
     </div>
   </div>
@@ -346,6 +345,15 @@ function renderGpuBench(){
   const speedup=`${g.speedup}×`;
   const rows=g.rows.toLocaleString();
   document.querySelectorAll('.js-gpu-speedup').forEach(el=>el.textContent=speedup);
+  // Real archive total, computed server-side from each daily aggregate's own
+  // observation count, so the two on-page mentions can never drift apart or
+  // go stale as the archive grows.
+  if(typeof g.archive_readings==='number'){
+    const full=g.archive_readings.toLocaleString();
+    const short=`${(g.archive_readings/1e6).toFixed(1)}M`;
+    document.querySelectorAll('.js-archive-readings-full').forEach(el=>el.textContent=full);
+    document.querySelectorAll('.js-archive-readings').forEach(el=>el.textContent=short);
+  }
   document.querySelectorAll('.js-gpu-rows').forEach(el=>el.textContent=rows);
   const dataset=document.getElementById('gpuDatasetRow');
   if(dataset)dataset.textContent=`${rows} readings`;
@@ -376,13 +384,13 @@ function renderShowcase(){
   const tiles=[];
   if(winner){
     tiles.push(`<div class="showTile reveal"><div class="ic"><svg><use href="#ic-chart"/></svg></div>
-      <h3>Forecast Bench</h3><p>Four forecasting methods compete on real held-out data. Right now
+      <h3>Forecast bench</h3><p>Four forecasting methods compete on real held-out data. Right now
       <b style="color:var(--txt)">${bench.methods[winner[0]]}</b> is winning for Delhi PM2.5, with a measured
       backtest error of <b style="color:var(--txt)">${winner[1]} µg/m³</b>. No black box: every method is scored
       on identical folds and the loser is shown too.</p></div>`);
   }
   tiles.push(`<div class="showTile reveal d1"><div class="ic"><svg><use href="#ic-signal"/></svg></div>
-    <h3>Air Quality Calendar</h3><p>Every archived day, for every tracked city, colored by its EPA-method
+    <h3>Air quality calendar</h3><p>Every archived day, for every tracked city, colored by its EPA-method
     AQI band, spanning 2024 through today. Real measured history you can actually scan for patterns, not just a today-snapshot.</p></div>`);
   if(top){
     tiles.push(`<div class="showTile reveal d2"><div class="ic"><svg><use href="#${cityIcon(top.city)}"/></svg></div>

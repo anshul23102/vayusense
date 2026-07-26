@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
-from .aqi import category as aqi_category
+from .aqi import category as aqi_category, pollutant_label
 from .health_guidance import CONDITION_LABELS, GUIDANCE
 from .tools import get_city_snapshot, get_forecast, get_human_impact, list_cities
 
@@ -23,7 +23,6 @@ from .tools import get_city_snapshot, get_forecast, get_human_impact, list_citie
 # "general population" guidance alone understates the real risk for them.
 SENSITIVE_CONDITIONS = ["children", "elderly", "asthma", "heart"]
 ELEVATED_RISK_CATEGORIES = {"poor", "unhealthy", "severe", "hazardous"}
-
 
 def _forecast_outlook(city: str, parameter: str) -> str | None:
     """A one-line, hedged forecast sentence, or None if there isn't enough
@@ -45,7 +44,7 @@ def _forecast_outlook(city: str, parameter: str) -> str | None:
     mae = fc.get("backtest_mae")
     basis = (f"historical error ±{mae} on held-out data" if mae is not None
              else "based on recent trend only, no held-out backtest available")
-    return (f"Over the next {len(values)} days, {parameter.upper()} is {direction} "
+    return (f"Over the next {len(values)} days, {pollutant_label(parameter)} is {direction} "
             f"(projected by {fc['method_label']}; {basis}).")
 
 
@@ -70,7 +69,7 @@ def generate_advisory(city: str) -> dict:
         f"{city.upper()} AIR QUALITY ADVISORY, "
         f"{datetime.now(timezone.utc).strftime('%B %d, %Y')}",
         "",
-        f"Current status: {cat['label']} (AQI {snap['aqi']}), driven by {dominant.upper()}."
+        f"Current status: {cat['label']} (AQI {snap['aqi']}), driven by {pollutant_label(dominant)}."
         + (f" Today's exposure carries a health burden comparable to smoking "
            f"{cigs} cigarettes." if cigs is not None else ""),
     ]

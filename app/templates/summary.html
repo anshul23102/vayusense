@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23cfe0ff'/%3E%3Cstop offset='100%25' stop-color='%23b9a8fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='7' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/static/vendor/leaflet-velocity/leaflet-velocity.css">
 <style>
   :root{
@@ -319,7 +319,7 @@
 </section>
 
 <section class="section reveal" id="windmap">
-  <div class="sectionHead"><div class="kicker">Live</div><h2>Wind &amp; Air Quality Map</h2>
+  <div class="sectionHead"><div class="kicker">Live</div><h2>Wind and air quality map</h2>
     <p class="scoreTxt" style="max-width:none">Real wind vectors sampled across India (Open-Meteo), animated with <a href="https://github.com/weacast/leaflet-velocity" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">leaflet-velocity</a>. The red-to-green overlay is a live AQI heatmap; state boundaries via <a href="https://www.geoboundaries.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">geoBoundaries</a> (CC BY 2.5 India).</p></div>
   <div id="windMapContainer" style="height:520px;border-radius:16px;overflow:hidden;border:1px solid var(--line)"></div>
   <p class="scoreTxt" id="windMapNote" style="margin-top:10px;max-width:none"></p>
@@ -328,7 +328,7 @@
 <p class="foot">Want the full instrument panel: pollutants, health guidance, solutions, calendar, forecasts? <a href="#cities">Tap any city above ↑</a></p>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="/static/vendor/leaflet/leaflet.js"></script>
 <script src="/static/vendor/leaflet-velocity/leaflet-velocity.js"></script>
 <script src="/static/vendor/leaflet-heat/leaflet-heat.js"></script>
 <script>
