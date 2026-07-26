@@ -30,6 +30,14 @@ CORPUS = [
                 "(µg/m3) -- half the previous 2005 guideline of 10 µg/m3.",
     },
     {
+        "id": "who_co_24h",
+        "source": "WHO Global Air Quality Guidelines, 2021",
+        "text": "WHO's 2021 guidelines introduced a new 24-hour guideline value for carbon "
+                "monoxide (CO) of 4 mg/m3, with an interim target of 7 mg/m3. The existing "
+                "8-hour (10 mg/m3), 1-hour (35 mg/m3) and 15-minute (100 mg/m3) levels were "
+                "carried over unchanged.",
+    },
+    {
         "id": "who_pm10_annual",
         "source": "WHO Global Air Quality Guidelines, 2021",
         "text": "WHO's 2021 annual guideline value for PM10 is 15 µg/m3, a 25% reduction "

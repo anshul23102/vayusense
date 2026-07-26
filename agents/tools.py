@@ -13,8 +13,13 @@ import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 
-# WHO 2021 24-hour guideline values (µg/m³ unless noted)
-WHO_24H = {"pm25": 15.0, "pm10": 45.0, "no2": 25.0, "so2": 40.0, "o3": 100.0}
+# WHO 2021 Global Air Quality Guideline levels, in each pollutant's own
+# ARCHIVE_UNITS scale so the ratio below is unit-consistent (µg/m³ for all but
+# CO, which the archive stores in mg/m³).
+# Averaging time is 24-hour for pm25/pm10/no2/so2/co; O3 has no 24-hour AQG,
+# so 100 is its 8-hour level and is compared as the nearest published bound.
+WHO_24H = {"pm25": 15.0, "pm10": 45.0, "no2": 25.0, "so2": 40.0, "o3": 100.0,
+           "co": 4.0}
 
 from .aqi import ARCHIVE_UNITS, category as _aqi_category, overall_aqi as _overall_aqi
 
@@ -113,6 +118,9 @@ def get_trend(city: str, parameter: str, days: int = 30) -> str:
         days: Number of trailing days to return (default 30).
     """
     df = _daily()
+    # Clamp before .tail(): a negative value makes pandas drop the first N rows
+    # and return the whole remaining history instead of a trailing window.
+    days = max(1, min(int(days), 3650))
     d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date").tail(days)
     if d.empty:
         return json.dumps({"error": f"no {parameter} data for {city}"})
@@ -268,6 +276,9 @@ def get_worst_stations(city: str, top_n: int = 5) -> str:
         top_n: How many stations to return.
     """
     lg = _league()
+    # Reachable as an agent tool, so the argument is model-chosen: a negative
+    # value would make .head() return everything but the last N rows.
+    top_n = max(1, min(int(top_n), 50))
     d = lg[lg["city"].str.lower() == city.lower()].head(top_n)
     if d.empty:
         return json.dumps({"error": f"no station data for {city}"})
