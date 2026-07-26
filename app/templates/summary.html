@@ -333,6 +333,7 @@
 <script src="/static/vendor/leaflet-heat/leaflet-heat.js"></script>
 <script>
 const $ = id => document.getElementById(id);
+function pollutantLabel(code){ code=(code||'').toLowerCase(); return code==='pm25'?'PM2.5':code.toUpperCase(); }
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85',severe:'#ef4fc0',hazardous:'#c93a5a'};
 // See index.html for why: Oxblood is correct for fills/strokes (3:1 threshold)
@@ -451,7 +452,7 @@ async function loadOverview(){
     const v=$('verdict');
     v.innerHTML='<span class="vdot"></span>'+a.category.label;
     v.style.color=textSafeColor(a.category.key,a.category.color);v.style.borderColor=a.category.color;
-    $('scoreTxt').innerHTML=`Driven by ${a.dominant.toUpperCase()} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
+    $('scoreTxt').innerHTML=`Driven by ${pollutantLabel(a.dominant)} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
     $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
     $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         if(a.rank && a.of){ $('aqiRank').style.display=''; $('aqiRank').textContent=`#${a.rank} of ${a.of}`; } else { $('aqiRank').style.display='none'; }
@@ -466,7 +467,7 @@ async function loadOverview(){
         <div class="cityName">${r.city}</div>
         <div class="cityAqi num">${r.aqi}</div>
         <div class="cityCat" style="color:${textSafeColor(catKey,color)}">● ${r.category}</div>
-        <div class="cityDom">${(r.dominant||'').toUpperCase()}</div>
+        <div class="cityDom">${pollutantLabel(r.dominant)}</div>
         <div class="cityGo">→</div>
       </div>`;
     }).join('');
@@ -574,7 +575,7 @@ async function renderWindMap(ranking){
         heatPoints.push([c[0], c[1], Math.min(r.aqi/300, 1)]);
         L.circleMarker([c[0],c[1]], {radius:9, color:'#0b1020', fillColor:color, fillOpacity:.95, weight:2}).addTo(WIND_MAP)
           .bindTooltip(r.city, {direction:'top', className:'windMapTip', offset:[0,-6]})
-          .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${(r.dominant||'').toUpperCase()}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
+          .bindPopup(`<b>${r.city}</b><br>AQI ${r.aqi} (US EPA) · ${r.category}<br>Dominant: ${pollutantLabel(r.dominant)}<br><a href="/city/${r.city.toLowerCase()}" style="color:#7fb0ff">Open full city page →</a>`, {className:'windMapPopup'});
       });
       if(typeof L.heatLayer==='function' && heatPoints.length){
         L.heatLayer(heatPoints, {
