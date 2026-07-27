@@ -72,6 +72,23 @@
   @media(max-width:940px){.s6{grid-column:span 12}}
   .eyebrow{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;margin-bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px}
   .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:10.5px;color:var(--dim);letter-spacing:.3px;font-weight:600}
+  .yearChip{font:inherit;font-size:12.5px;padding:6px 14px;border-radius:99px;border:1px solid var(--line);
+    background:transparent;color:var(--dim);cursor:pointer;transition:color .15s,border-color .15s,background .15s,transform .15s cubic-bezier(.2,.8,.2,1)}
+  .yearChip:hover{color:var(--txt);background:rgba(255,255,255,.04);transform:translateY(-1px)}
+  .alertRow{border-left:3px solid var(--line);padding:14px 16px;border-radius:12px;
+    background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);margin-bottom:10px}
+  .alertTop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .alertCityLink{font-weight:600;font-size:13.5px;color:inherit;text-decoration:none}
+  .alertCityLink:hover{text-decoration:underline}
+  .alertBadge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:99px}
+  .alertMsg{font-size:13px;color:var(--dim);margin-top:6px;line-height:1.5}
+  .alertGenBtn{margin-top:10px}
+  .alertAdvisoryBox{margin-top:12px;display:none}
+  .alertAdvisoryBox pre{white-space:pre-wrap;font-family:inherit;font-size:12.5px;line-height:1.6;
+    color:var(--txt);margin:0;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px}
+  .alertEmpty{padding:20px;border:1px solid var(--line);border-radius:12px;background:rgba(61,252,158,.06);
+    color:var(--dim);font-size:13.5px}
 
   .scoreWrap{display:flex;align-items:center;gap:24px}
   @media(max-width:480px){
@@ -306,6 +323,13 @@
 </div>
 </section>
 
+<section class="section reveal" id="alerts">
+  <div class="sectionHead"><div class="kicker">Early warning</div><h2>Active alerts</h2>
+    <p class="scoreTxt" style="max-width:520px">AQI category breaches, WHO 24-hour guideline exceedances, and statistically
+      detected pollutant spikes across all 36 tracked cities, worst-first.</p></div>
+  <div id="alertsList"><p class="scoreTxt">Loading…</p></div>
+</section>
+
 <section class="section reveal" id="cities">
   <div class="sectionHead"><div class="kicker">Compare</div><h2>India's cities, ranked</h2>
     <p id="citiesBasis" class="scoreTxt"></p></div>
@@ -481,6 +505,58 @@ async function loadOverview(){
     countUp($('impYearsNum'), imp.estimated_life_expectancy_years_lost, {decimals:2});
   }
   renderYoyRanking();
+  renderAlerts();
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+const ALERT_TYPE_LABEL={category_breach:a=>a.severity.toUpperCase(),
+  who_breach:a=>`WHO ${a.times_who}x`, anomaly:a=>`ANOMALY ${a.zscore}σ`};
+function alertBadgeColor(a){
+  if(a.type==='category_breach')return RAMP[a.severity]||RAMP.hazardous;
+  if(a.type==='who_breach')return 'var(--blueSolid)';
+  return 'var(--violet)';
+}
+async function renderAlerts(){
+  const list=$('alertsList');
+  try{
+    const r=await (await fetch('/api/alerts')).json();
+    if(!r.alerts||!r.alerts.length){
+      list.innerHTML='<div class="alertEmpty">No active alerts right now: every tracked city is within normal bounds.</div>';
+      return;
+    }
+    list.innerHTML=r.alerts.map((a,i)=>{
+      const color=alertBadgeColor(a);
+      return `<div class="alertRow" style="border-left-color:${color}">
+        <div class="alertTop">
+          <a class="alertCityLink" href="/city/${a.city_slug}">${esc(a.city)}</a>
+          <span class="alertBadge" style="background:${color}22;color:${color}">${ALERT_TYPE_LABEL[a.type](a)}</span>
+        </div>
+        <div class="alertMsg">${esc(a.message)}</div>
+        <div class="alertGenBtn"><button type="button" class="yearChip" id="alertGenBtn${i}" onclick="generateAlertAdvisory(${i},'${esc(a.city).replace(/'/g,"\\'")}')">Generate advisory</button></div>
+        <div class="alertAdvisoryBox" id="alertAdvisoryBox${i}">
+          <pre id="alertAdvisoryText${i}"></pre>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML='<p class="scoreTxt">Something went wrong, try again.</p>';
+  }
+}
+async function generateAlertAdvisory(i,city){
+  const btn=$('alertGenBtn'+i), box=$('alertAdvisoryBox'+i), pre=$('alertAdvisoryText'+i);
+  if(box.style.display==='block'){box.style.display='none';btn.textContent='Generate advisory';return}
+  btn.disabled=true;btn.textContent='Generating…';
+  try{
+    const r=await (await fetch(`/api/advisory?city=${encodeURIComponent(city)}`)).json();
+    if(r.error){btn.textContent='Not enough data for this city';return}
+    pre.textContent=r.text;
+    box.style.display='block';
+    btn.textContent='Hide advisory';
+  }catch(e){
+    btn.textContent='Something went wrong, try again';
+  }finally{
+    btn.disabled=false;
+  }
 }
 
 async function renderYoyRanking(){

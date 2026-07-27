@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 from google.adk.agents import Agent, SequentialAgent
 
+from .alerts import get_active_alerts_tool
 from .rag import retrieve_guidelines
 from .tools import (
     get_city_snapshot, get_forecast, get_human_impact, get_trend,
@@ -62,6 +63,9 @@ Use your tools to gather FACTS before answering:
   for historical context — this compares the trailing window's average AQI to the
   same calendar window exactly one year earlier, from real archived data
 - list_cities() if the requested city may not be covered
+- get_active_alerts_tool() when asked about active alerts, warnings, or which
+  cities need attention right now across the whole tracked region, rather than a
+  single city's routine status
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
 24h guidelines (state the multiple, e.g. '6.2x the WHO limit'), 7-day trend
@@ -70,7 +74,7 @@ and forecast figures (clearly marked as a projection) when the user asked about
 upcoming days. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
 """,
     tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, get_forecast,
-           get_year_over_year, list_cities],
+           get_year_over_year, list_cities, get_active_alerts_tool],
     output_key="analysis",
 )
 

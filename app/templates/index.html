@@ -102,6 +102,21 @@
   .objCard:hover{background:rgba(255,255,255,.06);box-shadow:0 14px 36px rgba(6,10,25,.4)}
   .cardIcon{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .objCard:hover .cardIcon{transform:scale(1.08) translateY(-2px)}
+  .alertRow{border-left:3px solid var(--line);padding:14px 16px;border-radius:12px;
+    background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);margin-bottom:10px}
+  .alertTop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .alertCityLink{font-weight:600;font-size:13.5px}
+  .alertCityLink a{color:inherit;text-decoration:none}
+  .alertCityLink a:hover{text-decoration:underline}
+  .alertBadge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:99px}
+  .alertMsg{font-size:13px;color:var(--dim);margin-top:6px;line-height:1.5}
+  .alertGenBtn{margin-top:10px}
+  .alertAdvisoryBox{margin-top:12px;display:none}
+  .alertAdvisoryBox pre{white-space:pre-wrap;font-family:inherit;font-size:12.5px;line-height:1.6;
+    color:var(--txt);margin:0;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px}
+  .alertEmpty{padding:20px;border:1px solid var(--line);border-radius:12px;background:rgba(61,252,158,.06);
+    color:var(--dim);font-size:13.5px}
   .card{position:relative;padding:24px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);
     transition:background .2s,box-shadow .2s,transform .15s cubic-bezier(.2,.8,.2,1);
     transform-style:preserve-3d;will-change:transform}
@@ -419,7 +434,7 @@
     </div>
   </div>
   <div class="navLinks" id="navLinks">
-    <a href="#overview">Overview</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#advisory">Advisory</a><a href="#visioncheck">Vision</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
+    <a href="#overview">Overview</a><a href="#alerts">Alerts</a><a href="#cities">Compare</a><a href="#hotspots">Hotspots</a><a href="#pollutants">Pollutants</a><a href="#health">Health</a><a href="#solutions">Solutions</a><a href="#advisory">Advisory</a><a href="#visioncheck">Vision</a><a href="#calendar">Calendar</a><a href="#trends">Trends</a><a href="#bench">Forecast bench</a><a href="#ask">Ask</a>
   </div>
 </nav>
 
@@ -491,6 +506,13 @@
       <div class="kpiStrip" id="kpis"></div>
   </div>
 </div>
+</section>
+
+<section class="section reveal" id="alerts">
+  <div class="sectionHead"><div class="kicker">Early warning</div><h2>Alerts for <span id="alertsCity">this city</span></h2>
+    <p class="scoreTxt" style="max-width:none">AQI category breaches, WHO 24-hour guideline exceedances, and statistically
+      detected pollutant spikes, computed from the real archive, not a fixed rule of thumb.</p></div>
+  <div id="alertsList"><p class="scoreTxt">Loading…</p></div>
 </section>
 
 <section class="section reveal" id="cities">
@@ -1100,6 +1122,7 @@ async function refresh(){
   renderHotspots();
   renderWeather();
   renderYoy();
+  renderAlerts();
 }
 
 async function shareCard(){
@@ -1323,6 +1346,57 @@ function renderTrace(trace){
     return `<span class="traceChip">${esc(t.tool)}${args?`(${esc(args)})`:''}</span>`;
   }).join('');
   return chips?`<div class="traceRow"><span class="traceLabel">Data used</span>${chips}</div>`:'';
+}
+const ALERT_TYPE_LABEL={category_breach:a=>a.severity.toUpperCase(),
+  who_breach:a=>`WHO ${a.times_who}x`, anomaly:a=>`ANOMALY ${a.zscore}σ`};
+function alertBadgeColor(a){
+  if(a.type==='category_breach')return RAMP[a.severity]||RAMP.hazardous;
+  if(a.type==='who_breach')return 'var(--blueSolid)';
+  return 'var(--violet)';
+}
+async function renderAlerts(){
+  if($('alertsCity'))$('alertsCity').textContent=CITY;
+  const myToken=refreshToken;
+  const list=$('alertsList');
+  try{
+    const r=await (await fetch(`/api/alerts?city=${encodeURIComponent(CITY)}`)).json();
+    if(myToken!==refreshToken)return;
+    if(!r.alerts||!r.alerts.length){
+      list.innerHTML=`<div class="alertEmpty">No active alerts for ${esc(CITY)} right now: AQI is within normal bounds, no WHO guideline breaches, no statistically unusual spikes.</div>`;
+      return;
+    }
+    list.innerHTML=r.alerts.map((a,i)=>{
+      const color=alertBadgeColor(a);
+      return `<div class="alertRow" style="border-left-color:${color}">
+        <div class="alertTop">
+          <span class="alertBadge" style="background:${color}22;color:${color}">${ALERT_TYPE_LABEL[a.type](a)}</span>
+        </div>
+        <div class="alertMsg">${esc(a.message)}</div>
+        <div class="alertGenBtn"><button type="button" class="yearChip" id="alertGenBtn${i}" onclick="generateAlertAdvisory(${i},'${esc(a.city).replace(/'/g,"\\'")}')">Generate advisory</button></div>
+        <div class="alertAdvisoryBox" id="alertAdvisoryBox${i}">
+          <pre id="alertAdvisoryText${i}"></pre>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML='<p class="scoreTxt">Something went wrong, try again.</p>';
+  }
+}
+async function generateAlertAdvisory(i,city){
+  const btn=$('alertGenBtn'+i), box=$('alertAdvisoryBox'+i), pre=$('alertAdvisoryText'+i);
+  if(box.style.display==='block'){box.style.display='none';btn.textContent='Generate advisory';return}
+  btn.disabled=true;const origLabel=btn.textContent;btn.textContent='Generating…';
+  try{
+    const r=await (await fetch(`/api/advisory?city=${encodeURIComponent(city)}`)).json();
+    if(r.error){btn.textContent='Not enough data for this city';return}
+    pre.textContent=r.text;
+    box.style.display='block';
+    btn.textContent='Hide advisory';
+  }catch(e){
+    btn.textContent='Something went wrong, try again';
+  }finally{
+    btn.disabled=false;
+  }
 }
 async function generateAdvisory(){
   const btn=$('genAdvisoryBtn');

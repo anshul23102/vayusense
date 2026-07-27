@@ -8,6 +8,7 @@ import time
 import uuid
 from collections import defaultdict, deque
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from agents.advisory import generate_advisory, generate_advisory_batch
+from agents.alerts import get_active_alerts
 from agents.vision import ALLOWED_MIME_TYPES, MAX_IMAGE_BYTES, assess_sky_photo
 from agents.agent import root_agent
 from agents import tools as data_tools
@@ -541,6 +543,20 @@ def advisory_batch_api():
     per-city requests, and completes in well under a second."""
     results = generate_advisory_batch()
     return {"count": len(results), "advisories": results}
+
+
+@app.get("/api/alerts")
+def alerts_api(city: str | None = None):
+    """Every current alert across all tracked cities -- category-threshold
+    breaches, WHO 24-hour guideline exceedances, and statistically detected
+    pollutant spikes -- worst-first. See agents/alerts.py. Pass ?city= to
+    filter to one city; an unknown or clean city correctly returns an empty
+    list rather than an error, since "no alerts" is a normal, valid state."""
+    alerts = get_active_alerts()
+    if city:
+        alerts = [a for a in alerts if a["city"].lower() == city.lower()]
+    return {"count": len(alerts), "alerts": alerts,
+            "generated_at": datetime.now(timezone.utc).isoformat()}
 
 
 @app.post("/api/vision-check")
