@@ -31,6 +31,7 @@
       radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(185,168,251,.22), transparent 60%)}
   #atmosphere{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(110px);
     opacity:0;transition:opacity .9s ease}
+  #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .9s ease}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
   .shell{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:104px 4vw 70px}
@@ -194,6 +195,7 @@
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
     #aurora{display:none}
     #atmosphere{transition:none}
+    #vignette{transition:none}
     .logo .dot,#scoreRing{animation:none}
     .livePulse{animation:none}
     .puff{animation:none;opacity:0}
@@ -259,6 +261,7 @@
 </svg>
 <div id="aurora"></div>
 <div id="atmosphere"></div>
+<div id="vignette"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
 
@@ -389,6 +392,7 @@ function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
   setBreathing(ATMOSPHERE_SEVERITY);
+  setVignette(ATMOSPHERE_SEVERITY);
   const el=$('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -408,6 +412,23 @@ function setBreathing(severity){
   document.querySelectorAll('.logo .dot, #scoreRing').forEach(el=>{
     el.style.setProperty('--breathDur',dur+'ms');
     el.style.setProperty('--breathAmp',amp);
+  });
+}
+function severityVignetteColor(severity){
+  const neutral=[20,26,45], smog=[70,58,48];
+  return neutral.map((v,i)=>Math.round(v+(smog[i]-v)*severity));
+}
+function setVignette(severity){
+  const el=$('vignette');
+  if(!el)return;
+  const [r,g,b]=severityVignetteColor(severity);
+  const alpha=(severity*0.5).toFixed(2);
+  const grad=`radial-gradient(circle at 50% 38%, transparent 42%, rgba(${r},${g},${b},${alpha}) 100%)`;
+  if(reduceMotion){ el.style.background=grad; el.style.opacity='1'; return; }
+  el.style.opacity='0';
+  requestAnimationFrame(()=>{
+    el.style.background=grad;
+    requestAnimationFrame(()=>{el.style.opacity='1'});
   });
 }
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
@@ -456,6 +477,7 @@ if(!reduceMotion){
   const cb=Math.round(NEUTRAL[2]+(ATMOSPHERE_RGB[2]-NEUTRAL[2])*ATMOSPHERE_SEVERITY);
   for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
   if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
+  p.vy+=ATMOSPHERE_SEVERITY*.008;
   p.vx*=.985;p.vy*=.985;p.x+=p.vx*speedMul;p.y+=p.vy*speedMul;
   if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
   ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();

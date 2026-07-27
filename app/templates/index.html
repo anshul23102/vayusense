@@ -34,6 +34,14 @@
      different gradient colors requires going through invisible first. */
   #atmosphere{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(110px);
     opacity:0;transition:opacity .9s ease}
+  /* Smog vignette: a third, genuinely different severity metaphor -- not
+     color or pulse, but visibility itself. Transparent center, darkening
+     edges, same opacity-crossfade technique as #atmosphere above (a CSS
+     transition can't animate between two different gradient colors, so
+     the fade has to go through invisible). Sits at the same layer tier as
+     .grain below, which already coexists with all page text with zero
+     legibility impact. */
+  #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .9s ease}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
   .shell{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:150px 4vw 70px}
@@ -333,6 +341,7 @@
     .bot.thinking i{animation:none}
     #aurora{display:none}
     #atmosphere{transition:none}
+    #vignette{transition:none}
     .logo .dot,#scoreRing{animation:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
     .livePulse{animation:none}
@@ -422,6 +431,7 @@
 </svg>
 <div id="aurora"></div>
 <div id="atmosphere"></div>
+<div id="vignette"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
 
@@ -720,6 +730,7 @@ function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
   setBreathing(ATMOSPHERE_SEVERITY);
+  setVignette(ATMOSPHERE_SEVERITY);
   const el=$('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -744,6 +755,29 @@ function setBreathing(severity){
   document.querySelectorAll('.logo .dot, #scoreRing').forEach(el=>{
     el.style.setProperty('--breathDur',dur+'ms');
     el.style.setProperty('--breathAmp',amp);
+  });
+}
+// Smog vignette: a third severity metaphor -- visibility, not color or
+// pulse. Transparent center, darkening edges. Same opacity-crossfade
+// technique as setAtmosphere() above, since background-image can't be
+// CSS-transitioned directly. Stays under reduceMotion (a static tint, not
+// motion) but skips the crossfade animation there -- see spec for why
+// this is the one exception to "suppress entirely" in this session.
+function severityVignetteColor(severity){
+  const neutral=[20,26,45], smog=[70,58,48];
+  return neutral.map((v,i)=>Math.round(v+(smog[i]-v)*severity));
+}
+function setVignette(severity){
+  const el=$('vignette');
+  if(!el)return;
+  const [r,g,b]=severityVignetteColor(severity);
+  const alpha=(severity*0.5).toFixed(2);
+  const grad=`radial-gradient(circle at 50% 38%, transparent 42%, rgba(${r},${g},${b},${alpha}) 100%)`;
+  if(reduceMotion){ el.style.background=grad; el.style.opacity='1'; return; }
+  el.style.opacity='0';
+  requestAnimationFrame(()=>{
+    el.style.background=grad;
+    requestAnimationFrame(()=>{el.style.opacity='1'});
   });
 }
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
@@ -926,6 +960,7 @@ if(!reduceMotion){
   const cb=Math.round(NEUTRAL[2]+(ATMOSPHERE_RGB[2]-NEUTRAL[2])*ATMOSPHERE_SEVERITY);
   for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
   if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
+  p.vy+=ATMOSPHERE_SEVERITY*.008; // settling: worse air, particles drift down like real PM
   p.vx*=.985;p.vy*=.985;p.x+=p.vx*speedMul;p.y+=p.vy*speedMul;
   if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
   ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();

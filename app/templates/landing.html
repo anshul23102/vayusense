@@ -29,6 +29,7 @@
     transition:background-position .3s ease-out}
   #atmosphere{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(110px);
     opacity:0;transition:opacity .9s ease}
+  #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .9s ease}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
   .shell{position:relative;z-index:2}
@@ -151,6 +152,7 @@
     .card,.btn,.kpi{transition-duration:.01s !important}
     #aurora{display:none}
     #atmosphere{transition:none}
+    #vignette{transition:none}
     .logo .dot{animation:none}
     /* No tilt/scale here (motion is opted out of), so hover needs to read
        through color alone: a visible border brighten + stronger fill,
@@ -189,6 +191,7 @@
 </svg>
 <div id="aurora"></div>
 <div id="atmosphere"></div>
+<div id="vignette"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
 
@@ -323,6 +326,7 @@ function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
   setBreathing(ATMOSPHERE_SEVERITY);
+  setVignette(ATMOSPHERE_SEVERITY);
   const el=document.getElementById('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -342,6 +346,23 @@ function setBreathing(severity){
   document.querySelectorAll('.logo .dot').forEach(el=>{
     el.style.setProperty('--breathDur',dur+'ms');
     el.style.setProperty('--breathAmp',amp);
+  });
+}
+function severityVignetteColor(severity){
+  const neutral=[20,26,45], smog=[70,58,48];
+  return neutral.map((v,i)=>Math.round(v+(smog[i]-v)*severity));
+}
+function setVignette(severity){
+  const el=document.getElementById('vignette');
+  if(!el)return;
+  const [r,g,b]=severityVignetteColor(severity);
+  const alpha=(severity*0.5).toFixed(2);
+  const grad=`radial-gradient(circle at 50% 38%, transparent 42%, rgba(${r},${g},${b},${alpha}) 100%)`;
+  if(reduceMotion){ el.style.background=grad; el.style.opacity='1'; return; }
+  el.style.opacity='0';
+  requestAnimationFrame(()=>{
+    el.style.background=grad;
+    requestAnimationFrame(()=>{el.style.opacity='1'});
   });
 }
 async function initAtmosphereFromAlerts(){
@@ -555,6 +576,7 @@ if(!reduceMotion){
     for(const p of parts){
       const dx=p.x-mouse.x, dy=p.y-mouse.y, d2=dx*dx+dy*dy;
       if(d2<22000){const f=1-d2/22000; p.vx+=dx/Math.sqrt(d2+1)*f*.6; p.vy+=dy/Math.sqrt(d2+1)*f*.6;}
+      p.vy+=ATMOSPHERE_SEVERITY*.008;
       p.vx*=.985; p.vy*=.985; p.x+=p.vx*speedMul; p.y+=p.vy*speedMul;
       if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20; if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
       ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7);
