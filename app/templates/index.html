@@ -157,6 +157,12 @@
   .chartGlow.hovering{filter:drop-shadow(0 0 20px rgba(127,176,255,.16))}
   .ring{position:relative;width:150px;height:150px;flex:none;transition:filter .3s}
   .ring:hover{filter:drop-shadow(0 0 22px var(--ringGlow,rgba(127,176,255,.35)))}
+  /* Breathing motion: a second physical metaphor alongside Living
+     Atmosphere's color. Worse air = faster but SHALLOWER pulse (labored
+     breathing), not bigger -- set via --breathDur/--breathAmp in JS,
+     computed alongside setAtmosphere() from the same severity value. */
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(var(--breathAmp,1.04))}}
+  .logo .dot,#scoreRing{animation:breathe var(--breathDur,3500ms) ease-in-out infinite}
   .ring svg{transform:rotate(-90deg)}
   .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .ring .val b{font-size:40px;font-weight:700;line-height:1}
@@ -327,6 +333,7 @@
     .bot.thinking i{animation:none}
     #aurora{display:none}
     #atmosphere{transition:none}
+    .logo .dot,#scoreRing{animation:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
     .livePulse{animation:none}
     .puff{animation:none;opacity:0}
@@ -712,6 +719,7 @@ let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
+  setBreathing(ATMOSPHERE_SEVERITY);
   const el=$('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -723,6 +731,19 @@ function setAtmosphere(aqi){
   requestAnimationFrame(()=>{
     el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.22), transparent 65%)`;
     requestAnimationFrame(()=>{el.style.opacity='.16'});
+  });
+}
+// Breathing motion: worse air -> faster but SHALLOWER pulse (labored
+// breathing), applied to the header logo and the AQI ring via CSS custom
+// properties the @keyframes above reads. No-op under reduceMotion since
+// the CSS itself sets animation:none there; setting the vars is harmless
+// but skipped for clarity.
+function setBreathing(severity){
+  if(reduceMotion)return;
+  const dur=Math.round(5000-severity*3000), amp=(1.06-severity*0.04).toFixed(3);
+  document.querySelectorAll('.logo .dot, #scoreRing').forEach(el=>{
+    el.style.setProperty('--breathDur',dur+'ms');
+    el.style.setProperty('--breathAmp',amp);
   });
 }
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};

@@ -99,6 +99,8 @@
   }
   .ring{position:relative;width:150px;height:150px;flex:none;transition:filter .3s}
   .ring:hover{filter:drop-shadow(0 0 22px var(--ringGlow,rgba(127,176,255,.35)))}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(var(--breathAmp,1.04))}}
+  .logo .dot,#scoreRing{animation:breathe var(--breathDur,3500ms) ease-in-out infinite}
   .ring svg{transform:rotate(-90deg)}
   .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .ring .val b{font-size:40px;font-weight:700;line-height:1}
@@ -192,6 +194,7 @@
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
     #aurora{display:none}
     #atmosphere{transition:none}
+    .logo .dot,#scoreRing{animation:none}
     .livePulse{animation:none}
     .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
@@ -385,6 +388,7 @@ let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
+  setBreathing(ATMOSPHERE_SEVERITY);
   const el=$('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -396,6 +400,14 @@ function setAtmosphere(aqi){
   requestAnimationFrame(()=>{
     el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.22), transparent 65%)`;
     requestAnimationFrame(()=>{el.style.opacity='.16'});
+  });
+}
+function setBreathing(severity){
+  if(reduceMotion)return;
+  const dur=Math.round(5000-severity*3000), amp=(1.06-severity*0.04).toFixed(3);
+  document.querySelectorAll('.logo .dot, #scoreRing').forEach(el=>{
+    el.style.setProperty('--breathDur',dur+'ms');
+    el.style.setProperty('--breathAmp',amp);
   });
 }
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',

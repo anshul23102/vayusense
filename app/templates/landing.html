@@ -39,6 +39,8 @@
   .logo{font-weight:700;font-size:27px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
   .logo .dot{width:38px;height:38px;flex:none;object-fit:contain}
   .logo span{color:var(--blue)}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(var(--breathAmp,1.04))}}
+  .logo .dot{animation:breathe var(--breathDur,3500ms) ease-in-out infinite}
   .navLinks{display:flex;gap:26px}
   nav a{color:var(--dim);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
   nav a:hover{color:var(--txt)}
@@ -149,6 +151,7 @@
     .card,.btn,.kpi{transition-duration:.01s !important}
     #aurora{display:none}
     #atmosphere{transition:none}
+    .logo .dot{animation:none}
     /* No tilt/scale here (motion is opted out of), so hover needs to read
        through color alone: a visible border brighten + stronger fill,
        snapping instantly instead of animating. */
@@ -319,6 +322,7 @@ let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
+  setBreathing(ATMOSPHERE_SEVERITY);
   const el=document.getElementById('atmosphere');
   if(!el)return;
   if(reduceMotion){
@@ -330,6 +334,14 @@ function setAtmosphere(aqi){
   requestAnimationFrame(()=>{
     el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.22), transparent 65%)`;
     requestAnimationFrame(()=>{el.style.opacity='.16'});
+  });
+}
+function setBreathing(severity){
+  if(reduceMotion)return;
+  const dur=Math.round(5000-severity*3000), amp=(1.06-severity*0.04).toFixed(3);
+  document.querySelectorAll('.logo .dot').forEach(el=>{
+    el.style.setProperty('--breathDur',dur+'ms');
+    el.style.setProperty('--breathAmp',amp);
   });
 }
 async function initAtmosphereFromAlerts(){
