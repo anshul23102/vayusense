@@ -28,6 +28,12 @@
     background:
       radial-gradient(38% 30% at var(--mx,30%) var(--my,20%), rgba(157,193,255,.3), transparent 60%),
       radial-gradient(30% 26% at calc(100% - var(--mx,30%)) 75%, rgba(185,168,251,.22), transparent 60%)}
+  /* Living Atmosphere: a third, severity-tinted glow, additive to #aurora
+     above, not a replacement -- fades in/out via opacity only, since
+     background-image is not natively animatable and cross-fading two
+     different gradient colors requires going through invisible first. */
+  #atmosphere{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(110px);
+    opacity:0;transition:opacity .9s ease}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
   .shell{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:150px 4vw 70px}
@@ -320,6 +326,7 @@
     .card,.kpi,.askrow button{transition-duration:.01s !important}
     .bot.thinking i{animation:none}
     #aurora{display:none}
+    #atmosphere{transition:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
     .livePulse{animation:none}
     .puff{animation:none;opacity:0}
@@ -407,6 +414,7 @@
   </symbol>
 </svg>
 <div id="aurora"></div>
+<div id="atmosphere"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
 
@@ -683,6 +691,40 @@ const RAMP={good:'#3dfc9e',moderate:'#ffc247',poor:'#ff9640',unhealthy:'#ff5c85'
 function textSafeColor(key,color){ return key==='hazardous' ? '#d25c76' : (color||RAMP[key]); }
 const BANDS=[[0,50,'good','Good'],[51,100,'moderate','Moderate'],[101,150,'poor','Poor'],[151,200,'unhealthy','Unhealthy'],[201,300,'severe','Severe'],[301,9999,'hazardous','Hazardous']];
 function bandOf(aqi){for(const [lo,hi,k,l] of BANDS)if(aqi>=lo&&aqi<=hi)return{key:k,label:l,color:RAMP[k]};return{key:'hazardous',label:'Hazardous',color:RAMP.hazardous}}
+
+// Living Atmosphere: walks the SAME six RAMP anchor colors, in the same
+// order, as the AQI ramp bar already on screen -- so the ambient tint at
+// any AQI always agrees with what the category badge next to it says.
+// A naive two-stop lerp (green straight to oxblood) was tried and rejected:
+// it produces a muddy desaturated grey-green around "moderate", which reads
+// as a bug rather than a feeling.
+const SEVERITY_STOPS=[[0,[61,252,158]],[50,[61,252,158]],[100,[255,194,71]],
+  [150,[255,150,64]],[200,[255,92,133]],[300,[239,79,192]],[400,[201,58,90]]];
+function severityColor(aqi){
+  const a=Math.max(0,Math.min(400,aqi));
+  for(let i=0;i<SEVERITY_STOPS.length-1;i++){
+    const [lo,c0]=SEVERITY_STOPS[i],[hi,c1]=SEVERITY_STOPS[i+1];
+    if(a<=hi){const t=hi===lo?0:(a-lo)/(hi-lo);return c0.map((v,k)=>Math.round(v+(c1[k]-v)*t))}
+  }
+  return SEVERITY_STOPS[SEVERITY_STOPS.length-1][1];
+}
+let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
+function setAtmosphere(aqi){
+  const [r,g,b]=severityColor(aqi);
+  ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
+  const el=$('atmosphere');
+  if(!el)return;
+  if(reduceMotion){
+    el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.16), transparent 65%)`;
+    el.style.opacity='.16';
+    return;
+  }
+  el.style.opacity='0';
+  requestAnimationFrame(()=>{
+    el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.22), transparent 65%)`;
+    requestAnimationFrame(()=>{el.style.opacity='.16'});
+  });
+}
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
 const POLL_ICON={pm25:'ic-pm25',pm10:'ic-pm10',co:'ic-co',so2:'ic-so2',no2:'ic-no2',o3:'ic-o3'};
 const POLL_UNITS={co:'mg/m³'};
@@ -850,11 +892,22 @@ if(!reduceMotion){
   function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight} rs();addEventListener('resize',rs);
   addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
   for(let i=0;i<80;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.16,o:Math.random()*.26+.06});
-  (function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+  // Living Atmosphere: worse air -> particles drift faster and tint from
+  // neutral grey-blue toward the current AQI's severity color. Both read
+  // from the module-level ATMOSPHERE_RGB/ATMOSPHERE_SEVERITY that
+  // setAtmosphere() updates on each data load, so this loop stays cheap
+  // (no per-frame allocation) and just picks up the latest values.
+  const NEUTRAL=[196,212,245];
+  (function tick(){ctx.clearRect(0,0,W,H);
+  const speedMul=1+ATMOSPHERE_SEVERITY*.4;
+  const cr=Math.round(NEUTRAL[0]+(ATMOSPHERE_RGB[0]-NEUTRAL[0])*ATMOSPHERE_SEVERITY);
+  const cg=Math.round(NEUTRAL[1]+(ATMOSPHERE_RGB[1]-NEUTRAL[1])*ATMOSPHERE_SEVERITY);
+  const cb=Math.round(NEUTRAL[2]+(ATMOSPHERE_RGB[2]-NEUTRAL[2])*ATMOSPHERE_SEVERITY);
+  for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
   if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
-  p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
+  p.vx*=.985;p.vy*=.985;p.x+=p.vx*speedMul;p.y+=p.vy*speedMul;
   if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
-  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(196,212,245,${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
 }
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
@@ -1051,6 +1104,7 @@ async function refresh(){
       if(myToken!==refreshToken)return;
       AQI_SNAPSHOT=a;
       if(a.aqi!==undefined){
+        setAtmosphere(a.aqi);
         countUp($('aqiVal'), a.aqi, {decimals:0});
         $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
         $('ringArc').style.stroke=a.category.color;
