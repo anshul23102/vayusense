@@ -342,6 +342,16 @@
   .liveRegion.loading{opacity:.45}
   @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
   .kpi.skel .v,.kpi.skel .who{background:rgba(255,255,255,.08);border-radius:6px;color:transparent;animation:shimmer 1.3s ease-in-out infinite}
+  /* Live data pulse: a one-shot glow marking the moment a fetch actually
+     resolves with new data, in the current severity color. See spec for why
+     this needed the remove/reflow/add restart trick (fires on every city
+     switch, not just once). */
+  @keyframes dataPulse{
+    0%{box-shadow:0 0 0 0 var(--pulseColor,rgba(157,193,255,.5))}
+    70%{box-shadow:0 0 0 16px rgba(157,193,255,0)}
+    100%{box-shadow:0 0 0 0 rgba(157,193,255,0)}
+  }
+  .pulseOnce{animation:dataPulse .8s cubic-bezier(.2,.8,.2,1)}
 
   /* Story rail: chapter markers tracking scroll position through the page's
      long-scroll sections. Purely a motion-tracking affordance -- hidden
@@ -388,6 +398,7 @@
     .logo .dot,#scoreRing{animation:none}
     .kpi.skel .v,.kpi.skel .who{animation:none}
     .livePulse{animation:none}
+    .pulseOnce{animation:none}
     .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
     .cardIn{animation:none !important;opacity:1 !important;transform:none !important}
@@ -823,6 +834,23 @@ function setVignette(severity){
   requestAnimationFrame(()=>{
     el.style.background=grad;
     requestAnimationFrame(()=>{el.style.opacity='1'});
+  });
+}
+// Live data pulse: marks the moment a fetch actually resolves with new
+// data -- see spec for why this fires on the hero ring plus every KPI
+// card, in the current severity color, rather than a fixed accent.
+function pulseData(){
+  if(reduceMotion)return;
+  const [r,g,b]=ATMOSPHERE_RGB;
+  const ring=$('scoreRing');
+  if(ring){
+    ring.style.setProperty('--pulseColor',`rgba(${r},${g},${b},.55)`);
+    ring.classList.remove('pulseOnce'); void ring.offsetWidth; ring.classList.add('pulseOnce');
+  }
+  document.querySelectorAll('.kpi, .impactStat').forEach((el,i)=>{
+    el.style.setProperty('--pulseColor',`rgba(${r},${g},${b},.35)`);
+    el.classList.remove('pulseOnce'); void el.offsetWidth;
+    setTimeout(()=>el.classList.add('pulseOnce'), Math.min(i,6)*25);
   });
 }
 const POLL_NAMES={pm25:'Particulate Matter (PM2.5)',pm10:'Particulate Matter (PM10)',no2:'Nitrogen Dioxide (NO₂)',o3:'Ozone (O₃)',so2:'Sulfur Dioxide (SO₂)',co:'Carbon Monoxide (CO)'};
@@ -1284,6 +1312,7 @@ async function refresh(){
       AQI_SNAPSHOT=a;
       if(a.aqi!==undefined){
         setAtmosphere(a.aqi);
+        pulseData();
         countUp($('aqiVal'), a.aqi, {decimals:0});
         $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
         $('ringArc').style.stroke=a.category.color;

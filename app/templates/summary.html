@@ -188,6 +188,14 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .cardIn{animation:cardIn .35s cubic-bezier(.2,.8,.2,1) backwards}
+  /* Live data pulse: see index.html for the full rationale -- same
+     mechanism, applied here to the hero ring and the two impact stats. */
+  @keyframes dataPulse{
+    0%{box-shadow:0 0 0 0 var(--pulseColor,rgba(157,193,255,.5))}
+    70%{box-shadow:0 0 0 16px rgba(157,193,255,0)}
+    100%{box-shadow:0 0 0 0 rgba(157,193,255,0)}
+  }
+  .pulseOnce{animation:dataPulse .8s cubic-bezier(.2,.8,.2,1)}
   .liveRegion{transition:opacity .25s ease}
   .liveRegion.loading{opacity:.45}
 
@@ -226,6 +234,7 @@
     #vignette{transition:none}
     .logo .dot,#scoreRing{animation:none}
     .livePulse{animation:none}
+    .pulseOnce{animation:none}
     .puff{animation:none;opacity:0}
     .aqiPointer{transition:none}
     .cardIn{animation:none !important;opacity:1 !important;transform:none !important}
@@ -462,6 +471,21 @@ function setVignette(severity){
     requestAnimationFrame(()=>{el.style.opacity='1'});
   });
 }
+// Live data pulse: see index.html for the full rationale.
+function pulseData(){
+  if(reduceMotion)return;
+  const [r,g,b]=ATMOSPHERE_RGB;
+  const ring=$('scoreRing');
+  if(ring){
+    ring.style.setProperty('--pulseColor',`rgba(${r},${g},${b},.55)`);
+    ring.classList.remove('pulseOnce'); void ring.offsetWidth; ring.classList.add('pulseOnce');
+  }
+  document.querySelectorAll('.kpi, .impactStat').forEach((el,i)=>{
+    el.style.setProperty('--pulseColor',`rgba(${r},${g},${b},.35)`);
+    el.classList.remove('pulseOnce'); void el.offsetWidth;
+    setTimeout(()=>el.classList.add('pulseOnce'), Math.min(i,6)*25);
+  });
+}
 const CITY_ICON={Delhi:'ic-delhi',Mumbai:'ic-mumbai',Kolkata:'ic-kolkata',Chennai:'ic-chennai',
   Bengaluru:'ic-bengaluru',Hyderabad:'ic-hyderabad',Pune:'ic-pune',Ahmedabad:'ic-ahmedabad',
   Lucknow:'ic-lucknow',Patna:'ic-patna',Jaipur:'ic-jaipur',Surat:'ic-surat',Kanpur:'ic-kanpur',Nagpur:'ic-nagpur',Indore:'ic-indore',Bhopal:'ic-bhopal',Visakhapatnam:'ic-visakhapatnam',Vadodara:'ic-vadodara',Coimbatore:'ic-coimbatore',Nashik:'ic-nashik',};
@@ -648,6 +672,7 @@ async function loadOverview(){
   if(a.aqi!==undefined){
     $('scoreCity').textContent=a.city;
     setAtmosphere(a.aqi);
+    pulseData();
     countUp($('aqiVal'), a.aqi, {decimals:0});
     $('ringArc').style.strokeDashoffset=408-(408*Math.min(a.aqi,500)/500);
     $('ringArc').style.stroke=a.category.color;
