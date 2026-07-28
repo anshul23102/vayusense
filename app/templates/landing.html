@@ -124,6 +124,17 @@
   .searchItem:hover,.searchItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
   .searchItem:active{background:rgba(157,193,255,.16)}
   .searchItem svg{width:15px;height:15px}
+  .cityGridFooter{margin-top:36px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+    flex-wrap:wrap;padding-top:28px;border-top:1px solid var(--line)}
+  .cityGridFooter p{color:var(--dim);font-size:14.5px}
+  .cityGridFooter p span{color:var(--txt);font-weight:600}
+  .cityGridActions{display:flex;gap:12px;flex-wrap:wrap}
+  .cityGridActions button,.cityGridActions a{font-family:inherit;cursor:pointer;font-size:14px;font-weight:600;
+    padding:11px 20px;border-radius:12px;text-decoration:none;transition:transform .2s,background .2s}
+  .cityGridActions button{color:var(--txt);background:var(--glass);border:1px solid var(--line)}
+  .cityGridActions button:hover{background:var(--glass2)}
+  .cityGridActions a{color:#071023;background:linear-gradient(135deg,#e3ecff,#7fb0ff)}
+  .cityGridActions a:hover{transform:translateY(-2px)}
   .card h3{font-size:19px;margin-bottom:10px}
   .card p{color:var(--dim);font-size:14.5px;line-height:1.6}
   .big{font-size:clamp(40px,5.4vw,64px);font-weight:700}
@@ -240,8 +251,15 @@
 
 <section id="cities-grid">
   <div class="kicker reveal">Pick a city</div>
-  <h2 class="reveal d1">Thirty-six cities. One tap away.</h2>
+  <h2 class="reveal d1">Where it's worst right now.</h2>
   <div class="showcase" id="cityGrid"></div>
+  <div class="cityGridFooter reveal">
+    <p>+ <span id="moreCitiesCount"></span> more cities tracked live</p>
+    <div class="cityGridActions">
+      <button type="button" onclick="document.getElementById('citySearch').focus();document.getElementById('citySearch').scrollIntoView({behavior:'smooth',block:'center'})">Search a city</button>
+      <a href="/dashboard">Open Live Dashboard →</a>
+    </div>
+  </div>
 </section>
 
 <section id="why">
@@ -534,7 +552,9 @@ addEventListener('click',e=>{ if(!e.target.closest('.searchWrap'))closeSearchDro
 function renderCityGrid(){
   const grid=document.getElementById('cityGrid');
   if(!grid)return;
-  grid.innerHTML=LANDING_DATA.ranking.map((r,i)=>{
+  const ranking=LANDING_DATA.ranking;
+  const top8=ranking.slice(0,8);
+  grid.innerHTML=top8.map((r,i)=>{
     const b=bandOf(r.aqi);
     return `<div class="showTile reveal ${i%4===1?'d1':i%4===2?'d2':i%4===3?'d3':''}" style="cursor:pointer;border-left:3px solid ${b.color}"
         onclick="goToCity('${r.city}')" role="button" tabindex="0"
@@ -545,6 +565,8 @@ function renderCityGrid(){
         <span style="color:${textSafeColor(b.key,b.color)}">${r.category}</span></p>
     </div>`;
   }).join('');
+  const moreEl=document.getElementById('moreCitiesCount');
+  if(moreEl)moreEl.textContent=Math.max(0,ranking.length-top8.length);
   document.querySelectorAll('#cityGrid .reveal').forEach(el=>io.observe(el));
 }
 
