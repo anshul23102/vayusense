@@ -343,7 +343,31 @@
   @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
   .kpi.skel .v,.kpi.skel .who{background:rgba(255,255,255,.08);border-radius:6px;color:transparent;animation:shimmer 1.3s ease-in-out infinite}
 
+  /* Story rail: chapter markers tracking scroll position through the page's
+     long-scroll sections. Purely a motion-tracking affordance -- hidden
+     under reduced motion and on narrow viewports where it has no room and
+     would duplicate the nav. */
+  #storyRail{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:9;
+    display:flex;flex-direction:column;align-items:center;gap:0}
+  #storyRail .railTrack{position:relative;width:2px;background:var(--line);border-radius:2px}
+  #storyRail .railFill{position:absolute;top:0;left:0;width:100%;background:var(--blueSolid,#7fb0ff);
+    border-radius:2px;height:0;transition:height .25s cubic-bezier(.2,.8,.2,1),background .25s}
+  .railDot{position:relative;width:26px;height:26px;margin:0;border:none;background:transparent;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex:none}
+  .railDot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--dim);
+    transition:background .25s,transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  .railDot:hover::before{transform:scale(1.3)}
+  .railDot.on::before{background:var(--railColor,var(--blueSolid,#7fb0ff));transform:scale(1.5);
+    box-shadow:0 0 10px 1px var(--railColor,var(--blueSolid,#7fb0ff))}
+  .railLabel{position:absolute;right:24px;top:50%;transform:translateY(-50%) translateX(4px);
+    font-size:11.5px;font-weight:600;color:var(--dim);background:rgba(15,21,40,.85);padding:5px 10px;
+    border-radius:8px;border:1px solid var(--line);white-space:nowrap;opacity:0;pointer-events:none;
+    transition:opacity .18s,transform .18s}
+  .railDot:hover .railLabel,.railDot.on .railLabel{opacity:1;transform:translateY(-50%) translateX(0)}
+  @media(max-width:900px){#storyRail{display:none}}
+
   @media (prefers-reduced-motion: reduce){
+    #storyRail{display:none}
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
     .card,.kpi,.askrow button{transition-duration:.01s !important}
     .bot.thinking i{animation:none}
@@ -449,6 +473,7 @@
 <div id="vignette"></div>
 <canvas id="haze"></canvas>
 <div class="grain"></div>
+<nav id="storyRail"></nav>
 
 <div class="shell">
 <nav>
@@ -741,6 +766,7 @@ function severityColor(aqi){
   return SEVERITY_STOPS[SEVERITY_STOPS.length-1][1];
 }
 let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
+const ATMOSPHERE_BASE_OPACITY=.16;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
@@ -750,13 +776,13 @@ function setAtmosphere(aqi){
   if(!el)return;
   if(reduceMotion){
     el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.16), transparent 65%)`;
-    el.style.opacity='.16';
+    el.style.opacity=ATMOSPHERE_BASE_OPACITY;
     return;
   }
   el.style.opacity='0';
   requestAnimationFrame(()=>{
     el.style.background=`radial-gradient(45% 40% at 50% 15%, rgba(${r},${g},${b},.22), transparent 65%)`;
-    requestAnimationFrame(()=>{el.style.opacity='.16'});
+    requestAnimationFrame(()=>{ el.style.opacity=ATMOSPHERE_BASE_OPACITY; applyScrollAtmosphere(); });
   });
 }
 // Breathing motion: worse air -> faster but SHALLOWER pulse (labored
@@ -828,6 +854,26 @@ addEventListener('popstate', ()=>{
 });
 const HEALTH_ICON={general:'ic-lungs',children:'ic-child',elderly:'ic-elder',asthma:'ic-asthma',heart:'ic-heart',outdoor_workers:'ic-worker'};
 let HEALTH_DATA=null, ACTIVE_CONDITION='general', CURRENT_CATEGORY_KEY='moderate';
+// Scroll-driven storytelling: chapter rail + header parallax + a scroll
+// factor blended into the atmosphere glow's opacity. Six waypoints, not
+// every section -- sections between chapters just keep the most recent
+// one highlighted, like chapter markers in a video scrubber. Fully
+// skipped under reduceMotion (guarded at setup, not per-tick) and on
+// narrow viewports (handled by the CSS media query already added).
+const CHAPTERS=[
+  {id:'overview',label:'Overview'},
+  {id:'alerts',label:'Alerts'},
+  {id:'cities',label:'Compare'},
+  {id:'health',label:'Health'},
+  {id:'trends',label:'Trends'},
+  {id:'ask',label:'Ask'},
+];
+let SCROLL_DEPTH=0;
+function applyScrollAtmosphere(){
+  const el=$('atmosphere');
+  if(!el||reduceMotion)return;
+  el.style.opacity=(ATMOSPHERE_BASE_OPACITY*(0.7+0.3*SCROLL_DEPTH)).toFixed(3);
+}
 async function loadHealthGuidance(){
   try{ HEALTH_DATA=await (await fetch('/api/health_guidance')).json(); renderHealthPanel(); }catch(e){}
 }
@@ -935,6 +981,52 @@ addEventListener('click',e=>{ if(!e.target.closest('.navSearchWrap'))closeNavSea
 let CITY='Delhi';
 let SESSION_ID = crypto.randomUUID();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reduceMotion){
+  const rail=$('storyRail');
+  const track=document.createElement('div');
+  track.className='railTrack';
+  const fill=document.createElement('div');
+  fill.className='railFill';
+  fill.id='railFill';
+  track.appendChild(fill);
+  const dotEls=CHAPTERS.map(ch=>{
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='railDot'; btn.dataset.chapter=ch.id;
+    btn.setAttribute('aria-label',ch.label);
+    btn.innerHTML=`<span class="railLabel">${ch.label}</span>`;
+    btn.onclick=()=>{ const sec=document.getElementById(ch.id); if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'}); };
+    rail.appendChild(btn);
+    return btn;
+  });
+  rail.insertBefore(track,rail.firstChild);
+  let railTicking=false;
+  function updateStory(){
+    railTicking=false;
+    const chapterSections=CHAPTERS.map(ch=>({...ch, el:document.getElementById(ch.id)})).filter(c=>c.el);
+    let activeIdx=0;
+    chapterSections.forEach((c,i)=>{ if(c.el.getBoundingClientRect().top<=140) activeIdx=i; });
+    const color=RAMP[CURRENT_CATEGORY_KEY]||'var(--blueSolid)';
+    dotEls.forEach((btn,i)=>{
+      const on=i===activeIdx;
+      btn.classList.toggle('on',on);
+      btn.style.setProperty('--railColor',color);
+    });
+    fill.style.background=color;
+    fill.style.height=((activeIdx/(dotEls.length-1))*100)+'%';
+    const doc=document.documentElement;
+    const scrollable=Math.max(1,doc.scrollHeight-innerHeight);
+    SCROLL_DEPTH=Math.min(1,(scrollY/scrollable)/0.6);
+    applyScrollAtmosphere();
+    document.querySelectorAll('.sectionHead h1,.sectionHead h2').forEach(h2=>{
+      const rect=h2.getBoundingClientRect();
+      if(rect.bottom<-200||rect.top>innerHeight+200)return;
+      const lag=Math.max(-8,Math.min(8,(rect.top-innerHeight*.5)*-.02));
+      h2.style.transform=`translateY(${lag}px)`;
+    });
+  }
+  addEventListener('scroll',()=>{ if(!railTicking){ railTicking=true; requestAnimationFrame(updateStory); } },{passive:true});
+  updateStory();
+}
 function countUp(el, target, {duration=900, decimals=0}={}){
   const from=parseFloat(el.dataset.raw||el.textContent)||0;
   if(reduceMotion || !isFinite(target)){ el.textContent=target.toFixed(decimals); el.dataset.raw=target; return; }
