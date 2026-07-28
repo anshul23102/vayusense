@@ -217,6 +217,14 @@
   .traceLabel{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);font-weight:700;margin-right:2px}
   .traceChip{font-size:10.5px;font-family:'SF Mono',ui-monospace,monospace;color:var(--blueSolid);
     background:rgba(157,193,255,.08);border:1px solid rgba(157,193,255,.22);border-radius:6px;padding:2px 7px}
+  /* Live reasoning trace: each chip pops in exactly once, the moment its
+     real SSE tool-call event arrives -- not a batch reveal. See ask(). */
+  @keyframes chipIn{from{opacity:0;transform:translateY(4px) scale(.92)}to{opacity:1;transform:none}}
+  .traceChip.chipIn{animation:chipIn .3s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes traceSettle{0%{box-shadow:0 0 0 rgba(127,176,255,0)}40%{box-shadow:0 0 16px rgba(127,176,255,.35)}100%{box-shadow:0 0 0 rgba(127,176,255,0)}}
+  .traceRow.settled{animation:traceSettle .8s ease-out}
+  .thinkingLine{transition:opacity .3s ease}
+  .thinkingLine.done{opacity:0}
   .askrow{display:flex;gap:10px;margin-top:14px}
   .askrow input{flex:1;background:rgba(255,255,255,.055);color:var(--txt);border:1px solid var(--line);border-radius:14px;
     padding:13px 16px;font-size:14.5px;font-family:inherit;outline:none;transition:border .2s}
@@ -339,6 +347,13 @@
     .reveal{transition:opacity .15s linear !important;transform:none !important;filter:none !important}
     .card,.kpi,.askrow button{transition-duration:.01s !important}
     .bot.thinking i{animation:none}
+    .traceChip.chipIn{animation:none;opacity:1;transform:none}
+    .traceRow.settled{animation:none}
+    /* transition:none would make transitionend never fire, so the JS that
+       collapses this line's space after its fade would never run -- hide
+       it outright instead, consistent with "no animation" here meaning an
+       instant state change, not a stuck half-state. */
+    .thinkingLine.done{display:none}
     #aurora{display:none}
     #atmosphere{transition:none}
     #vignette{transition:none}
@@ -1437,6 +1452,7 @@ async function loadBench(){try{const b=await (await fetch('/api/benchmark')).jso
   $('benchTimes').textContent=`pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`}}catch(e){}}
 
 let askBusy=false;
+let ASK_MSG_ID=0; // per-message counter so element IDs never collide across turns
 function preset(el){if(askBusy)return;$('q').value=el.textContent;ask()}
 function resetChat(){
   if(askBusy)return;
@@ -1567,11 +1583,42 @@ async function ask(){
   $('q').value='';$('askBtn').disabled=true;$('q').disabled=true;
   const chat=$('chat');
   chat.insertAdjacentHTML('beforeend',`<div class="msg me"></div>`);chat.lastElementChild.textContent=q;
-  chat.insertAdjacentHTML('beforeend',`<div class="msg bot thinking">Analyst crunching data <i>●</i><i>●</i><i>●</i></div>`);
+  const id=++ASK_MSG_ID;
+  // Stable child containers, created once: later updates touch only the
+  // piece that changed, so trace chips that already animated in never
+  // replay -- see docs/superpowers/specs/2026-07-28-live-reasoning-trace-design.md.
+  chat.insertAdjacentHTML('beforeend',
+    `<div class="msg bot thinking">`+
+    `<span class="thinkingLine" id="think-${id}">Analyst crunching data <i>●</i><i>●</i><i>●</i></span>`+
+    `<div class="ans" id="ans-${id}"></div>`+
+    `<div class="traceRow" id="trace-${id}" style="display:none"><span class="traceLabel">Data used</span></div>`+
+    `</div>`);
   chat.scrollTop=chat.scrollHeight;
   const bubble=chat.lastElementChild;
-  let full='',trace=[],gotAny=false;
-  const render=()=>{bubble.innerHTML=mdToHtml(full||'No answer.')+renderTrace(trace);chat.scrollTop=chat.scrollHeight};
+  const thinkEl=$('think-'+id), ansEl=$('ans-'+id), traceEl=$('trace-'+id);
+  let full='',gotAny=false,chipCount=0;
+  const addChip=(t)=>{
+    const args=Object.values(t.args||{}).map(String).join(', ');
+    if(chipCount===0)traceEl.style.display='flex';
+    traceEl.insertAdjacentHTML('beforeend',
+      `<span class="traceChip chipIn">${esc(t.tool)}${args?`(${esc(args)})`:''}</span>`);
+    chipCount++;
+    chat.scrollTop=chat.scrollHeight;
+  };
+  const showAnswer=()=>{ansEl.innerHTML=mdToHtml(full||'No answer.');chat.scrollTop=chat.scrollHeight};
+  const settleTrace=()=>{
+    thinkEl.classList.add('done');
+    // Fading opacity alone leaves the line's height reserved, stranding a
+    // blank gap above the answer; collapse it once the fade actually
+    // finishes (not immediately, or the fade never has time to play).
+    // transitionend rather than a fixed timeout would be the natural fit,
+    // but it did not fire reliably when this was tested -- a timeout tied
+    // to the CSS transition's own .3s duration is the robust choice, not
+    // just the convenient one.
+    setTimeout(()=>{thinkEl.style.display='none'},320);
+    bubble.classList.remove('thinking');
+    if(chipCount>0){traceEl.classList.add('settled');setTimeout(()=>traceEl.classList.remove('settled'),820)}
+  };
   try{
     const resp=await fetch('/api/ask/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,session_id:SESSION_ID})});
     if(!resp.ok || !resp.body)throw new Error('stream failed');
@@ -1588,25 +1635,26 @@ async function ask(){
         if(!line)continue;
         const msg=JSON.parse(line.slice(6));
         if(msg.type==='session'&&msg.session_id)SESSION_ID=msg.session_id;
-        else if(msg.type==='tool')trace.push(msg);
+        else if(msg.type==='tool')addChip(msg);
         else if(msg.type==='delta'){
+          const firstDelta=!gotAny;
           gotAny=true;
-          bubble.classList.remove('thinking');
+          if(firstDelta)settleTrace();
           // Final (non-partial) event repeats the whole accumulated answer --
           // replace, don't append, or the text would double up.
           full=msg.partial?full+msg.text:msg.text;
-          render();
+          showAnswer();
         }else if(msg.type==='error'){
-          bubble.classList.remove('thinking');bubble.classList.add('error');
-          full=msg.error;render();
+          settleTrace();bubble.classList.add('error');
+          full=msg.error;showAnswer();
         }
       }
     }
     if(!gotAny && !bubble.classList.contains('error')){
-      bubble.classList.remove('thinking');bubble.classList.add('error');
-      full='The agent didn\'t return an answer. Please try rephrasing your question.';render();
+      settleTrace();bubble.classList.add('error');
+      full='The agent didn\'t return an answer. Please try rephrasing your question.';showAnswer();
     }
-  }catch(e){bubble.classList.remove('thinking');bubble.classList.add('error');bubble.textContent='Connection error. Please try again.'}
+  }catch(e){settleTrace();bubble.classList.add('error');ansEl.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;
 }
 
