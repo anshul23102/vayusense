@@ -195,8 +195,12 @@
      long-scroll sections. Purely a motion-tracking affordance -- hidden
      under reduced motion and on narrow viewports where it has no room and
      would duplicate the nav. Same implementation as index.html's rail. */
-  #storyRail{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:9;
-    display:flex;flex-direction:column;align-items:center;gap:0}
+  /* width/left explicitly reset: the bare `nav{...}` rule above (for the
+     main top navbar) also matches this <nav>, and its width:min(1320px,94vw)
+     + left:50% would otherwise leak through and stretch this into a giant
+     box, since #storyRail itself never set those properties to override it. */
+  #storyRail{position:fixed;right:26px;left:auto;top:50%;transform:translateY(-50%);z-index:9;
+    width:auto;display:flex;flex-direction:column;align-items:center;gap:0}
   #storyRail .railTrack{position:relative;width:2px;background:var(--line);border-radius:2px}
   #storyRail .railFill{position:absolute;top:0;left:0;width:100%;background:var(--blueSolid,#7fb0ff);
     border-radius:2px;height:0;transition:height .25s cubic-bezier(.2,.8,.2,1),background .25s}
