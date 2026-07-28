@@ -533,6 +533,16 @@ if(!reduceMotion){
     const chapterSections=CHAPTERS.map(ch=>({...ch, el:document.getElementById(ch.id)})).filter(c=>c.el);
     let activeIdx=0;
     chapterSections.forEach((c,i)=>{ if(c.el.getBoundingClientRect().top<=140) activeIdx=i; });
+    // The last chapter's own header can sit well short of the 140px
+    // threshold if its section is shorter than the viewport -- without
+    // this, the rail gets stuck on the second-to-last chapter forever,
+    // even at the literal bottom of the page.
+    // 300px tolerance, not a tight equality check: browsers don't always
+    // let scrollY reach exactly scrollHeight-innerHeight (rounding, fixed
+    // decorative layers, etc. can leave the true max scroll position tens
+    // to hundreds of pixels short of that arithmetic value), so a strict
+    // "at the bottom" check would sometimes never fire at all.
+    if(scrollY+innerHeight>=document.documentElement.scrollHeight-300) activeIdx=chapterSections.length-1;
     const color=RAMP[CURRENT_CATEGORY_KEY]||'var(--blueSolid)';
     dotEls.forEach((btn,i)=>{
       const on=i===activeIdx;

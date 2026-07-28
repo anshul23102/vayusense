@@ -892,12 +892,24 @@ let HEALTH_DATA=null, ACTIVE_CONDITION='general', CURRENT_CATEGORY_KEY='moderate
 // one highlighted, like chapter markers in a video scrubber. Fully
 // skipped under reduceMotion (guarded at setup, not per-tick) and on
 // narrow viewports (handled by the CSS media query already added).
+// Every nav-linked section gets a rail stop (matching the nav's own list
+// exactly) -- 'bench' is included but gets filtered out at rail-build time
+// if its section is still display:none (the default until forecast-bench
+// data loads), since a dot for a hidden, zero-height section would throw
+// off both the active-chapter math and the click-to-scroll target.
 const CHAPTERS=[
   {id:'overview',label:'Overview'},
   {id:'alerts',label:'Alerts'},
   {id:'cities',label:'Compare'},
+  {id:'hotspots',label:'Hotspots'},
+  {id:'pollutants',label:'Pollutants'},
   {id:'health',label:'Health'},
+  {id:'solutions',label:'Solutions'},
+  {id:'advisory',label:'Advisory'},
+  {id:'visioncheck',label:'Vision'},
+  {id:'calendar',label:'Calendar'},
   {id:'trends',label:'Trends'},
+  {id:'bench',label:'Forecast bench'},
   {id:'ask',label:'Ask'},
 ];
 let SCROLL_DEPTH=0;
@@ -1021,22 +1033,47 @@ if(!reduceMotion){
   fill.className='railFill';
   fill.id='railFill';
   track.appendChild(fill);
-  const dotEls=CHAPTERS.map(ch=>{
-    const btn=document.createElement('button');
-    btn.type='button'; btn.className='railDot'; btn.dataset.chapter=ch.id;
-    btn.setAttribute('aria-label',ch.label);
-    btn.innerHTML=`<span class="railLabel">${ch.label}</span>`;
-    btn.onclick=()=>{ const sec=document.getElementById(ch.id); if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'}); };
-    rail.appendChild(btn);
-    return btn;
-  });
+  // 'bench' (Forecast bench) starts display:none and only appears once
+  // forecast-benchmark data loads -- excluded here (offsetParent check) so
+  // a hidden, zero-height section doesn't get a rail dot pointing at
+  // nothing. visibleChapters() is re-derived on every updateStory() call
+  // (cheap: at most 13 elements) so dotEls and the active-tracking loop
+  // always index the same set, even if bench appears later in the session.
+  function visibleChapters(){ return CHAPTERS.map(ch=>({...ch, el:document.getElementById(ch.id)})).filter(c=>c.el && c.el.offsetParent!==null); }
+  let dotEls=[];
+  function rebuildDots(){
+    const chapters=visibleChapters();
+    if(chapters.length===dotEls.length && chapters.every((c,i)=>dotEls[i].dataset.chapter===c.id)) return chapters;
+    rail.querySelectorAll('.railDot').forEach(el=>el.remove());
+    dotEls=chapters.map(ch=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='railDot'; btn.dataset.chapter=ch.id;
+      btn.setAttribute('aria-label',ch.label);
+      btn.innerHTML=`<span class="railLabel">${ch.label}</span>`;
+      btn.onclick=()=>{ const sec=document.getElementById(ch.id); if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'}); };
+      rail.appendChild(btn);
+      return btn;
+    });
+    return chapters;
+  }
   rail.insertBefore(track,rail.firstChild);
   let railTicking=false;
   function updateStory(){
     railTicking=false;
-    const chapterSections=CHAPTERS.map(ch=>({...ch, el:document.getElementById(ch.id)})).filter(c=>c.el);
+    const chapterSections=rebuildDots();
     let activeIdx=0;
     chapterSections.forEach((c,i)=>{ if(c.el.getBoundingClientRect().top<=140) activeIdx=i; });
+    // The last chapter's own header can sit well short of the 140px
+    // threshold if its section is shorter than the viewport (e.g. Ask's
+    // chat box + footer don't leave enough room to scroll its heading that
+    // far up) -- without this, the rail gets stuck on the second-to-last
+    // chapter forever, even at the literal bottom of the page.
+    // 300px tolerance, not a tight equality check: browsers don't always
+    // let scrollY reach exactly scrollHeight-innerHeight (rounding, fixed
+    // decorative layers, etc. can leave the true max scroll position tens
+    // to hundreds of pixels short of that arithmetic value), so a strict
+    // "at the bottom" check would sometimes never fire at all.
+    if(scrollY+innerHeight>=document.documentElement.scrollHeight-300) activeIdx=chapterSections.length-1;
     const color=RAMP[CURRENT_CATEGORY_KEY]||'var(--blueSolid)';
     dotEls.forEach((btn,i)=>{
       const on=i===activeIdx;
