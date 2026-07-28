@@ -72,6 +72,8 @@ Then write a compact, numbers-first analysis (bullet style): current levels vs W
 direction, any anomaly days, relevant hotspots, human-impact metrics when relevant,
 and forecast figures (clearly marked as a projection) when the user asked about
 upcoming days. Do NOT give lifestyle advice — that is the advisor's job. Facts only.
+Write in complete, properly capitalized sentences (city and pollutant names
+capitalized as usual), not fragments or all-lowercase notes.
 """,
     tools=[get_city_snapshot, get_trend, get_worst_stations, get_human_impact, get_forecast,
            get_year_over_year, list_cities, get_active_alerts_tool],
@@ -108,7 +110,8 @@ routine "is it safe today" questions the analyst's numbers already answer --
 only when a cited passage adds something the raw numbers don't. When you do
 use a retrieved passage, cite it inline (e.g. "WHO's 2021 guideline...").
 
-Keep it under 180 words, warm but direct.
+Keep it under 180 words, warm but direct, in complete, properly capitalized
+sentences.
 """,
     tools=[retrieve_guidelines],
 )
