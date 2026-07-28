@@ -579,6 +579,20 @@ if(!reduceMotion){
   });
 }
 
+// Day/night ambient density: night reads denser/brighter, day sparser --
+// recomputed every 5 min (not just once at load) so a long-open tab or a
+// session crossing a dawn/dusk boundary still drifts instead of freezing.
+function nightFactor(){
+  const now=new Date();
+  const istMin=(now.getUTCHours()*60+now.getUTCMinutes()+330)%1440; // UTC -> IST (+5:30)
+  const h=istMin/60;
+  if(h>=22||h<5) return 1.15;
+  if(h>=9&&h<17) return .55;
+  const rampStart=h<9?5:17, rampEnd=h<9?9:22;
+  const t=(h-rampStart)/(rampEnd-rampStart);
+  const from=h<9?1.15:.55, to=h<9?.55:1.15;
+  return from+(to-from)*Math.max(0,Math.min(1,t));
+}
 /* particulate haze — cursor acts as wind. Skipped entirely under reduced motion: no rAF loop, no drift. */
 if(!reduceMotion){
   const cv = document.getElementById('haze'), ctx = cv.getContext('2d');
@@ -589,6 +603,8 @@ if(!reduceMotion){
   for(let i=0;i<110;i++) parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,
     r:Math.random()*2.2+0.6,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.2,o:Math.random()*.35+.08});
   const NEUTRAL=[160,185,235];
+  let NIGHT_FACTOR=nightFactor();
+  setInterval(()=>{NIGHT_FACTOR=nightFactor()},300000);
   (function tick(){
     ctx.clearRect(0,0,W,H);
     const speedMul=1+ATMOSPHERE_SEVERITY*.4;
@@ -602,7 +618,7 @@ if(!reduceMotion){
       p.vx*=.985; p.vy*=.985; p.x+=p.vx*speedMul; p.y+=p.vy*speedMul;
       if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20; if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
       ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7);
-      ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`; ctx.fill();
+      ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o*NIGHT_FACTOR})`; ctx.fill();
     }
     requestAnimationFrame(tick);
   })();

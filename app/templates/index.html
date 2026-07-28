@@ -156,7 +156,9 @@
   /* HERO: score + impact */
   .heroRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:820px){.heroRow{grid-template-columns:1fr}}
-  .scoreWrap{display:flex;align-items:center;gap:24px}
+  .scoreWrap{display:flex;align-items:center;gap:24px;
+    transition:opacity .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1)}
+  .scoreWrap.heroFade{opacity:.4;transform:scale(.985)}
   @media(max-width:480px){
     .scoreWrap{flex-wrap:wrap}
     .moodChar{display:none}
@@ -531,7 +533,7 @@
   <div class="s6">
       <div class="eyebrow">Air quality index <span class="tag" id="scoreCity">Delhi</span><span class="tag" id="aqiSource">…</span><span class="tag" id="aqiRank" style="display:none"></span>
         <button type="button" id="shareBtn" class="tag" style="cursor:pointer;font:inherit;background:transparent;color:var(--dim);-webkit-appearance:none;appearance:none" onclick="shareCard()">Share ⤴</button></div>
-      <div class="scoreWrap">
+      <div class="scoreWrap" id="scoreWrap">
         <div class="ring" id="scoreRing">
           <svg width="150" height="150" viewBox="0 0 150 150">
             <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
@@ -782,6 +784,10 @@ function severityColor(aqi){
 }
 let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
 const ATMOSPHERE_BASE_OPACITY=.16;
+// Wind-driven particle drift (see haze tick loop below): populated by
+// renderWeather() once real wind data loads; null/0 until then, so the
+// loop's wind-force branch is simply skipped on first paint.
+let WIND_DEG=null, WIND_KMH=0;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
@@ -1116,6 +1122,20 @@ function countUp(el, target, {duration=900, decimals=0}={}){
   setTimeout(finish, duration+120);
 }
 
+// Day/night ambient density: night reads denser/brighter, day sparser --
+// recomputed every 5 min (not just once at load) so a long-open tab or a
+// session crossing a dawn/dusk boundary still drifts instead of freezing.
+function nightFactor(){
+  const now=new Date();
+  const istMin=(now.getUTCHours()*60+now.getUTCMinutes()+330)%1440; // UTC -> IST (+5:30)
+  const h=istMin/60;
+  if(h>=22||h<5) return 1.15;
+  if(h>=9&&h<17) return .55;
+  const rampStart=h<9?5:17, rampEnd=h<9?9:22;
+  const t=(h-rampStart)/(rampEnd-rampStart);
+  const from=h<9?1.15:.55, to=h<9?.55:1.15;
+  return from+(to-from)*Math.max(0,Math.min(1,t));
+}
 if(!reduceMotion){
   const aurora=$('aurora');
   addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
@@ -1129,17 +1149,30 @@ if(!reduceMotion){
   // setAtmosphere() updates on each data load, so this loop stays cheap
   // (no per-frame allocation) and just picks up the latest values.
   const NEUTRAL=[196,212,245];
+  let NIGHT_FACTOR=nightFactor();
+  setInterval(()=>{NIGHT_FACTOR=nightFactor()},300000);
   (function tick(){ctx.clearRect(0,0,W,H);
   const speedMul=1+ATMOSPHERE_SEVERITY*.4;
   const cr=Math.round(NEUTRAL[0]+(ATMOSPHERE_RGB[0]-NEUTRAL[0])*ATMOSPHERE_SEVERITY);
   const cg=Math.round(NEUTRAL[1]+(ATMOSPHERE_RGB[1]-NEUTRAL[1])*ATMOSPHERE_SEVERITY);
   const cb=Math.round(NEUTRAL[2]+(ATMOSPHERE_RGB[2]-NEUTRAL[2])*ATMOSPHERE_SEVERITY);
+  // Wind-driven drift: wind_deg is the compass bearing wind blows FROM, so
+  // particles drift TOWARD the opposite bearing. A gentle constant bias,
+  // capped at 40km/h, blended with the existing cursor/severity forces
+  // below -- not a replacement for them.
+  let wdx=0,wdy=0;
+  if(WIND_DEG!=null){
+    const bearing=(WIND_DEG+180)%360*Math.PI/180;
+    const force=Math.min(WIND_KMH,40)/40*.03;
+    wdx=Math.sin(bearing)*force; wdy=-Math.cos(bearing)*force;
+  }
   for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
   if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
   p.vy+=ATMOSPHERE_SEVERITY*.008; // settling: worse air, particles drift down like real PM
+  p.vx+=wdx;p.vy+=wdy;
   p.vx*=.985;p.vy*=.985;p.x+=p.vx*speedMul;p.y+=p.vy*speedMul;
   if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
-  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o*NIGHT_FACTOR})`;ctx.fill()}requestAnimationFrame(tick)})();
 }
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
@@ -1262,12 +1295,18 @@ function renderCitiesTable(){
 }
 
 let refreshToken=0;
+let LAST_TRANSITIONED_CITY=null;
 async function refresh(){
   const myToken=++refreshToken;
   const p=$('paramSel').value;
   let AQI_SNAPSHOT=null;
   $('kpis').querySelectorAll('.kpi').forEach(k=>k.classList.add('skel'));
   $('scoreLive').classList.add('loading');
+  // Only the whole-hero dip marks an actual city change -- not a mere
+  // pollutant-dropdown switch, which re-fetches the same city and doesn't
+  // read as "going somewhere new."
+  const cityChanging=!reduceMotion && CITY!==LAST_TRANSITIONED_CITY;
+  if(cityChanging) $('scoreWrap').classList.add('heroFade');
   const t=await (await fetch(`/api/trend?city=${CITY}&parameter=${p}&days=90`)).json();
   if(myToken!==refreshToken)return;
   if(t.series){
@@ -1382,6 +1421,7 @@ async function refresh(){
     }catch(e){}
   }
   $('scoreLive').classList.remove('loading');
+  if(cityChanging){ $('scoreWrap').classList.remove('heroFade'); LAST_TRANSITIONED_CITY=CITY; }
   const imp=await (await fetch(`/api/impact?city=${CITY}`)).json();
   if(myToken!==refreshToken)return;
   if(imp.cigarettes_per_day_equivalent!==undefined){
@@ -1485,7 +1525,8 @@ async function renderWeather(){
   try{
     const w=await (await fetch(`/api/weather?city=${CITY}`)).json();
     if(myToken!==refreshToken)return;
-    if(w.error){ strip.innerHTML=''; return; }
+    if(w.error){ strip.innerHTML=''; WIND_DEG=null; WIND_KMH=0; return; }
+    WIND_DEG=w.wind_deg!=null?w.wind_deg:null; WIND_KMH=w.wind_kmh||0;
     const items=[
       w.temp_c!=null?['ic-temp',`${Math.round(w.temp_c)}°C`]:null,
       w.humidity_pct!=null?['ic-humidity',`${Math.round(w.humidity_pct)}%`]:null,
@@ -1493,7 +1534,7 @@ async function renderWeather(){
       w.uv_index!=null?['ic-uv',`UV ${Math.round(w.uv_index)}`]:null,
     ].filter(Boolean);
     strip.innerHTML=items.map(([ic,val])=>`<span class="wItem"><svg><use href="#${ic}"/></svg><b>${val}</b></span>`).join('');
-  }catch(e){ strip.innerHTML=''; }
+  }catch(e){ strip.innerHTML=''; WIND_DEG=null; WIND_KMH=0; }
 }
 
 async function renderHotspots(){

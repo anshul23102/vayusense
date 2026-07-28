@@ -428,6 +428,10 @@ function severityColor(aqi){
 }
 let ATMOSPHERE_RGB=[157,193,255], ATMOSPHERE_SEVERITY=0;
 const ATMOSPHERE_BASE_OPACITY=.16;
+// Wind-driven particle drift (see haze tick loop below): populated by
+// renderWeather() once real wind data loads; null/0 until then, so the
+// loop's wind-force branch is simply skipped on first paint.
+let WIND_DEG=null, WIND_KMH=0;
 function setAtmosphere(aqi){
   const [r,g,b]=severityColor(aqi);
   ATMOSPHERE_RGB=[r,g,b]; ATMOSPHERE_SEVERITY=Math.min(1,aqi/300);
@@ -590,6 +594,20 @@ function countUp(el, target, {decimals=0, duration=900}={}){
   setTimeout(finish, duration+120);
 }
 
+// Day/night ambient density: night reads denser/brighter, day sparser --
+// recomputed every 5 min (not just once at load) so a long-open tab or a
+// session crossing a dawn/dusk boundary still drifts instead of freezing.
+function nightFactor(){
+  const now=new Date();
+  const istMin=(now.getUTCHours()*60+now.getUTCMinutes()+330)%1440; // UTC -> IST (+5:30)
+  const h=istMin/60;
+  if(h>=22||h<5) return 1.15;
+  if(h>=9&&h<17) return .55;
+  const rampStart=h<9?5:17, rampEnd=h<9?9:22;
+  const t=(h-rampStart)/(rampEnd-rampStart);
+  const from=h<9?1.15:.55, to=h<9?.55:1.15;
+  return from+(to-from)*Math.max(0,Math.min(1,t));
+}
 if(!reduceMotion){
   const aurora=$('aurora');
   addEventListener('mousemove',e=>{aurora.style.setProperty('--mx',(e.clientX/innerWidth*100)+'%');aurora.style.setProperty('--my',(e.clientY/innerHeight*100)+'%')});
@@ -598,17 +616,26 @@ if(!reduceMotion){
   addEventListener('mousemove',e=>{mouse={x:e.clientX,y:e.clientY}});
   for(let i=0;i<80;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.6,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.16,o:Math.random()*.26+.06});
   const NEUTRAL=[196,212,245];
+  let NIGHT_FACTOR=nightFactor();
+  setInterval(()=>{NIGHT_FACTOR=nightFactor()},300000);
   (function tick(){ctx.clearRect(0,0,W,H);
   const speedMul=1+ATMOSPHERE_SEVERITY*.4;
   const cr=Math.round(NEUTRAL[0]+(ATMOSPHERE_RGB[0]-NEUTRAL[0])*ATMOSPHERE_SEVERITY);
   const cg=Math.round(NEUTRAL[1]+(ATMOSPHERE_RGB[1]-NEUTRAL[1])*ATMOSPHERE_SEVERITY);
   const cb=Math.round(NEUTRAL[2]+(ATMOSPHERE_RGB[2]-NEUTRAL[2])*ATMOSPHERE_SEVERITY);
+  let wdx=0,wdy=0;
+  if(WIND_DEG!=null){
+    const bearing=(WIND_DEG+180)%360*Math.PI/180;
+    const force=Math.min(WIND_KMH,40)/40*.03;
+    wdx=Math.sin(bearing)*force; wdy=-Math.cos(bearing)*force;
+  }
   for(const p of parts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
   if(d2<20000){const f=1-d2/20000;p.vx+=dx/Math.sqrt(d2+1)*f*.5;p.vy+=dy/Math.sqrt(d2+1)*f*.5}
   p.vy+=ATMOSPHERE_SEVERITY*.008;
+  p.vx+=wdx;p.vy+=wdy;
   p.vx*=.985;p.vy*=.985;p.x+=p.vx*speedMul;p.y+=p.vy*speedMul;
   if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
-  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o})`;ctx.fill()}requestAnimationFrame(tick)})();
+  ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(${cr},${cg},${cb},${p.o*NIGHT_FACTOR})`;ctx.fill()}requestAnimationFrame(tick)})();
 }
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.1});
@@ -695,7 +722,7 @@ async function loadOverview(){
     $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         if(a.rank && a.of){ $('aqiRank').style.display=''; $('aqiRank').textContent=`#${a.rank} of ${a.of}`; } else { $('aqiRank').style.display='none'; }
     $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
-    CURRENT_CATEGORY_KEY=a.category.key; renderMoodChar(a.category.color); renderWeather();
+    CURRENT_CATEGORY_KEY=a.category.key; renderMoodChar(a.category.color); renderWeather(a.city);
     $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
     $('citiesTable').innerHTML=a.ranking.map((r,i)=>{
       const catKey=r.category?.toLowerCase?.();
@@ -789,11 +816,16 @@ async function renderYoyRanking(){
   }catch(e){ document.getElementById('yoyRanking').style.display='none'; }
 }
 
-async function renderWeather(){
+// city is passed explicitly rather than defaulting to Delhi -- the hero
+// is now the actual worst city nationally (see loadOverview()), so the
+// weather strip has to follow whichever city that turns out to be, not
+// always Delhi's.
+async function renderWeather(city){
   const strip=$('weatherStrip');
   try{
-    const w=await (await fetch(`/api/weather?city=Delhi`)).json();
-    if(w.error){ strip.innerHTML=''; return; }
+    const w=await (await fetch(`/api/weather?city=${city}`)).json();
+    if(w.error){ strip.innerHTML=''; WIND_DEG=null; WIND_KMH=0; return; }
+    WIND_DEG=w.wind_deg!=null?w.wind_deg:null; WIND_KMH=w.wind_kmh||0;
     const items=[
       w.temp_c!=null?['ic-temp',`${Math.round(w.temp_c)}°C`]:null,
       w.humidity_pct!=null?['ic-humidity',`${Math.round(w.humidity_pct)}%`]:null,
@@ -801,7 +833,7 @@ async function renderWeather(){
       w.uv_index!=null?['ic-uv',`UV ${Math.round(w.uv_index)}`]:null,
     ].filter(Boolean);
     strip.innerHTML=items.map(([ic,val])=>`<span class="wItem"><svg><use href="#${ic}"/></svg><b>${val}</b></span>`).join('');
-  }catch(e){ strip.innerHTML=''; }
+  }catch(e){ strip.innerHTML=''; WIND_DEG=null; WIND_KMH=0; }
 }
 
 let WIND_MAP=null, WIND_LAYER=null, WIND_MARKERS_ADDED=false;

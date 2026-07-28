@@ -71,7 +71,7 @@ def _fetch(city: str) -> dict | None:
         with httpx.Client(timeout=6) as cli:
             r = cli.get(API, params={
                 "latitude": lat, "longitude": lon,
-                "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,uv_index",
+                "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,uv_index",
                 "timezone": "auto",
             })
             r.raise_for_status()
@@ -86,6 +86,7 @@ def _fetch(city: str) -> dict | None:
         "temp_c": cur.get("temperature_2m"),
         "humidity_pct": cur.get("relative_humidity_2m"),
         "wind_kmh": cur.get("wind_speed_10m"),
+        "wind_deg": cur.get("wind_direction_10m"),
         "uv_index": cur.get("uv_index"),
         "observed_at": cur.get("time"),
     }
