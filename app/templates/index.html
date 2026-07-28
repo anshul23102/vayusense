@@ -1068,6 +1068,23 @@ function cityRowHtml(r,i){
     <div class="cityGo">→</div>
   </div>`;
 }
+// Collapsed view shows cities ranked NEAR the one you're looking at, not
+// an unrelated national top-5: the question "how is my city ranked" is
+// better answered by comparable neighbors than by five cities that
+// happen to be nationally worst. Slides to stay inside [0, length) at
+// either end, so a city ranked #1 or #36 still gets a full window rather
+// than a truncated one. "Show all" is unchanged -- the full leaderboard,
+// including the true top-5, is still one click away.
+function rankWindow(ranking,city,size=5){
+  const idx=ranking.findIndex(r=>r.city===city);
+  if(idx<0)return ranking.slice(0,size); // city not found: sane fallback, not a crash
+  const half=Math.floor(size/2);
+  let start=idx-half, end=start+size;
+  if(start<0){end-=start;start=0}
+  if(end>ranking.length){start-=(end-ranking.length);end=ranking.length}
+  start=Math.max(0,start);
+  return ranking.slice(start,end);
+}
 function renderCitiesTable(){
   const ranking=RANKING_DATA;
   const box=$('citiesTable');
@@ -1077,13 +1094,8 @@ function renderCitiesTable(){
       + (ranking.length>6?`<button type="button" class="yearChip" style="margin-top:12px" onclick="CITIES_EXPANDED=false;renderCitiesTable()">Show fewer ↑</button>`:'');
     return;
   }
-  const top5=ranking.slice(0,5);
-  const myIdx=ranking.findIndex(r=>r.city===CITY);
-  const iShowMine = myIdx>=5;
-  let html=top5.map((r,i)=>cityRowHtml(r,i)).join('');
-  if(iShowMine){
-    html+=`<div class="scoreTxt" style="padding:8px 4px;opacity:.6">···</div>`+cityRowHtml(ranking[myIdx],5);
-  }
+  const win=rankWindow(ranking,CITY,5);
+  let html=win.map((r,i)=>cityRowHtml(r,i)).join('');
   html+=`<button type="button" class="yearChip" style="margin-top:12px" onclick="CITIES_EXPANDED=true;renderCitiesTable()">Show all ${ranking.length} cities ↓</button>`;
   box.innerHTML=html;
 }
