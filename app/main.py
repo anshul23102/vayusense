@@ -726,13 +726,27 @@ async def ask_stream(body: AskBody, request: Request):
             yield sse({"type": "session", "session_id": session.id})
             content = types.Content(role="user", parts=[types.Part.from_text(text=question)])
             got_answer = False
+            # Under StreamingMode.SSE, ADK's aggregator re-emits the same
+            # accumulated event as a turn assembles (the same mechanism that
+            # sends a text delta as partial=True chunks then one final
+            # partial=False event with the full text) -- get_function_calls()
+            # returns the same calls again on each re-emission, not just new
+            # ones. Without dedup this doubled every trace chip shown to the
+            # user (verified live: 8 SSE "tool" frames for 4 real calls,
+            # confirmed against /api/ask's non-streaming trace of the same
+            # calls, which has no such duplication).
+            seen_calls = set()
             async for event in runner.run_async(
                 user_id="web", session_id=session.id, new_message=content,
                 run_config=RunConfig(streaming_mode=StreamingMode.SSE),
             ):
                 for call in event.get_function_calls():
-                    yield sse({"type": "tool", "agent": event.author, "tool": call.name,
-                               "args": dict(call.args or {})})
+                    args = dict(call.args or {})
+                    key = (event.author, call.name, json.dumps(args, sort_keys=True, default=str))
+                    if key in seen_calls:
+                        continue
+                    seen_calls.add(key)
+                    yield sse({"type": "tool", "agent": event.author, "tool": call.name, "args": args})
                 # data_analyst's output is internal context for health_advisor,
                 # never shown to the user (same rule as /api/ask) -- only
                 # stream the final agent's text deltas.
