@@ -186,6 +186,10 @@ def city_page(slug: str):
         return JSONResponse({"error": f"unknown city '{slug}'"}, status_code=404)
     html = (ROOT / "app" / "templates" / "index.html").read_text()
     html = html.replace("let CITY='Delhi';", f"let CITY='{match}';")
+    html = html.replace(
+        "<title>VayuSense: Live Dashboard</title>",
+        f"<title>VayuSense: {match} Air Quality</title>",
+    )
     row = _city_aqi(match, allow_fetch=False)
     if row is not None:
         title = f"{match} air quality: {row['aqi']} AQI ({row['category']['label']}) | VayuSense"
