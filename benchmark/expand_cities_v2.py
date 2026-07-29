@@ -9,7 +9,7 @@ used in vayusense_gpu_benchmark.ipynb / expand_cities.py (pandas path), for
 these NEW cities only, then merges the result into the existing processed
 parquet files. The GPU benchmark artifacts (benchmark.png /
 benchmark_results.json) are left untouched: they are the fixed, one-time
-proof of the 37.5x cuDF speedup and are not regenerated here.
+proof of the 42.16x cuDF speedup and are not regenerated here.
 """
 import concurrent.futures as cf
 import gzip

@@ -310,7 +310,7 @@
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
     <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-bolt"/></svg></div><h3>Accelerated by NVIDIA</h3>
-      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 5.9M OpenAQ readings, done in <b class="nvg">0.25s on GPU (cuDF)</b> instead of 9.34s on CPU. Fresh insight, every time you ask.</p></div>
+      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 10,443,350 OpenAQ readings, done in <b class="nvg">0.19s on GPU (cuDF)</b> instead of 7.994s on CPU. Fresh insight, every time you ask.</p></div>
     <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-chip"/></svg></div><h3>Reasoned by Google ADK + Gemini</h3>
       <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
     <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-target"/></svg></div><h3>Built to be used, not admired</h3>
@@ -320,7 +320,7 @@
 
 <section id="bench">
   <div class="kicker reveal">The acceleration, proven</div>
-  <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">37.5×</span> faster than pandas.</h2>
+  <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">42.16×</span> faster than pandas.</h2>
   <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 10,443,350 rows. Timed honestly, side by side. When air quality
     can shift by the hour, a 7.994-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision.</p>
@@ -537,7 +537,6 @@ function renderGpuBench(){
     document.querySelectorAll('.js-archive-readings-full').forEach(el=>el.textContent=full);
     document.querySelectorAll('.js-archive-readings').forEach(el=>el.textContent=short);
   }
-  document.querySelectorAll('.js-gpu-rows').forEach(el=>el.textContent=rows);
   const dataset=document.getElementById('gpuDatasetRow');
   if(dataset)dataset.textContent=`${rows} readings`;
   const cpuRow=document.getElementById('gpuCpuRow');
