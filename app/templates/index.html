@@ -780,7 +780,7 @@
       <div id="chat">
         <div class="msg bot">Namaste! I analyze millions of readings before I answer. Try a suggestion below, or ask anything.</div>
       </div>
-      <div class="sugg">
+      <div class="sugg" id="askSugg">
         <button type="button" onclick="preset(this)">Is it safe for my kid's school to hold sports practice outdoors in Delhi this week?</button>
         <button type="button" onclick="preset(this)">Compare Delhi vs Mumbai air quality</button>
         <button type="button" onclick="preset(this)">Which are the worst pollution hotspots in Delhi?</button>
@@ -1492,6 +1492,7 @@ async function refresh(){
         $('citiesBasis').textContent=`Ranked on ${a.ranking_basis||'the latest archive day, all cities'}`;
         RANKING_DATA=a.ranking; CITIES_EXPANDED=false;
         renderCitiesTable();
+        renderAskSuggestions();
         $('pollBasis').textContent=`Sub-AQI per pollutant · ${a.basis}`;
         $('pollGrid').innerHTML=Object.entries(a.sub_aqi).map(([p,sub],i)=>{
           const b=bandOf(sub); const sv=s.pollutants[p]||{};
@@ -1819,6 +1820,25 @@ function computeFollowups(usedTools){
   const other=(RANKING_DATA[0]&&RANKING_DATA[0].city!==CITY)?RANKING_DATA[0].city:(CITY==='Mumbai'?'Delhi':'Mumbai');
   out.push(`Compare ${CITY} with ${other}`);
   return out.slice(0,3);
+}
+// Opening suggestions for the Ask panel, before any turn has happened.
+// Same city-aware, ranking-driven pick as computeFollowups (RANKING_DATA
+// comes from /api/aqi's real station ranking for CITY), so switching city
+// updates these the same way it updates the rest of the page, not just a
+// hardcoded "Delhi" string swapped for the current city name.
+function computeInitialSuggestions(){
+  const other=(RANKING_DATA[0]&&RANKING_DATA[0].city!==CITY)?RANKING_DATA[0].city:(CITY==='Mumbai'?'Delhi':'Mumbai');
+  return [
+    `Is it safe for my kid's school to hold sports practice outdoors in ${CITY} this week?`,
+    `Compare ${CITY} vs ${other} air quality`,
+    `Which are the worst pollution hotspots in ${CITY}?`,
+  ];
+}
+function renderAskSuggestions(){
+  const sugg=$('askSugg');
+  if(!sugg)return;
+  sugg.innerHTML=computeInitialSuggestions().map(q=>
+    `<button type="button" onclick="preset(this)">${esc(q)}</button>`).join('');
 }
 function resetChat(){
   if(askBusy)return;
