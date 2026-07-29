@@ -158,6 +158,12 @@
   .cityRow:hover{background:rgba(255,255,255,.03);padding-left:10px}
   .cityRow:active{background:rgba(157,193,255,.07)}
   .cityRow:focus-visible{outline:2px solid var(--blueSolid);outline-offset:-2px;border-radius:8px}
+  .skipLink{position:fixed;top:-60px;left:16px;z-index:2000;background:var(--blueSolid);
+    color:#071023;padding:10px 18px;border-radius:10px;font-weight:600;font-size:13.5px;
+    text-decoration:none;transition:top .2s}
+  .skipLink:focus{top:16px}
+  a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{
+    outline:2px solid var(--blueSolid);outline-offset:2px;border-radius:4px}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
   .cityIconBadge svg{width:32px;height:32px}
@@ -254,6 +260,7 @@
 </style>
 </head>
 <body>
+<a href="#overview" class="skipLink">Skip to content</a>
 <div id="scrollProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:2px;width:0;background:var(--blueSolid);opacity:.85;z-index:1000;transition:width .1s linear"></div>
 <div id="mobileChapter" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -790,7 +797,7 @@ async function renderAlerts(){
       return `<div class="alertRow" style="border-left-color:${color}">
         <div class="alertTop">
           <a class="alertCityLink" href="/city/${a.city_slug}">${esc(a.city)}</a>
-          <span class="alertBadge" style="background:${color}22;color:${color}">${ALERT_TYPE_LABEL[a.type](a)}</span>
+          <span class="alertBadge" style="background:${color}22;color:${textSafeColor(a.severity,color)}">${ALERT_TYPE_LABEL[a.type](a)}</span>
         </div>
         <div class="alertMsg">${esc(a.message)}</div>
         <div class="alertGenBtn"><button type="button" class="yearChip" id="alertGenBtn${i}" onclick="generateAlertAdvisory(${i},'${esc(a.city).replace(/'/g,"\\'")}')">Generate advisory</button></div>

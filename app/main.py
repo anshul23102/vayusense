@@ -105,6 +105,13 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Nothing in this app uses the camera, microphone, geolocation, or
+    # payment APIs -- explicitly deny them rather than leaving the
+    # browser's own (often permissive) default in effect.
+    response.headers["Permissions-Policy"] = (
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), "
+        "accelerometer=(), gyroscope=(), magnetometer=()"
+    )
     # HTML carries the app's markup, CSS and JS inline, so a stale copy pins a
     # visitor to an old build. With no cache directive at all, browsers fall
     # back to heuristic caching and can serve that stale copy for a long time
