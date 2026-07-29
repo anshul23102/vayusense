@@ -123,6 +123,20 @@
   .skipLink:focus{top:16px}
   a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{
     outline:2px solid var(--blueSolid);outline-offset:2px;border-radius:4px}
+  .cmdPalette{position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
+  .cmdBackdrop{position:absolute;inset:0;background:rgba(8,12,24,.6);backdrop-filter:blur(6px)}
+  .cmdBox{position:relative;width:min(560px,92vw);background:#141b31;border:1px solid var(--line);
+    border-radius:16px;box-shadow:0 20px 60px rgba(6,10,25,.5);overflow:hidden;
+    opacity:0;transform:scale(.97);animation:cmdIn .15s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes cmdIn{to{opacity:1;transform:scale(1)}}
+  .cmdInput{width:100%;background:transparent;color:var(--txt);border:none;border-bottom:1px solid var(--line);
+    padding:16px 18px;font-size:15px;font-family:inherit;outline:none}
+  .cmdList{max-height:360px;overflow-y:auto}
+  .cmdItem{padding:11px 18px;font-size:13.5px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:10px}
+  .cmdItem .cmdKind{margin-left:auto;font-size:10.5px;color:var(--dim);opacity:.6;text-transform:uppercase;letter-spacing:.5px}
+  .cmdItem:hover,.cmdItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .cmdEmpty{padding:18px;font-size:13px;color:var(--dim);text-align:center}
+  @media(prefers-reduced-motion:reduce){.cmdBox{animation:none;opacity:1;transform:none}}
   .searchDrop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#141b31;border:1px solid var(--line);
     border-radius:12px;overflow:hidden;z-index:20;display:none}
   .searchDrop.on{display:block}
@@ -180,6 +194,14 @@
 </head>
 <body>
 <a href="#showcase" class="skipLink">Skip to content</a>
+<div id="cmdPalette" class="cmdPalette" role="dialog" aria-modal="true" aria-label="Quick navigation" style="display:none">
+  <div class="cmdBackdrop" onclick="closeCmdPalette()"></div>
+  <div class="cmdBox">
+    <input id="cmdInput" class="cmdInput" placeholder="Search a city or action…" autocomplete="off"
+      oninput="filterCmdPalette(this.value)" onkeydown="cmdPaletteKeydown(event)">
+    <div id="cmdList" class="cmdList" role="listbox"></div>
+  </div>
+</div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ic-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-signal" viewBox="0 0 24 24"><circle cx="12" cy="19" r="1.3" fill="currentColor"/><path d="M8 15.5a5.5 5.5 0 0 1 8 0M5 12a9 9 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
@@ -413,6 +435,54 @@ const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.ta
 
 const LANDING_DATA={cities:[],ranking:[],bench:null};
 function goToCity(name){ location.href=`/city/${encodeURIComponent(name.toLowerCase())}`; }
+
+// Command palette: Ctrl/Cmd+K quick navigation. Reuses LANDING_DATA.cities,
+// already populated by loadLandingData() -- no new fetch.
+let CMD_OPEN=false, CMD_HI=-1, CMD_MATCHES=[];
+function cmdItems(){
+  const cities=LANDING_DATA.cities.map(c=>({type:'city',label:c,action:()=>{closeCmdPalette();goToCity(c)}}));
+  const actions=[
+    {type:'action',label:'Open Live Dashboard',action:()=>{location.href='/dashboard'}},
+  ];
+  return [...actions,...cities];
+}
+function openCmdPalette(){
+  CMD_OPEN=true;
+  document.getElementById('cmdPalette').style.display='flex';
+  document.getElementById('cmdInput').value='';
+  filterCmdPalette('');
+  setTimeout(()=>document.getElementById('cmdInput').focus(),10);
+}
+function closeCmdPalette(){
+  CMD_OPEN=false;
+  document.getElementById('cmdPalette').style.display='none';
+}
+function renderCmdList(){
+  const list=document.getElementById('cmdList');
+  if(!CMD_MATCHES.length){ list.innerHTML='<div class="cmdEmpty">No matches</div>'; return; }
+  list.innerHTML=CMD_MATCHES.slice(0,8).map((it,i)=>
+    `<div class="cmdItem${i===CMD_HI?' hi':''}" role="option" id="cmditem-${i}" onclick="CMD_MATCHES[${i}].action()">
+      ${it.label}<span class="cmdKind">${it.type==='city'?'city':'action'}</span>
+    </div>`).join('');
+}
+function filterCmdPalette(q){
+  const query=q.trim().toLowerCase();
+  const all=cmdItems();
+  CMD_MATCHES=query?all.filter(it=>it.label.toLowerCase().includes(query)):all;
+  CMD_HI=CMD_MATCHES.length?0:-1;
+  renderCmdList();
+}
+function cmdPaletteKeydown(e){
+  if(e.key==='Escape'){ closeCmdPalette(); return; }
+  if(!CMD_MATCHES.length)return;
+  if(e.key==='ArrowDown'){ e.preventDefault(); CMD_HI=Math.min(CMD_HI+1,Math.min(CMD_MATCHES.length,8)-1); renderCmdList(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); CMD_HI=Math.max(CMD_HI-1,0); renderCmdList(); }
+  else if(e.key==='Enter'){ e.preventDefault(); const it=CMD_MATCHES[CMD_HI>=0?CMD_HI:0]; if(it)it.action(); }
+}
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); CMD_OPEN?closeCmdPalette():openCmdPalette(); }
+});
+
 async function loadLandingData(){
   try{
     const [cities, aqi, bench, impact, gpu] = await Promise.all([

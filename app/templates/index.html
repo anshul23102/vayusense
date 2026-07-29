@@ -289,6 +289,23 @@
      yearChip buttons), it doesn't override anything already correct. */
   a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{
     outline:2px solid var(--blueSolid);outline-offset:2px;border-radius:4px}
+  /* Command palette: Ctrl/Cmd+K quick navigation, same glass-panel
+     language as the nav bar. Entrance is opacity+scale only, skipped
+     under reduced motion via the existing convention. */
+  .cmdPalette{position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
+  .cmdBackdrop{position:absolute;inset:0;background:rgba(8,12,24,.6);backdrop-filter:blur(6px)}
+  .cmdBox{position:relative;width:min(560px,92vw);background:#141b31;border:1px solid var(--line);
+    border-radius:16px;box-shadow:0 20px 60px rgba(6,10,25,.5);overflow:hidden;
+    opacity:0;transform:scale(.97);animation:cmdIn .15s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes cmdIn{to{opacity:1;transform:scale(1)}}
+  .cmdInput{width:100%;background:transparent;color:var(--txt);border:none;border-bottom:1px solid var(--line);
+    padding:16px 18px;font-size:15px;font-family:inherit;outline:none}
+  .cmdList{max-height:360px;overflow-y:auto}
+  .cmdItem{padding:11px 18px;font-size:13.5px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:10px}
+  .cmdItem .cmdKind{margin-left:auto;font-size:10.5px;color:var(--dim);opacity:.6;text-transform:uppercase;letter-spacing:.5px}
+  .cmdItem:hover,.cmdItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .cmdEmpty{padding:18px;font-size:13px;color:var(--dim);text-align:center}
+  @media(prefers-reduced-motion:reduce){.cmdBox{animation:none;opacity:1;transform:none}}
   .cityRow.current{border-left:2px solid var(--blueSolid);padding-left:12px;margin-left:-14px}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
@@ -436,6 +453,14 @@
 </head>
 <body>
 <a href="#overview" class="skipLink">Skip to content</a>
+<div id="cmdPalette" class="cmdPalette" role="dialog" aria-modal="true" aria-label="Quick navigation" style="display:none">
+  <div class="cmdBackdrop" onclick="closeCmdPalette()"></div>
+  <div class="cmdBox">
+    <input id="cmdInput" class="cmdInput" placeholder="Search a city or action…" autocomplete="off"
+      oninput="filterCmdPalette(this.value)" onkeydown="cmdPaletteKeydown(event)">
+    <div id="cmdList" class="cmdList" role="listbox"></div>
+  </div>
+</div>
 <div id="scrollProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:2px;width:0;background:var(--blueSolid);opacity:.85;z-index:1000;transition:width .1s linear"></div>
 <div id="mobileChapter" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -567,6 +592,7 @@
           <div class="verdict" id="verdict" style="color:var(--amber);border-color:var(--amber)">…</div>
           <p class="scoreTxt" id="scoreTxt">Crunching the latest readings…</p>
           <p class="scoreTxt" id="aqiMeta" style="font-size:11.5px;opacity:.8;margin-top:6px"></p>
+          <p class="scoreTxt" id="momentum" style="font-size:12px;font-weight:600;margin-top:6px;display:none"></p>
         </div>
         <svg id="moodChar" class="moodChar" aria-hidden="true" style="color:var(--amber)"><use id="moodCharUse" href="#mood-uneasy"/></svg>
       </div>
@@ -1325,6 +1351,35 @@ function renderCitiesTable(){
   box.innerHTML=html;
 }
 
+// Momentum highlight: reads the 7-day rolling trend of the currently
+// selected pollutant (already fetched for the trend chart, no new API
+// call) -- not a recomputed overall-AQI series, so it's labeled by
+// pollutant, not as a blanket "AQI improving" claim. Only surfaced when
+// a real, non-trivial streak (3+ days) exists.
+function computeMomentum(series){
+  if(!series||series.length<4)return null;
+  const roll=series.map(d=>d.roll7).filter(v=>v!=null);
+  if(roll.length<4)return null;
+  let streak=0,dir=null;
+  for(let i=roll.length-1;i>0;i--){
+    const delta=roll[i]-roll[i-1];
+    if(Math.abs(delta)<0.05)break;
+    const thisDir=delta<0?'improving':'worsening';
+    if(dir===null)dir=thisDir;
+    else if(thisDir!==dir)break;
+    streak++;
+  }
+  return streak>=3?{dir,streak}:null;
+}
+function renderMomentum(series,pollLabel){
+  const el=$('momentum');
+  const m=computeMomentum(series);
+  if(!m){ el.style.display='none'; return; }
+  const good=m.dir==='improving';
+  el.style.color=good?RAMP.good:RAMP.unhealthy;
+  el.textContent=`${good?'📉':'📈'} ${pollLabel}'s 7-day trend has been ${m.dir} for ${m.streak} straight days`;
+  el.style.display='';
+}
 let refreshToken=0;
 let LAST_TRANSITIONED_CITY=null;
 async function refresh(){
@@ -1429,6 +1484,7 @@ async function refresh(){
         v.style.color=textSafeColor(a.category.key,a.category.color);v.style.borderColor=a.category.color;
         $('scoreTxt').innerHTML=`Driven by ${pollutantLabel(a.dominant)} · <a href="#cities" style="color:inherit;text-decoration:underline">see full ranking ↓</a>`;
         $('aqiMeta').textContent=`${a.basis} · updated ${a.last_updated}`;
+        renderMomentum(t.series, pollutantLabel(p));
         $('aqiSource').innerHTML=a.source==='live'?'<span class="livePulse"></span>LIVE':'ARCHIVE';
         if(a.rank && a.of){ $('aqiRank').style.display=''; $('aqiRank').textContent=`#${a.rank} of ${a.of}`; } else { $('aqiRank').style.display='none'; }
         $('aqiPointer').style.left=(Math.min(a.aqi,500)/500*100)+'%';
@@ -1697,9 +1753,73 @@ async function loadBench(){try{const b=await (await fetch('/api/benchmark')).jso
   if(b.speedup){$('speedup').textContent=b.speedup+'×';$('benchRows').textContent=b.rows.toLocaleString()+' sensor readings';
   $('benchTimes').textContent=`pandas ${b.cpu_seconds}s → cuDF ${b.gpu_seconds}s`}}catch(e){}}
 
+// Command palette: Ctrl/Cmd+K quick navigation. City list is read on
+// demand from the existing #citySel dropdown (already populated by
+// loadCities()) rather than fetched again.
+let CMD_OPEN=false, CMD_HI=-1, CMD_MATCHES=[];
+function cmdItems(){
+  const cities=[...$('citySel').options].map(o=>({type:'city',label:o.value,action:()=>{selectCity(o.value);closeCmdPalette()}}));
+  const actions=[
+    {type:'action',label:'Open Live Dashboard',action:()=>{location.href='/dashboard'}},
+    {type:'action',label:'Open Landing Page',action:()=>{location.href='/'}},
+    {type:'action',label:'Ask VayuSense',action:()=>{closeCmdPalette();$('ask').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('q').focus(),300)}},
+  ];
+  return [...actions,...cities];
+}
+function openCmdPalette(){
+  CMD_OPEN=true;
+  $('cmdPalette').style.display='flex';
+  $('cmdInput').value='';
+  filterCmdPalette('');
+  setTimeout(()=>$('cmdInput').focus(),10);
+}
+function closeCmdPalette(){
+  CMD_OPEN=false;
+  $('cmdPalette').style.display='none';
+}
+function renderCmdList(){
+  const list=$('cmdList');
+  if(!CMD_MATCHES.length){ list.innerHTML='<div class="cmdEmpty">No matches</div>'; return; }
+  list.innerHTML=CMD_MATCHES.slice(0,8).map((it,i)=>
+    `<div class="cmdItem${i===CMD_HI?' hi':''}" role="option" id="cmditem-${i}" onclick="CMD_MATCHES[${i}].action()">
+      ${esc(it.label)}<span class="cmdKind">${it.type==='city'?'city':'action'}</span>
+    </div>`).join('');
+}
+function filterCmdPalette(q){
+  const query=q.trim().toLowerCase();
+  const all=cmdItems();
+  CMD_MATCHES=query?all.filter(it=>it.label.toLowerCase().includes(query)):all;
+  CMD_HI=CMD_MATCHES.length?0:-1;
+  renderCmdList();
+}
+function cmdPaletteKeydown(e){
+  if(e.key==='Escape'){ closeCmdPalette(); return; }
+  if(!CMD_MATCHES.length)return;
+  if(e.key==='ArrowDown'){ e.preventDefault(); CMD_HI=Math.min(CMD_HI+1,Math.min(CMD_MATCHES.length,8)-1); renderCmdList(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); CMD_HI=Math.max(CMD_HI-1,0); renderCmdList(); }
+  else if(e.key==='Enter'){ e.preventDefault(); const it=CMD_MATCHES[CMD_HI>=0?CMD_HI:0]; if(it)it.action(); }
+}
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); CMD_OPEN?closeCmdPalette():openCmdPalette(); }
+});
+
 let askBusy=false;
 let ASK_MSG_ID=0; // per-message counter so element IDs never collide across turns
 function preset(el){if(askBusy)return;$('q').value=el.textContent;ask()}
+// Suggested next questions after a turn: a deterministic, context-aware
+// pick from a small template bank, not a new LLM call -- skips anything
+// this turn's own tool calls already answered.
+function computeFollowups(usedTools){
+  const bank=[
+    {tool:'get_forecast',text:"What's the forecast for the next few days?"},
+    {tool:'get_worst_stations',text:`Which areas in ${CITY} have the worst air?`},
+    {tool:'get_year_over_year',text:`Is ${CITY}'s air better or worse than last year?`},
+  ];
+  const out=bank.filter(b=>!usedTools.has(b.tool)).map(b=>b.text).slice(0,2);
+  const other=(RANKING_DATA[0]&&RANKING_DATA[0].city!==CITY)?RANKING_DATA[0].city:(CITY==='Mumbai'?'Delhi':'Mumbai');
+  out.push(`Compare ${CITY} with ${other}`);
+  return out.slice(0,3);
+}
 function resetChat(){
   if(askBusy)return;
   SESSION_ID=crypto.randomUUID();
@@ -1843,7 +1963,9 @@ async function ask(){
   const bubble=chat.lastElementChild;
   const thinkEl=$('think-'+id), ansEl=$('ans-'+id), traceEl=$('trace-'+id);
   let full='',gotAny=false,chipCount=0;
+  const usedTools=new Set();
   const addChip=(t)=>{
+    usedTools.add(t.tool);
     const args=Object.values(t.args||{}).map(String).join(', ');
     if(chipCount===0)traceEl.style.display='flex';
     traceEl.insertAdjacentHTML('beforeend',
@@ -1899,6 +2021,14 @@ async function ask(){
     if(!gotAny && !bubble.classList.contains('error')){
       settleTrace();bubble.classList.add('error');
       full='The agent didn\'t return an answer. Please try rephrasing your question.';showAnswer();
+    }
+    if(gotAny && !bubble.classList.contains('error')){
+      const followups=computeFollowups(usedTools);
+      if(followups.length){
+        bubble.insertAdjacentHTML('beforeend',
+          `<div class="sugg">${followups.map(f=>`<button type="button" onclick="preset(this)">${esc(f)}</button>`).join('')}</div>`);
+        chat.scrollTop=chat.scrollHeight;
+      }
     }
   }catch(e){settleTrace();bubble.classList.add('error');ansEl.textContent='Connection error. Please try again.'}
   askBusy=false;$('askBtn').disabled=false;$('q').disabled=false;chat.scrollTop=chat.scrollHeight;

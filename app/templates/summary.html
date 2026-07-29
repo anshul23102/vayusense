@@ -164,6 +164,20 @@
   .skipLink:focus{top:16px}
   a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{
     outline:2px solid var(--blueSolid);outline-offset:2px;border-radius:4px}
+  .cmdPalette{position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
+  .cmdBackdrop{position:absolute;inset:0;background:rgba(8,12,24,.6);backdrop-filter:blur(6px)}
+  .cmdBox{position:relative;width:min(560px,92vw);background:#141b31;border:1px solid var(--line);
+    border-radius:16px;box-shadow:0 20px 60px rgba(6,10,25,.5);overflow:hidden;
+    opacity:0;transform:scale(.97);animation:cmdIn .15s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes cmdIn{to{opacity:1;transform:scale(1)}}
+  .cmdInput{width:100%;background:transparent;color:var(--txt);border:none;border-bottom:1px solid var(--line);
+    padding:16px 18px;font-size:15px;font-family:inherit;outline:none}
+  .cmdList{max-height:360px;overflow-y:auto}
+  .cmdItem{padding:11px 18px;font-size:13.5px;cursor:pointer;color:var(--dim);display:flex;align-items:center;gap:10px}
+  .cmdItem .cmdKind{margin-left:auto;font-size:10.5px;color:var(--dim);opacity:.6;text-transform:uppercase;letter-spacing:.5px}
+  .cmdItem:hover,.cmdItem.hi{background:rgba(157,193,255,.1);color:var(--txt)}
+  .cmdEmpty{padding:18px;font-size:13px;color:var(--dim);text-align:center}
+  @media(prefers-reduced-motion:reduce){.cmdBox{animation:none;opacity:1;transform:none}}
   .cityIconBadge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
   .cityRow:hover .cityIconBadge{transform:scale(1.08)}
   .cityIconBadge svg{width:32px;height:32px}
@@ -261,6 +275,14 @@
 </head>
 <body>
 <a href="#overview" class="skipLink">Skip to content</a>
+<div id="cmdPalette" class="cmdPalette" role="dialog" aria-modal="true" aria-label="Quick navigation" style="display:none">
+  <div class="cmdBackdrop" onclick="closeCmdPalette()"></div>
+  <div class="cmdBox">
+    <input id="cmdInput" class="cmdInput" placeholder="Search a city or action…" autocomplete="off"
+      oninput="filterCmdPalette(this.value)" onkeydown="cmdPaletteKeydown(event)">
+    <div id="cmdList" class="cmdList" role="listbox"></div>
+  </div>
+</div>
 <div id="scrollProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:2px;width:0;background:var(--blueSolid);opacity:.85;z-index:1000;transition:width .1s linear"></div>
 <div id="mobileChapter" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -684,6 +706,53 @@ function goToCity(name){ location.href=`/city/${encodeURIComponent(name.toLowerC
 
 let CITIES=[];
 async function loadCities(){ CITIES=await (await fetch('/api/cities')).json(); }
+
+// Command palette: Ctrl/Cmd+K quick navigation. Reuses the CITIES array
+// loadCities() already populates -- no new fetch.
+let CMD_OPEN=false, CMD_HI=-1, CMD_MATCHES=[];
+function cmdItems(){
+  const cities=CITIES.map(c=>({type:'city',label:c,action:()=>{closeCmdPalette();goToCity(c)}}));
+  const actions=[
+    {type:'action',label:'Open Landing Page',action:()=>{location.href='/'}},
+  ];
+  return [...actions,...cities];
+}
+function openCmdPalette(){
+  CMD_OPEN=true;
+  $('cmdPalette').style.display='flex';
+  $('cmdInput').value='';
+  filterCmdPalette('');
+  setTimeout(()=>$('cmdInput').focus(),10);
+}
+function closeCmdPalette(){
+  CMD_OPEN=false;
+  $('cmdPalette').style.display='none';
+}
+function renderCmdList(){
+  const list=$('cmdList');
+  if(!CMD_MATCHES.length){ list.innerHTML='<div class="cmdEmpty">No matches</div>'; return; }
+  list.innerHTML=CMD_MATCHES.slice(0,8).map((it,i)=>
+    `<div class="cmdItem${i===CMD_HI?' hi':''}" role="option" id="cmditem-${i}" onclick="CMD_MATCHES[${i}].action()">
+      ${esc(it.label)}<span class="cmdKind">${it.type==='city'?'city':'action'}</span>
+    </div>`).join('');
+}
+function filterCmdPalette(q){
+  const query=q.trim().toLowerCase();
+  const all=cmdItems();
+  CMD_MATCHES=query?all.filter(it=>it.label.toLowerCase().includes(query)):all;
+  CMD_HI=CMD_MATCHES.length?0:-1;
+  renderCmdList();
+}
+function cmdPaletteKeydown(e){
+  if(e.key==='Escape'){ closeCmdPalette(); return; }
+  if(!CMD_MATCHES.length)return;
+  if(e.key==='ArrowDown'){ e.preventDefault(); CMD_HI=Math.min(CMD_HI+1,Math.min(CMD_MATCHES.length,8)-1); renderCmdList(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); CMD_HI=Math.max(CMD_HI-1,0); renderCmdList(); }
+  else if(e.key==='Enter'){ e.preventDefault(); const it=CMD_MATCHES[CMD_HI>=0?CMD_HI:0]; if(it)it.action(); }
+}
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); CMD_OPEN?closeCmdPalette():openCmdPalette(); }
+});
 
 let SEARCH_HI=-1;
 function closeNavSearchDrop(){
