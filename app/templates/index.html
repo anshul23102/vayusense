@@ -381,6 +381,15 @@
     transition:opacity .18s,transform .18s}
   .railDot:hover .railLabel,.railDot.on .railLabel{opacity:1;transform:translateY(-50%) translateX(0)}
   @media(max-width:900px){#storyRail{display:none}}
+  /* Mobile chapter awareness: the rail can't fit below 900px, so this pill
+     (complementary breakpoint, not an independent one) carries the same
+     "where am I" information the rail's always-visible active-label
+     already gives desktop visitors. */
+  #mobileChapter{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1000;
+    font-size:11px;font-weight:600;color:var(--dim);background:rgba(15,21,40,.85);
+    padding:4px 12px;border-radius:99px;border:1px solid var(--line);
+    opacity:0;transition:opacity .25s,color .25s;pointer-events:none}
+  @media(min-width:900px){#mobileChapter{display:none}}
 
   @media (prefers-reduced-motion: reduce){
     #storyRail{display:none}
@@ -417,6 +426,7 @@
 </head>
 <body>
 <div id="scrollProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:2px;width:0;background:var(--blueSolid);opacity:.85;z-index:1000;transition:width .1s linear"></div>
+<div id="mobileChapter" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ic-lungs" viewBox="0 0 24 24"><path d="M12 3v7M12 10c-1 -3 -4 -3 -5 -1c-2 3 -2 9 0 11c2 1.5 4 -0.5 5 -3M12 10c1 -3 4 -3 5 -1c2 3 2 9 0 11c-2 1.5 -4 -0.5 -5 -3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="ic-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -1088,6 +1098,16 @@ if(!reduceMotion){
     });
     fill.style.background=color;
     fill.style.height=((activeIdx/(dotEls.length-1))*100)+'%';
+    // Mobile chapter awareness: the rail is hidden below 900px (CSS), so
+    // this pill carries the same "where am I" information for viewports
+    // where the rail itself has no room -- same activeIdx/color computed
+    // above, no separate tracking logic.
+    const mobileLabel=$('mobileChapter');
+    if(mobileLabel){
+      mobileLabel.textContent=chapterSections[activeIdx]?.label||'';
+      mobileLabel.style.color=color;
+      mobileLabel.style.opacity=chapterSections.length?'1':'0';
+    }
     const doc=document.documentElement;
     const scrollable=Math.max(1,doc.scrollHeight-innerHeight);
     SCROLL_DEPTH=Math.min(1,(scrollY/scrollable)/0.6);
