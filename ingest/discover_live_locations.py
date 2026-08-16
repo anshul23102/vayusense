@@ -1,15 +1,27 @@
 """One-time discovery: map each VayuSense city to up to 5 active OpenAQ v3
 locations, recording sensor->parameter/unit so the live fetcher can decode
-/latest responses without extra API calls. Writes ingest/live_locations.json."""
+/latest responses without extra API calls. Writes ingest/live_locations.json.
+
+Uses one /v3/locations call per city (well inside OpenAQ's 60/min, 2000/hour
+rate limit -- see docs.openaq.org/using-the-api/rate-limits) and picks the
+5 most RECENTLY reporting stations by datetimeLast, rather than the first 5
+in response order. The original version took the first 5 unconditionally,
+which for some cities picked stations that had been offline for years (e.g.
+Bengaluru's original 5 all last reported in February 2018) while dozens of
+genuinely live stations sat lower in the same response, unused."""
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
-KEY = open("/tmp/openaq_key.txt").read().strip()
+load_dotenv(ROOT / ".env")
+KEY = os.environ["OPENAQ_API_KEY"]
 HEADERS = {"X-API-Key": KEY}
 API = "https://api.openaq.org/v3"
 PARAMS = {"pm25", "pm10", "no2", "o3", "so2", "co"}
@@ -36,6 +48,11 @@ CITY_QUERIES = {
     "Nashik":       {"coordinates": "19.9975,73.7898", "radius": 25000},
 }
 
+# One call per city keeps this at 20 requests total -- nowhere near the
+# 60/minute limit -- but a small courtesy delay avoids bursting them all
+# in under a second, per OpenAQ's "don't hammer the API" guidance.
+REQUEST_DELAY_SECONDS = 1.0
+
 
 def main() -> None:
     out: dict[str, list[dict]] = {}
@@ -43,7 +60,7 @@ def main() -> None:
         r = requests.get(f"{API}/locations",
                          params={**q, "limit": 100}, headers=HEADERS, timeout=30)
         r.raise_for_status()
-        locs = []
+        candidates = []
         for loc in r.json().get("results", []):
             sensors = {}
             for s in loc.get("sensors", []):
@@ -51,13 +68,24 @@ def main() -> None:
                 punits = (s.get("parameter") or {}).get("units", "")
                 if pname in PARAMS:
                     sensors[str(s["id"])] = {"parameter": pname, "unit": punits}
-            if sensors:
-                locs.append({"location_id": loc["id"], "sensors": sensors})
-            if len(locs) >= 5:
-                break
-        out[city] = locs
-        print(f"{city}: {len(locs)} locations, "
-              f"{sum(len(l['sensors']) for l in locs)} sensors")
+            if not sensors:
+                continue
+            last = ((loc.get("datetimeLast") or {}).get("utc")) or ""
+            candidates.append((last, loc["id"], loc.get("name"), sensors))
+
+        # Freshest first, so a location that stopped reporting years ago never
+        # displaces one that's actually live, even if it appeared earlier in
+        # OpenAQ's response order.
+        candidates.sort(key=lambda c: c[0], reverse=True)
+        picked = candidates[:5]
+        out[city] = [{"location_id": loc_id, "sensors": sensors}
+                     for _, loc_id, _, sensors in picked]
+
+        newest = picked[0][0] if picked else "none"
+        print(f"{city}: {len(picked)} locations "
+              f"(of {len(candidates)} candidates, newest reading {newest})")
+        time.sleep(REQUEST_DELAY_SECONDS)
+
     (ROOT / "ingest" / "live_locations.json").write_text(json.dumps(out, indent=1))
 
 
