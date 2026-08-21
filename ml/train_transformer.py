@@ -25,6 +25,12 @@ MAX_EPOCHS = 200
 PATIENCE = 10
 VAL_FRACTION = 0.15
 LEARNING_RATE = 1e-3
+# Full-batch gradient descent doesn't scale here: the real archive produces
+# tens of thousands of (city, parameter) sliding windows, and a single
+# forward pass of a Transformer encoder over that many at once (self-
+# attention is O(batch * seq_len^2)) exhausts memory well before it exhausts
+# patience. Mini-batching keeps memory bounded regardless of archive size.
+BATCH_SIZE = 256
 
 
 def train(daily: pd.DataFrame, horizon: int = HORIZON,
@@ -63,19 +69,28 @@ def train(daily: pd.DataFrame, horizon: int = HORIZON,
     X_t, y_t = torch.from_numpy(X), torch.from_numpy(y)
     city_t, param_t = torch.from_numpy(city_idx), torch.from_numpy(param_idx)
 
+    generator = torch.Generator().manual_seed(seed)
     best_val, best_state, bad_epochs = float("inf"), None, 0
     for epoch in range(max_epochs):
         model.train()
-        optimizer.zero_grad()
-        pred = model(X_t[train_idx], city_t[train_idx], param_t[train_idx])
-        loss = loss_fn(pred, y_t[train_idx])
-        loss.backward()
-        optimizer.step()
+        shuffled = train_idx[torch.randperm(len(train_idx), generator=generator).numpy()]
+        for start in range(0, len(shuffled), BATCH_SIZE):
+            batch = shuffled[start:start + BATCH_SIZE]
+            optimizer.zero_grad()
+            pred = model(X_t[batch], city_t[batch], param_t[batch])
+            loss = loss_fn(pred, y_t[batch])
+            loss.backward()
+            optimizer.step()
 
         model.eval()
+        val_loss_sum, val_count = 0.0, 0
         with torch.no_grad():
-            val_pred = model(X_t[val_idx], city_t[val_idx], param_t[val_idx])
-            val_loss = loss_fn(val_pred, y_t[val_idx]).item()
+            for start in range(0, len(val_idx), BATCH_SIZE):
+                batch = val_idx[start:start + BATCH_SIZE]
+                val_pred = model(X_t[batch], city_t[batch], param_t[batch])
+                val_loss_sum += loss_fn(val_pred, y_t[batch]).item() * len(batch)
+                val_count += len(batch)
+        val_loss = val_loss_sum / val_count
 
         if val_loss < best_val - 1e-4:
             best_val = val_loss
