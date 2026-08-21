@@ -11,6 +11,7 @@ import pandas as pd
 
 from .backtest import HORIZON, MIN_HISTORY, N_FOLDS, backtest_series
 from .forecasters import LOCAL_FORECASTERS
+from .transformer_forecaster import UnknownSeriesError, transformer_forecast
 
 ROOT = Path(__file__).resolve().parent.parent
 FINAL_HORIZON = 7
@@ -19,6 +20,7 @@ METHOD_LABELS = {
     "damped_trend": "Damped trend",
     "gbt": "Gradient boosting",
     "arima_plus": "BigQuery ML ARIMA_PLUS",
+    "transformer": "Transformer (global, multi-city)",
 }
 
 
@@ -43,8 +45,18 @@ def _final_forecast_rows(series: pd.DataFrame, city: str, parameter: str) -> lis
         residual_std = 0.0
     residual_std = max(residual_std, last_roll * 0.05)
     rows = []
-    for name, fn in LOCAL_FORECASTERS.items():
-        for t, v in enumerate(fn(series, FINAL_HORIZON), start=1):
+    forecasters = {**LOCAL_FORECASTERS, "transformer": transformer_forecast}
+    for name, fn in forecasters.items():
+        try:
+            values = fn(series, FINAL_HORIZON)
+        except (UnknownSeriesError, FileNotFoundError):
+            # Series outside the trained model's vocabulary/history, or no
+            # trained model artifact present in this environment yet -- skip
+            # this method for this series, the same way arima_plus is
+            # already skipped when it has no current forecast row (see the
+            # comment on bq["forecasts"] below).
+            continue
+        for t, v in enumerate(values, start=1):
             band = residual_std * (1 + 0.25 * t)
             rows.append({
                 "city": city, "parameter": parameter, "method": name,
@@ -78,6 +90,16 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
                           if s["city"] == city and s["parameter"] == parameter), None)
             if match:
                 scores["arima_plus"] = float(match["mae"])
+        try:
+            transformer_scores = backtest_series(grp, {"transformer": transformer_forecast})
+            scores["transformer"] = transformer_scores["transformer"]
+        except (UnknownSeriesError, FileNotFoundError):
+            # Series outside the trained model's vocabulary/history, or no
+            # trained model artifact present in this environment yet -- the
+            # transformer is simply absent from this series' comparison,
+            # the same way arima_plus is absent without a bq_results.json
+            # match.
+            pass
         series_out.append({
             "city": city, "parameter": parameter,
             "winner": min(scores, key=scores.get),
