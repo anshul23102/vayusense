@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-25T15:39:41.515637+00:00",
+ "generated_at": "2026-08-22T11:52:16.728287+00:00",
  "fold_scheme": {
   "n_folds": 8,
   "horizon_days": 3,
@@ -10,7 +10,8 @@
   "naive": "Naive persistence",
   "damped_trend": "Damped trend",
   "gbt": "Gradient boosting",
-  "arima_plus": "BigQuery ML ARIMA_PLUS"
+  "arima_plus": "BigQuery ML ARIMA_PLUS",
+  "transformer": "Transformer (global, multi-city)"
  },
  "series": [
   {
@@ -21,7 +22,8 @@
     "naive": 0.14,
     "damped_trend": 0.17,
     "gbt": 0.13,
-    "arima_plus": 0.13
+    "arima_plus": 0.13,
+    "transformer": 0.17
    }
   },
   {
@@ -32,7 +34,8 @@
     "naive": 0.75,
     "damped_trend": 0.73,
     "gbt": 0.63,
-    "arima_plus": 0.6
+    "arima_plus": 0.6,
+    "transformer": 1.74
    }
   },
   {
@@ -43,7 +46,8 @@
     "naive": 3.73,
     "damped_trend": 5.56,
     "gbt": 6.27,
-    "arima_plus": 5.88
+    "arima_plus": 5.88,
+    "transformer": 4.31
    }
   },
   {
@@ -54,7 +58,8 @@
     "naive": 20.03,
     "damped_trend": 40.79,
     "gbt": 31.01,
-    "arima_plus": 28.5
+    "arima_plus": 28.5,
+    "transformer": 37.84
    }
   },
   {
@@ -65,7 +70,8 @@
     "naive": 6.45,
     "damped_trend": 6.9,
     "gbt": 7.28,
-    "arima_plus": 6.04
+    "arima_plus": 6.04,
+    "transformer": 8.59
    }
   },
   {
@@ -76,29 +82,32 @@
     "naive": 0.33,
     "damped_trend": 0.49,
     "gbt": 0.6,
-    "arima_plus": 0.3
+    "arima_plus": 0.3,
+    "transformer": 0.32
    }
   },
   {
    "city": "Ahmedabad",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.06,
     "damped_trend": 0.06,
     "gbt": 0.06,
-    "arima_plus": 0.09
+    "arima_plus": 0.09,
+    "transformer": 0.05
    }
   },
   {
    "city": "Ahmedabad",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 2.81,
     "damped_trend": 2.8,
     "gbt": 3.19,
-    "arima_plus": 2.8
+    "arima_plus": 2.8,
+    "transformer": 2.21
    }
   },
   {
@@ -109,7 +118,8 @@
     "naive": 1.85,
     "damped_trend": 1.52,
     "gbt": 2.24,
-    "arima_plus": 9.87
+    "arima_plus": 9.87,
+    "transformer": 2.12
    }
   },
   {
@@ -120,7 +130,8 @@
     "naive": 10.62,
     "damped_trend": 15.86,
     "gbt": 13.57,
-    "arima_plus": 11.78
+    "arima_plus": 11.78,
+    "transformer": 12.56
    }
   },
   {
@@ -131,7 +142,8 @@
     "naive": 3.2,
     "damped_trend": 3.87,
     "gbt": 3.99,
-    "arima_plus": 2.88
+    "arima_plus": 2.88,
+    "transformer": 3.0
    }
   },
   {
@@ -142,7 +154,8 @@
     "naive": 2.53,
     "damped_trend": 3.43,
     "gbt": 3.15,
-    "arima_plus": 7.77
+    "arima_plus": 7.77,
+    "transformer": 2.7
    }
   },
   {
@@ -153,7 +166,8 @@
     "naive": 0.0,
     "damped_trend": 0.0,
     "gbt": 0.0,
-    "arima_plus": 0.0
+    "arima_plus": 0.0,
+    "transformer": 0.0
    }
   },
   {
@@ -164,7 +178,8 @@
     "naive": 0.03,
     "damped_trend": 0.03,
     "gbt": 0.04,
-    "arima_plus": 0.03
+    "arima_plus": 0.03,
+    "transformer": 0.42
    }
   },
   {
@@ -175,18 +190,20 @@
     "naive": 1.22,
     "damped_trend": 1.47,
     "gbt": 1.38,
-    "arima_plus": 1.32
+    "arima_plus": 1.32,
+    "transformer": 1.66
    }
   },
   {
    "city": "Aizawl",
    "parameter": "pm10",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 8.7,
     "damped_trend": 8.32,
     "gbt": 7.97,
-    "arima_plus": 10.73
+    "arima_plus": 10.73,
+    "transformer": 6.43
    }
   },
   {
@@ -197,29 +214,32 @@
     "naive": 0.81,
     "damped_trend": 1.01,
     "gbt": 0.89,
-    "arima_plus": 1.48
+    "arima_plus": 1.48,
+    "transformer": 0.95
    }
   },
   {
    "city": "Aizawl",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.18,
     "damped_trend": 0.21,
     "gbt": 0.19,
-    "arima_plus": 0.51
+    "arima_plus": 0.51,
+    "transformer": 0.15
    }
   },
   {
    "city": "Baddi",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.09,
     "damped_trend": 0.09,
     "gbt": 0.09,
-    "arima_plus": 0.15
+    "arima_plus": 0.15,
+    "transformer": 0.07
    }
   },
   {
@@ -230,18 +250,20 @@
     "naive": 1.98,
     "damped_trend": 1.59,
     "gbt": 2.33,
-    "arima_plus": 1.74
+    "arima_plus": 1.74,
+    "transformer": 2.25
    }
   },
   {
    "city": "Baddi",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 7.3,
     "damped_trend": 11.41,
     "gbt": 9.81,
-    "arima_plus": 41.61
+    "arima_plus": 41.61,
+    "transformer": 6.47
    }
   },
   {
@@ -252,7 +274,8 @@
     "naive": 22.38,
     "damped_trend": 23.1,
     "gbt": 19.04,
-    "arima_plus": 23.39
+    "arima_plus": 23.39,
+    "transformer": 26.37
    }
   },
   {
@@ -263,7 +286,8 @@
     "naive": 8.01,
     "damped_trend": 9.26,
     "gbt": 10.09,
-    "arima_plus": 7.88
+    "arima_plus": 7.88,
+    "transformer": 10.15
    }
   },
   {
@@ -274,18 +298,20 @@
     "naive": 0.66,
     "damped_trend": 0.71,
     "gbt": 1.12,
-    "arima_plus": 7.65
+    "arima_plus": 7.65,
+    "transformer": 3.12
    }
   },
   {
    "city": "Bengaluru",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.07,
     "damped_trend": 0.09,
     "gbt": 0.08,
-    "arima_plus": 0.11
+    "arima_plus": 0.11,
+    "transformer": 0.06
    }
   },
   {
@@ -296,7 +322,8 @@
     "naive": 1.09,
     "damped_trend": 1.06,
     "gbt": 0.91,
-    "arima_plus": 1.2
+    "arima_plus": 1.2,
+    "transformer": 0.92
    }
   },
   {
@@ -307,7 +334,8 @@
     "naive": 2.03,
     "damped_trend": 2.42,
     "gbt": 2.09,
-    "arima_plus": 4.38
+    "arima_plus": 4.38,
+    "transformer": 6.26
    }
   },
   {
@@ -318,7 +346,8 @@
     "naive": 6.84,
     "damped_trend": 8.22,
     "gbt": 12.24,
-    "arima_plus": 9.9
+    "arima_plus": 9.9,
+    "transformer": 8.24
    }
   },
   {
@@ -329,7 +358,8 @@
     "naive": 2.63,
     "damped_trend": 4.41,
     "gbt": 3.58,
-    "arima_plus": 4.17
+    "arima_plus": 4.17,
+    "transformer": 3.8
    }
   },
   {
@@ -340,7 +370,8 @@
     "naive": 1.18,
     "damped_trend": 1.28,
     "gbt": 0.8,
-    "arima_plus": 2.09
+    "arima_plus": 2.09,
+    "transformer": 3.15
    }
   },
   {
@@ -351,29 +382,32 @@
     "naive": 0.05,
     "damped_trend": 0.06,
     "gbt": 0.08,
-    "arima_plus": 0.04
+    "arima_plus": 0.04,
+    "transformer": 0.05
    }
   },
   {
    "city": "Bhopal",
    "parameter": "no2",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 2.56,
     "damped_trend": 2.75,
     "gbt": 2.8,
-    "arima_plus": 2.43
+    "arima_plus": 2.43,
+    "transformer": 1.71
    }
   },
   {
    "city": "Bhopal",
    "parameter": "o3",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 4.66,
     "damped_trend": 3.59,
     "gbt": 4.6,
-    "arima_plus": 11.73
+    "arima_plus": 11.73,
+    "transformer": 3.35
    }
   },
   {
@@ -384,7 +418,8 @@
     "naive": 16.54,
     "damped_trend": 23.91,
     "gbt": 18.01,
-    "arima_plus": 20.58
+    "arima_plus": 20.58,
+    "transformer": 17.1
    }
   },
   {
@@ -395,7 +430,8 @@
     "naive": 3.62,
     "damped_trend": 5.9,
     "gbt": 4.11,
-    "arima_plus": 3.94
+    "arima_plus": 3.94,
+    "transformer": 4.44
    }
   },
   {
@@ -406,7 +442,8 @@
     "naive": 2.68,
     "damped_trend": 3.24,
     "gbt": 4.43,
-    "arima_plus": 6.37
+    "arima_plus": 6.37,
+    "transformer": 3.09
    }
   },
   {
@@ -417,29 +454,32 @@
     "naive": 0.12,
     "damped_trend": 0.1,
     "gbt": 0.22,
-    "arima_plus": 0.15
+    "arima_plus": 0.15,
+    "transformer": 0.1
    }
   },
   {
    "city": "Bhubaneswar",
    "parameter": "no2",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 3.06,
     "damped_trend": 2.87,
     "gbt": 2.48,
-    "arima_plus": 3.18
+    "arima_plus": 3.18,
+    "transformer": 2.0
    }
   },
   {
    "city": "Bhubaneswar",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 6.88,
     "damped_trend": 9.08,
     "gbt": 7.41,
-    "arima_plus": 13.86
+    "arima_plus": 13.86,
+    "transformer": 6.3
    }
   },
   {
@@ -450,7 +490,8 @@
     "naive": 13.42,
     "damped_trend": 17.87,
     "gbt": 18.14,
-    "arima_plus": 15.93
+    "arima_plus": 15.93,
+    "transformer": 13.75
    }
   },
   {
@@ -461,18 +502,20 @@
     "naive": 5.09,
     "damped_trend": 6.2,
     "gbt": 5.58,
-    "arima_plus": 5.54
+    "arima_plus": 5.54,
+    "transformer": 7.3
    }
   },
   {
    "city": "Bhubaneswar",
    "parameter": "so2",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 1.44,
     "damped_trend": 1.07,
     "gbt": 1.29,
-    "arima_plus": 0.95
+    "arima_plus": 0.95,
+    "transformer": 0.85
    }
   },
   {
@@ -483,7 +526,8 @@
     "naive": 0.07,
     "damped_trend": 0.07,
     "gbt": 0.1,
-    "arima_plus": 0.05
+    "arima_plus": 0.05,
+    "transformer": 0.07
    }
   },
   {
@@ -494,7 +538,8 @@
     "naive": 0.62,
     "damped_trend": 0.53,
     "gbt": 0.86,
-    "arima_plus": 1.76
+    "arima_plus": 1.76,
+    "transformer": 0.71
    }
   },
   {
@@ -505,7 +550,8 @@
     "naive": 9.74,
     "damped_trend": 10.58,
     "gbt": 9.66,
-    "arima_plus": 6.38
+    "arima_plus": 6.38,
+    "transformer": 9.35
    }
   },
   {
@@ -516,7 +562,8 @@
     "naive": 10.99,
     "damped_trend": 12.04,
     "gbt": 16.83,
-    "arima_plus": 18.68
+    "arima_plus": 18.68,
+    "transformer": 18.38
    }
   },
   {
@@ -527,7 +574,8 @@
     "naive": 4.56,
     "damped_trend": 5.78,
     "gbt": 5.99,
-    "arima_plus": 5.1
+    "arima_plus": 5.1,
+    "transformer": 7.28
    }
   },
   {
@@ -538,18 +586,20 @@
     "naive": 1.11,
     "damped_trend": 0.95,
     "gbt": 1.8,
-    "arima_plus": 0.76
+    "arima_plus": 0.76,
+    "transformer": 1.1
    }
   },
   {
    "city": "Coimbatore",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.11,
     "damped_trend": 0.13,
     "gbt": 0.31,
-    "arima_plus": 0.12
+    "arima_plus": 0.12,
+    "transformer": 0.1
    }
   },
   {
@@ -560,7 +610,8 @@
     "naive": 1.45,
     "damped_trend": 2.4,
     "gbt": 1.96,
-    "arima_plus": 6.02
+    "arima_plus": 6.02,
+    "transformer": 4.55
    }
   },
   {
@@ -571,18 +622,20 @@
     "naive": 0.07,
     "damped_trend": 0.08,
     "gbt": 0.94,
-    "arima_plus": 0.86
+    "arima_plus": 0.86,
+    "transformer": 2.04
    }
   },
   {
    "city": "Coimbatore",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 4.69,
     "damped_trend": 5.09,
     "gbt": 9.79,
-    "arima_plus": 4.22
+    "arima_plus": 4.22,
+    "transformer": 4.12
    }
   },
   {
@@ -593,7 +646,8 @@
     "naive": 6.72,
     "damped_trend": 8.56,
     "gbt": 7.23,
-    "arima_plus": 5.74
+    "arima_plus": 5.74,
+    "transformer": 5.89
    }
   },
   {
@@ -604,7 +658,8 @@
     "naive": 2.68,
     "damped_trend": 4.4,
     "gbt": 3.48,
-    "arima_plus": 6.34
+    "arima_plus": 6.34,
+    "transformer": 3.35
    }
   },
   {
@@ -615,7 +670,8 @@
     "naive": 0.04,
     "damped_trend": 0.09,
     "gbt": 0.06,
-    "arima_plus": 0.16
+    "arima_plus": 0.16,
+    "transformer": 0.06
    }
   },
   {
@@ -626,7 +682,8 @@
     "naive": 0.35,
     "damped_trend": 0.47,
     "gbt": 0.53,
-    "arima_plus": 1.36
+    "arima_plus": 1.36,
+    "transformer": 0.37
    }
   },
   {
@@ -637,7 +694,8 @@
     "naive": 9.59,
     "damped_trend": 11.89,
     "gbt": 11.88,
-    "arima_plus": 29.62
+    "arima_plus": 29.62,
+    "transformer": 10.53
    }
   },
   {
@@ -648,7 +706,8 @@
     "naive": 28.27,
     "damped_trend": 35.77,
     "gbt": 32.3,
-    "arima_plus": 51.5
+    "arima_plus": 51.5,
+    "transformer": 29.35
    }
   },
   {
@@ -659,7 +718,8 @@
     "naive": 13.51,
     "damped_trend": 16.1,
     "gbt": 14.55,
-    "arima_plus": 23.7
+    "arima_plus": 23.7,
+    "transformer": 15.61
    }
   },
   {
@@ -670,7 +730,8 @@
     "naive": 0.08,
     "damped_trend": 0.11,
     "gbt": 0.15,
-    "arima_plus": 0.32
+    "arima_plus": 0.32,
+    "transformer": 0.1
    }
   },
   {
@@ -681,7 +742,8 @@
     "naive": 0.19,
     "damped_trend": 0.15,
     "gbt": 0.15,
-    "arima_plus": 0.21
+    "arima_plus": 0.21,
+    "transformer": 0.15
    }
   },
   {
@@ -692,7 +754,8 @@
     "naive": 4.38,
     "damped_trend": 4.3,
     "gbt": 4.54,
-    "arima_plus": 5.85
+    "arima_plus": 5.85,
+    "transformer": 4.32
    }
   },
   {
@@ -703,7 +766,8 @@
     "naive": 6.23,
     "damped_trend": 5.13,
     "gbt": 4.91,
-    "arima_plus": 5.33
+    "arima_plus": 5.33,
+    "transformer": 5.18
    }
   },
   {
@@ -714,7 +778,8 @@
     "naive": 90.49,
     "damped_trend": 69.8,
     "gbt": 94.62,
-    "arima_plus": 62.39
+    "arima_plus": 62.39,
+    "transformer": 73.75
    }
   },
   {
@@ -725,7 +790,8 @@
     "naive": 16.37,
     "damped_trend": 13.44,
     "gbt": 12.76,
-    "arima_plus": 13.3
+    "arima_plus": 13.3,
+    "transformer": 12.81
    }
   },
   {
@@ -736,7 +802,8 @@
     "naive": 4.09,
     "damped_trend": 3.64,
     "gbt": 3.85,
-    "arima_plus": 3.48
+    "arima_plus": 3.48,
+    "transformer": 3.57
    }
   },
   {
@@ -747,7 +814,8 @@
     "naive": 0.14,
     "damped_trend": 0.16,
     "gbt": 0.2,
-    "arima_plus": 0.27
+    "arima_plus": 0.27,
+    "transformer": 0.22
    }
   },
   {
@@ -758,7 +826,8 @@
     "naive": 1.2,
     "damped_trend": 1.5,
     "gbt": 2.55,
-    "arima_plus": 9.76
+    "arima_plus": 9.76,
+    "transformer": 3.51
    }
   },
   {
@@ -769,7 +838,8 @@
     "naive": 2.53,
     "damped_trend": 3.41,
     "gbt": 6.51,
-    "arima_plus": 5.2
+    "arima_plus": 5.2,
+    "transformer": 3.57
    }
   },
   {
@@ -780,7 +850,8 @@
     "naive": 24.38,
     "damped_trend": 21.55,
     "gbt": 23.04,
-    "arima_plus": 17.62
+    "arima_plus": 17.62,
+    "transformer": 39.34
    }
   },
   {
@@ -791,7 +862,8 @@
     "naive": 3.25,
     "damped_trend": 3.27,
     "gbt": 4.09,
-    "arima_plus": 4.58
+    "arima_plus": 4.58,
+    "transformer": 15.04
    }
   },
   {
@@ -802,7 +874,8 @@
     "naive": 8.93,
     "damped_trend": 17.95,
     "gbt": 14.77,
-    "arima_plus": 21.27
+    "arima_plus": 21.27,
+    "transformer": 11.61
    }
   },
   {
@@ -813,18 +886,20 @@
     "naive": 0.06,
     "damped_trend": 0.09,
     "gbt": 0.14,
-    "arima_plus": 0.12
+    "arima_plus": 0.12,
+    "transformer": 0.15
    }
   },
   {
    "city": "Faridabad",
    "parameter": "no2",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 4.47,
     "damped_trend": 5.51,
     "gbt": 4.44,
-    "arima_plus": 9.38
+    "arima_plus": 9.38,
+    "transformer": 3.57
    }
   },
   {
@@ -835,51 +910,56 @@
     "naive": 6.75,
     "damped_trend": 7.93,
     "gbt": 8.85,
-    "arima_plus": 16.27
+    "arima_plus": 16.27,
+    "transformer": 9.26
    }
   },
   {
    "city": "Faridabad",
    "parameter": "pm10",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 84.46,
     "damped_trend": 67.46,
     "gbt": 91.23,
-    "arima_plus": 70.44
+    "arima_plus": 70.44,
+    "transformer": 64.62
    }
   },
   {
    "city": "Faridabad",
    "parameter": "pm25",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 14.57,
     "damped_trend": 11.57,
     "gbt": 11.79,
-    "arima_plus": 13.61
+    "arima_plus": 13.61,
+    "transformer": 10.91
    }
   },
   {
    "city": "Faridabad",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 1.3,
     "damped_trend": 1.6,
     "gbt": 1.74,
-    "arima_plus": 3.41
+    "arima_plus": 3.41,
+    "transformer": 0.92
    }
   },
   {
    "city": "Gangtok",
    "parameter": "co",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 0.04,
     "damped_trend": 0.03,
     "gbt": 0.03,
-    "arima_plus": 0.04
+    "arima_plus": 0.04,
+    "transformer": 0.03
    }
   },
   {
@@ -890,7 +970,8 @@
     "naive": 0.1,
     "damped_trend": 0.07,
     "gbt": 0.09,
-    "arima_plus": 0.1
+    "arima_plus": 0.1,
+    "transformer": 1.52
    }
   },
   {
@@ -901,29 +982,32 @@
     "naive": 2.51,
     "damped_trend": 4.54,
     "gbt": 5.47,
-    "arima_plus": 10.08
+    "arima_plus": 10.08,
+    "transformer": 6.9
    }
   },
   {
    "city": "Gangtok",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 3.09,
     "damped_trend": 4.19,
     "gbt": 3.17,
-    "arima_plus": 14.62
+    "arima_plus": 14.62,
+    "transformer": 2.32
    }
   },
   {
    "city": "Gangtok",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 1.89,
     "damped_trend": 2.87,
     "gbt": 3.39,
-    "arima_plus": 10.09
+    "arima_plus": 10.09,
+    "transformer": 1.58
    }
   },
   {
@@ -934,7 +1018,8 @@
     "naive": 0.01,
     "damped_trend": 0.01,
     "gbt": 0.01,
-    "arima_plus": 0.02
+    "arima_plus": 0.02,
+    "transformer": 0.16
    }
   },
   {
@@ -945,7 +1030,8 @@
     "naive": 0.05,
     "damped_trend": 0.04,
     "gbt": 0.05,
-    "arima_plus": 0.04
+    "arima_plus": 0.04,
+    "transformer": 0.04
    }
   },
   {
@@ -956,7 +1042,8 @@
     "naive": 2.23,
     "damped_trend": 1.95,
     "gbt": 1.53,
-    "arima_plus": 2.02
+    "arima_plus": 2.02,
+    "transformer": 1.6
    }
   },
   {
@@ -967,18 +1054,20 @@
     "naive": 1.71,
     "damped_trend": 3.04,
     "gbt": 4.54,
-    "arima_plus": 3.82
+    "arima_plus": 3.82,
+    "transformer": 4.56
    }
   },
   {
    "city": "Guwahati",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 35.57,
     "damped_trend": 31.81,
     "gbt": 38.09,
-    "arima_plus": 30.97
+    "arima_plus": 30.97,
+    "transformer": 29.47
    }
   },
   {
@@ -989,7 +1078,8 @@
     "naive": 19.25,
     "damped_trend": 20.43,
     "gbt": 13.36,
-    "arima_plus": 16.82
+    "arima_plus": 16.82,
+    "transformer": 18.72
    }
   },
   {
@@ -1000,18 +1090,20 @@
     "naive": 1.2,
     "damped_trend": 1.43,
     "gbt": 2.65,
-    "arima_plus": 1.93
+    "arima_plus": 1.93,
+    "transformer": 3.48
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "co",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 0.06,
     "damped_trend": 0.05,
     "gbt": 0.07,
-    "arima_plus": 0.09
+    "arima_plus": 0.09,
+    "transformer": 0.05
    }
   },
   {
@@ -1022,7 +1114,8 @@
     "naive": 0.95,
     "damped_trend": 0.71,
     "gbt": 0.9,
-    "arima_plus": 1.19
+    "arima_plus": 1.19,
+    "transformer": 2.14
    }
   },
   {
@@ -1033,7 +1126,8 @@
     "naive": 1.96,
     "damped_trend": 2.46,
     "gbt": 2.57,
-    "arima_plus": 1.75
+    "arima_plus": 1.75,
+    "transformer": 2.77
    }
   },
   {
@@ -1044,7 +1138,8 @@
     "naive": 7.06,
     "damped_trend": 7.18,
     "gbt": 8.83,
-    "arima_plus": 11.53
+    "arima_plus": 11.53,
+    "transformer": 17.03
    }
   },
   {
@@ -1055,7 +1150,8 @@
     "naive": 3.36,
     "damped_trend": 3.34,
     "gbt": 3.98,
-    "arima_plus": 4.24
+    "arima_plus": 4.24,
+    "transformer": 7.19
    }
   },
   {
@@ -1066,7 +1162,8 @@
     "naive": 0.95,
     "damped_trend": 1.18,
     "gbt": 1.94,
-    "arima_plus": 1.74
+    "arima_plus": 1.74,
+    "transformer": 1.71
    }
   },
   {
@@ -1076,37 +1173,41 @@
    "mae": {
     "naive": 0.03,
     "damped_trend": 0.02,
-    "gbt": 0.02
+    "gbt": 0.02,
+    "transformer": 0.02
    }
   },
   {
    "city": "Imphal",
    "parameter": "no2",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 1.05,
     "damped_trend": 0.77,
-    "gbt": 0.76
+    "gbt": 0.76,
+    "transformer": 0.72
    }
   },
   {
    "city": "Imphal",
    "parameter": "o3",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 1.1,
     "damped_trend": 0.96,
-    "gbt": 0.96
+    "gbt": 0.96,
+    "transformer": 0.79
    }
   },
   {
    "city": "Imphal",
    "parameter": "pm10",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 17.97,
     "damped_trend": 13.01,
-    "gbt": 13.77
+    "gbt": 13.77,
+    "transformer": 11.4
    }
   },
   {
@@ -1116,7 +1217,8 @@
    "mae": {
     "naive": 1.02,
     "damped_trend": 0.89,
-    "gbt": 0.8
+    "gbt": 0.8,
+    "transformer": 0.88
    }
   },
   {
@@ -1126,7 +1228,8 @@
    "mae": {
     "naive": 19.15,
     "damped_trend": 12.39,
-    "gbt": 10.63
+    "gbt": 10.63,
+    "transformer": 12.87
    }
   },
   {
@@ -1137,7 +1240,8 @@
     "naive": 0.13,
     "damped_trend": 0.14,
     "gbt": 0.17,
-    "arima_plus": 0.09
+    "arima_plus": 0.09,
+    "transformer": 0.18
    }
   },
   {
@@ -1148,7 +1252,8 @@
     "naive": 5.0,
     "damped_trend": 3.95,
     "gbt": 5.6,
-    "arima_plus": 5.23
+    "arima_plus": 5.23,
+    "transformer": 5.24
    }
   },
   {
@@ -1159,7 +1264,8 @@
     "naive": 4.29,
     "damped_trend": 3.63,
     "gbt": 5.42,
-    "arima_plus": 3.11
+    "arima_plus": 3.11,
+    "transformer": 3.62
    }
   },
   {
@@ -1170,29 +1276,32 @@
     "naive": 7.94,
     "damped_trend": 8.74,
     "gbt": 7.61,
-    "arima_plus": 9.17
+    "arima_plus": 9.17,
+    "transformer": 7.77
    }
   },
   {
    "city": "Indore",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 4.92,
     "damped_trend": 5.26,
     "gbt": 5.67,
-    "arima_plus": 6.33
+    "arima_plus": 6.33,
+    "transformer": 4.37
    }
   },
   {
    "city": "Indore",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 1.36,
     "damped_trend": 2.09,
     "gbt": 1.94,
-    "arima_plus": 3.93
+    "arima_plus": 3.93,
+    "transformer": 1.34
    }
   },
   {
@@ -1203,7 +1312,8 @@
     "naive": 0.03,
     "damped_trend": 0.06,
     "gbt": 0.05,
-    "arima_plus": 0.09
+    "arima_plus": 0.09,
+    "transformer": 0.04
    }
   },
   {
@@ -1214,7 +1324,8 @@
     "naive": 0.32,
     "damped_trend": 0.89,
     "gbt": 0.96,
-    "arima_plus": 0.31
+    "arima_plus": 0.31,
+    "transformer": 0.86
    }
   },
   {
@@ -1225,7 +1336,8 @@
     "naive": 0.33,
     "damped_trend": 0.93,
     "gbt": 1.05,
-    "arima_plus": 0.33
+    "arima_plus": 0.33,
+    "transformer": 1.64
    }
   },
   {
@@ -1236,7 +1348,8 @@
     "naive": 7.49,
     "damped_trend": 10.42,
     "gbt": 12.33,
-    "arima_plus": 10.83
+    "arima_plus": 10.83,
+    "transformer": 10.07
    }
   },
   {
@@ -1247,7 +1360,8 @@
     "naive": 3.96,
     "damped_trend": 5.4,
     "gbt": 7.16,
-    "arima_plus": 5.72
+    "arima_plus": 5.72,
+    "transformer": 4.51
    }
   },
   {
@@ -1258,7 +1372,8 @@
     "naive": 0.44,
     "damped_trend": 1.24,
     "gbt": 1.28,
-    "arima_plus": 0.44
+    "arima_plus": 0.44,
+    "transformer": 1.3
    }
   },
   {
@@ -1269,7 +1384,8 @@
     "naive": 0.08,
     "damped_trend": 0.13,
     "gbt": 0.07,
-    "arima_plus": 0.17
+    "arima_plus": 0.17,
+    "transformer": 0.07
    }
   },
   {
@@ -1280,7 +1396,8 @@
     "naive": 3.82,
     "damped_trend": 3.21,
     "gbt": 5.03,
-    "arima_plus": 4.85
+    "arima_plus": 4.85,
+    "transformer": 4.65
    }
   },
   {
@@ -1291,7 +1408,8 @@
     "naive": 5.1,
     "damped_trend": 6.59,
     "gbt": 6.38,
-    "arima_plus": 8.52
+    "arima_plus": 8.52,
+    "transformer": 8.49
    }
   },
   {
@@ -1302,7 +1420,8 @@
     "naive": 23.94,
     "damped_trend": 35.91,
     "gbt": 28.05,
-    "arima_plus": 28.39
+    "arima_plus": 28.39,
+    "transformer": 27.2
    }
   },
   {
@@ -1313,7 +1432,8 @@
     "naive": 7.85,
     "damped_trend": 11.15,
     "gbt": 10.18,
-    "arima_plus": 11.54
+    "arima_plus": 11.54,
+    "transformer": 9.36
    }
   },
   {
@@ -1324,7 +1444,8 @@
     "naive": 1.25,
     "damped_trend": 1.7,
     "gbt": 6.09,
-    "arima_plus": 2.96
+    "arima_plus": 2.96,
+    "transformer": 1.53
    }
   },
   {
@@ -1335,7 +1456,8 @@
     "naive": 0.03,
     "damped_trend": 0.05,
     "gbt": 0.04,
-    "arima_plus": 0.03
+    "arima_plus": 0.03,
+    "transformer": 0.03
    }
   },
   {
@@ -1346,7 +1468,8 @@
     "naive": 1.11,
     "damped_trend": 1.02,
     "gbt": 1.59,
-    "arima_plus": 0.86
+    "arima_plus": 0.86,
+    "transformer": 2.77
    }
   },
   {
@@ -1357,7 +1480,8 @@
     "naive": 1.51,
     "damped_trend": 1.44,
     "gbt": 1.62,
-    "arima_plus": 1.78
+    "arima_plus": 1.78,
+    "transformer": 1.51
    }
   },
   {
@@ -1368,7 +1492,8 @@
     "naive": 14.92,
     "damped_trend": 25.9,
     "gbt": 12.71,
-    "arima_plus": 29.53
+    "arima_plus": 29.53,
+    "transformer": 15.46
    }
   },
   {
@@ -1379,7 +1504,8 @@
     "naive": 7.89,
     "damped_trend": 11.81,
     "gbt": 7.52,
-    "arima_plus": 11.58
+    "arima_plus": 11.58,
+    "transformer": 8.66
    }
   },
   {
@@ -1390,7 +1516,8 @@
     "naive": 1.52,
     "damped_trend": 2.13,
     "gbt": 16.91,
-    "arima_plus": 2.7
+    "arima_plus": 2.7,
+    "transformer": 2.86
    }
   },
   {
@@ -1401,7 +1528,8 @@
     "naive": 0.2,
     "damped_trend": 0.14,
     "gbt": 0.19,
-    "arima_plus": 0.13
+    "arima_plus": 0.13,
+    "transformer": 0.16
    }
   },
   {
@@ -1411,7 +1539,8 @@
    "mae": {
     "naive": 0.23,
     "damped_trend": 0.22,
-    "gbt": 0.21
+    "gbt": 0.21,
+    "transformer": 0.33
    }
   },
   {
@@ -1421,7 +1550,8 @@
    "mae": {
     "naive": 0.56,
     "damped_trend": 0.59,
-    "gbt": 0.77
+    "gbt": 0.77,
+    "transformer": 1.07
    }
   },
   {
@@ -1431,7 +1561,8 @@
    "mae": {
     "naive": 2.14,
     "damped_trend": 2.8,
-    "gbt": 3.25
+    "gbt": 3.25,
+    "transformer": 8.88
    }
   },
   {
@@ -1441,7 +1572,8 @@
    "mae": {
     "naive": 0.93,
     "damped_trend": 2.94,
-    "gbt": 3.54
+    "gbt": 3.54,
+    "transformer": 28.42
    }
   },
   {
@@ -1451,7 +1583,8 @@
    "mae": {
     "naive": 0.04,
     "damped_trend": 0.05,
-    "gbt": 0.04
+    "gbt": 0.04,
+    "transformer": 0.05
    }
   },
   {
@@ -1462,7 +1595,8 @@
     "naive": 0.02,
     "damped_trend": 0.02,
     "gbt": 0.02,
-    "arima_plus": 0.03
+    "arima_plus": 0.03,
+    "transformer": 0.03
    }
   },
   {
@@ -1473,7 +1607,8 @@
     "naive": 0.03,
     "damped_trend": 0.03,
     "gbt": 0.04,
-    "arima_plus": 0.03
+    "arima_plus": 0.03,
+    "transformer": 0.03
    }
   },
   {
@@ -1484,7 +1619,8 @@
     "naive": 0.41,
     "damped_trend": 0.38,
     "gbt": 0.48,
-    "arima_plus": 0.7
+    "arima_plus": 0.7,
+    "transformer": 0.43
    }
   },
   {
@@ -1495,18 +1631,20 @@
     "naive": 5.89,
     "damped_trend": 4.33,
     "gbt": 8.55,
-    "arima_plus": 17.22
+    "arima_plus": 17.22,
+    "transformer": 5.37
    }
   },
   {
    "city": "Kohima",
    "parameter": "pm25",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 4.33,
     "damped_trend": 3.53,
     "gbt": 5.46,
-    "arima_plus": 11.08
+    "arima_plus": 11.08,
+    "transformer": 3.5
    }
   },
   {
@@ -1517,7 +1655,8 @@
     "naive": 2.51,
     "damped_trend": 2.05,
     "gbt": 2.97,
-    "arima_plus": 1.65
+    "arima_plus": 1.65,
+    "transformer": 2.05
    }
   },
   {
@@ -1528,18 +1667,20 @@
     "naive": 0.15,
     "damped_trend": 0.12,
     "gbt": 0.13,
-    "arima_plus": 0.08
+    "arima_plus": 0.08,
+    "transformer": 0.12
    }
   },
   {
    "city": "Kolkata",
    "parameter": "no2",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 2.83,
     "damped_trend": 3.4,
     "gbt": 2.94,
-    "arima_plus": 3.29
+    "arima_plus": 3.29,
+    "transformer": 2.54
    }
   },
   {
@@ -1550,18 +1691,20 @@
     "naive": 2.38,
     "damped_trend": 3.03,
     "gbt": 3.13,
-    "arima_plus": 3.83
+    "arima_plus": 3.83,
+    "transformer": 2.42
    }
   },
   {
    "city": "Kolkata",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 15.02,
     "damped_trend": 15.03,
     "gbt": 13.75,
-    "arima_plus": 10.49
+    "arima_plus": 10.49,
+    "transformer": 10.37
    }
   },
   {
@@ -1572,18 +1715,20 @@
     "naive": 8.44,
     "damped_trend": 8.81,
     "gbt": 6.75,
-    "arima_plus": 5.38
+    "arima_plus": 5.38,
+    "transformer": 5.8
    }
   },
   {
    "city": "Kolkata",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 0.52,
     "damped_trend": 1.08,
     "gbt": 2.05,
-    "arima_plus": 3.82
+    "arima_plus": 3.82,
+    "transformer": 0.49
    }
   },
   {
@@ -1594,7 +1739,8 @@
     "naive": 0.06,
     "damped_trend": 0.07,
     "gbt": 0.07,
-    "arima_plus": 0.08
+    "arima_plus": 0.08,
+    "transformer": 0.08
    }
   },
   {
@@ -1605,29 +1751,32 @@
     "naive": 1.38,
     "damped_trend": 1.25,
     "gbt": 1.64,
-    "arima_plus": 1.5
+    "arima_plus": 1.5,
+    "transformer": 1.9
    }
   },
   {
    "city": "Lucknow",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 5.3,
     "damped_trend": 5.81,
     "gbt": 6.37,
-    "arima_plus": 9.95
+    "arima_plus": 9.95,
+    "transformer": 5.29
    }
   },
   {
    "city": "Lucknow",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 19.2,
     "damped_trend": 31.82,
     "gbt": 19.66,
-    "arima_plus": 32.99
+    "arima_plus": 32.99,
+    "transformer": 17.23
    }
   },
   {
@@ -1638,7 +1787,8 @@
     "naive": 8.12,
     "damped_trend": 12.38,
     "gbt": 8.41,
-    "arima_plus": 17.63
+    "arima_plus": 17.63,
+    "transformer": 8.39
    }
   },
   {
@@ -1649,18 +1799,20 @@
     "naive": 1.87,
     "damped_trend": 1.86,
     "gbt": 1.62,
-    "arima_plus": 1.41
+    "arima_plus": 1.41,
+    "transformer": 1.62
    }
   },
   {
    "city": "Ludhiana",
    "parameter": "co",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 0.19,
     "damped_trend": 0.18,
     "gbt": 0.2,
-    "arima_plus": 0.17
+    "arima_plus": 0.17,
+    "transformer": 0.13
    }
   },
   {
@@ -1671,7 +1823,8 @@
     "naive": 4.95,
     "damped_trend": 5.75,
     "gbt": 7.88,
-    "arima_plus": 8.26
+    "arima_plus": 8.26,
+    "transformer": 14.31
    }
   },
   {
@@ -1682,7 +1835,8 @@
     "naive": 10.32,
     "damped_trend": 10.08,
     "gbt": 8.25,
-    "arima_plus": 8.93
+    "arima_plus": 8.93,
+    "transformer": 13.24
    }
   },
   {
@@ -1693,7 +1847,8 @@
     "naive": 13.18,
     "damped_trend": 16.47,
     "gbt": 20.37,
-    "arima_plus": 12.22
+    "arima_plus": 12.22,
+    "transformer": 15.9
    }
   },
   {
@@ -1704,18 +1859,20 @@
     "naive": 6.47,
     "damped_trend": 8.6,
     "gbt": 17.65,
-    "arima_plus": 6.52
+    "arima_plus": 6.52,
+    "transformer": 6.98
    }
   },
   {
    "city": "Ludhiana",
    "parameter": "so2",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 3.78,
     "damped_trend": 3.17,
     "gbt": 2.95,
-    "arima_plus": 3.25
+    "arima_plus": 3.25,
+    "transformer": 2.35
    }
   },
   {
@@ -1726,18 +1883,20 @@
     "naive": 0.07,
     "damped_trend": 0.09,
     "gbt": 0.1,
-    "arima_plus": 0.07
+    "arima_plus": 0.07,
+    "transformer": 0.09
    }
   },
   {
    "city": "Mumbai",
    "parameter": "no2",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
     "naive": 1.78,
     "damped_trend": 1.96,
     "gbt": 1.85,
-    "arima_plus": 1.72
+    "arima_plus": 1.72,
+    "transformer": 1.57
    }
   },
   {
@@ -1748,18 +1907,20 @@
     "naive": 4.94,
     "damped_trend": 4.16,
     "gbt": 4.08,
-    "arima_plus": 4.53
+    "arima_plus": 4.53,
+    "transformer": 4.27
    }
   },
   {
    "city": "Mumbai",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 12.57,
     "damped_trend": 31.48,
     "gbt": 31.37,
-    "arima_plus": 66.2
+    "arima_plus": 66.2,
+    "transformer": 12.21
    }
   },
   {
@@ -1770,7 +1931,8 @@
     "naive": 3.53,
     "damped_trend": 19.7,
     "gbt": 6.58,
-    "arima_plus": 18.53
+    "arima_plus": 18.53,
+    "transformer": 6.04
    }
   },
   {
@@ -1781,7 +1943,8 @@
     "naive": 1.76,
     "damped_trend": 1.92,
     "gbt": 1.89,
-    "arima_plus": 1.06
+    "arima_plus": 1.06,
+    "transformer": 2.01
    }
   },
   {
@@ -1792,7 +1955,8 @@
     "naive": 0.05,
     "damped_trend": 0.09,
     "gbt": 0.07,
-    "arima_plus": 0.07
+    "arima_plus": 0.07,
+    "transformer": 0.06
    }
   },
   {
@@ -1803,7 +1967,8 @@
     "naive": 0.88,
     "damped_trend": 1.32,
     "gbt": 1.26,
-    "arima_plus": 1.26
+    "arima_plus": 1.26,
+    "transformer": 1.04
    }
   },
   {
@@ -1814,7 +1979,8 @@
     "naive": 2.79,
     "damped_trend": 4.19,
     "gbt": 3.14,
-    "arima_plus": 6.43
+    "arima_plus": 6.43,
+    "transformer": 3.22
    }
   },
   {
@@ -1825,7 +1991,8 @@
     "naive": 8.56,
     "damped_trend": 16.95,
     "gbt": 9.78,
-    "arima_plus": 15.69
+    "arima_plus": 15.69,
+    "transformer": 11.72
    }
   },
   {
@@ -1836,7 +2003,8 @@
     "naive": 4.35,
     "damped_trend": 6.51,
     "gbt": 4.2,
-    "arima_plus": 5.8
+    "arima_plus": 5.8,
+    "transformer": 4.95
    }
   },
   {
@@ -1847,7 +2015,8 @@
     "naive": 1.3,
     "damped_trend": 1.53,
     "gbt": 2.33,
-    "arima_plus": 3.5
+    "arima_plus": 3.5,
+    "transformer": 1.73
    }
   },
   {
@@ -1858,7 +2027,8 @@
     "naive": 0.03,
     "damped_trend": 0.04,
     "gbt": 0.03,
-    "arima_plus": 0.04
+    "arima_plus": 0.04,
+    "transformer": 0.05
    }
   },
   {
@@ -1869,7 +2039,8 @@
     "naive": 0.36,
     "damped_trend": 0.32,
     "gbt": 0.98,
-    "arima_plus": 0.57
+    "arima_plus": 0.57,
+    "transformer": 1.28
    }
   },
   {
@@ -1880,7 +2051,8 @@
     "naive": 1.51,
     "damped_trend": 1.85,
     "gbt": 1.95,
-    "arima_plus": 2.4
+    "arima_plus": 2.4,
+    "transformer": 2.02
    }
   },
   {
@@ -1891,7 +2063,8 @@
     "naive": 9.02,
     "damped_trend": 15.74,
     "gbt": 14.95,
-    "arima_plus": 15.2
+    "arima_plus": 15.2,
+    "transformer": 10.66
    }
   },
   {
@@ -1902,7 +2075,8 @@
     "naive": 3.23,
     "damped_trend": 4.96,
     "gbt": 3.6,
-    "arima_plus": 4.95
+    "arima_plus": 4.95,
+    "transformer": 3.75
    }
   },
   {
@@ -1913,7 +2087,8 @@
     "naive": 0.58,
     "damped_trend": 0.82,
     "gbt": 1.05,
-    "arima_plus": 0.88
+    "arima_plus": 0.88,
+    "transformer": 0.62
    }
   },
   {
@@ -1924,7 +2099,8 @@
     "naive": 0.13,
     "damped_trend": 0.1,
     "gbt": 0.11,
-    "arima_plus": 0.11
+    "arima_plus": 0.11,
+    "transformer": 0.11
    }
   },
   {
@@ -1935,7 +2111,8 @@
     "naive": 0.92,
     "damped_trend": 0.78,
     "gbt": 1.49,
-    "arima_plus": 1.88
+    "arima_plus": 1.88,
+    "transformer": 1.35
    }
   },
   {
@@ -1946,7 +2123,8 @@
     "naive": 2.2,
     "damped_trend": 2.75,
     "gbt": 6.7,
-    "arima_plus": 2.81
+    "arima_plus": 2.81,
+    "transformer": 3.29
    }
   },
   {
@@ -1957,18 +2135,20 @@
     "naive": 9.87,
     "damped_trend": 16.2,
     "gbt": 15.74,
-    "arima_plus": 28.27
+    "arima_plus": 28.27,
+    "transformer": 12.18
    }
   },
   {
    "city": "Patna",
    "parameter": "pm25",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 5.42,
     "damped_trend": 5.93,
     "gbt": 5.09,
-    "arima_plus": 10.3
+    "arima_plus": 10.3,
+    "transformer": 4.28
    }
   },
   {
@@ -1979,7 +2159,8 @@
     "naive": 1.97,
     "damped_trend": 1.83,
     "gbt": 2.02,
-    "arima_plus": 1.08
+    "arima_plus": 1.08,
+    "transformer": 1.43
    }
   },
   {
@@ -1990,29 +2171,32 @@
     "naive": 0.09,
     "damped_trend": 0.07,
     "gbt": 0.11,
-    "arima_plus": 0.13
+    "arima_plus": 0.13,
+    "transformer": 0.1
    }
   },
   {
    "city": "Pune",
    "parameter": "no2",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 2.92,
     "damped_trend": 3.05,
     "gbt": 2.54,
-    "arima_plus": 3.19
+    "arima_plus": 3.19,
+    "transformer": 2.45
    }
   },
   {
    "city": "Pune",
    "parameter": "o3",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 2.58,
     "damped_trend": 2.46,
     "gbt": 3.71,
-    "arima_plus": 2.58
+    "arima_plus": 2.58,
+    "transformer": 1.95
    }
   },
   {
@@ -2023,18 +2207,20 @@
     "naive": 6.83,
     "damped_trend": 12.41,
     "gbt": 10.79,
-    "arima_plus": 11.62
+    "arima_plus": 11.62,
+    "transformer": 8.73
    }
   },
   {
    "city": "Pune",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
     "naive": 2.07,
     "damped_trend": 2.59,
     "gbt": 2.19,
-    "arima_plus": 2.32
+    "arima_plus": 2.32,
+    "transformer": 1.55
    }
   },
   {
@@ -2045,7 +2231,8 @@
     "naive": 1.1,
     "damped_trend": 0.94,
     "gbt": 0.99,
-    "arima_plus": 2.45
+    "arima_plus": 2.45,
+    "transformer": 0.96
    }
   },
   {
@@ -2056,7 +2243,8 @@
     "naive": 0.04,
     "damped_trend": 0.05,
     "gbt": 0.05,
-    "arima_plus": 0.04
+    "arima_plus": 0.04,
+    "transformer": 0.07
    }
   },
   {
@@ -2067,7 +2255,8 @@
     "naive": 1.26,
     "damped_trend": 1.04,
     "gbt": 1.05,
-    "arima_plus": 1.26
+    "arima_plus": 1.26,
+    "transformer": 1.62
    }
   },
   {
@@ -2078,7 +2267,8 @@
     "naive": 1.21,
     "damped_trend": 1.72,
     "gbt": 2.04,
-    "arima_plus": 1.52
+    "arima_plus": 1.52,
+    "transformer": 1.6
    }
   },
   {
@@ -2089,7 +2279,8 @@
     "naive": 11.05,
     "damped_trend": 16.61,
     "gbt": 7.9,
-    "arima_plus": 20.83
+    "arima_plus": 20.83,
+    "transformer": 12.75
    }
   },
   {
@@ -2100,7 +2291,8 @@
     "naive": 3.33,
     "damped_trend": 4.72,
     "gbt": 3.4,
-    "arima_plus": 6.17
+    "arima_plus": 6.17,
+    "transformer": 3.58
    }
   },
   {
@@ -2111,7 +2303,8 @@
     "naive": 1.37,
     "damped_trend": 1.75,
     "gbt": 1.23,
-    "arima_plus": 1.6
+    "arima_plus": 1.6,
+    "transformer": 1.36
    }
   },
   {
@@ -2122,7 +2315,8 @@
     "naive": 0.17,
     "damped_trend": 0.11,
     "gbt": 0.16,
-    "arima_plus": 0.1
+    "arima_plus": 0.1,
+    "transformer": 0.11
    }
   },
   {
@@ -2133,7 +2327,8 @@
     "naive": 0.61,
     "damped_trend": 1.3,
     "gbt": 1.49,
-    "arima_plus": 1.43
+    "arima_plus": 1.43,
+    "transformer": 0.66
    }
   },
   {
@@ -2144,7 +2339,8 @@
     "naive": 7.91,
     "damped_trend": 10.16,
     "gbt": 5.71,
-    "arima_plus": 26.07
+    "arima_plus": 26.07,
+    "transformer": 9.89
    }
   },
   {
@@ -2155,7 +2351,8 @@
     "naive": 7.07,
     "damped_trend": 9.29,
     "gbt": 7.38,
-    "arima_plus": 33.95
+    "arima_plus": 33.95,
+    "transformer": 11.57
    }
   },
   {
@@ -2166,7 +2363,8 @@
     "naive": 3.3,
     "damped_trend": 4.31,
     "gbt": 3.52,
-    "arima_plus": 4.66
+    "arima_plus": 4.66,
+    "transformer": 4.94
    }
   },
   {
@@ -2177,7 +2375,8 @@
     "naive": 1.48,
     "damped_trend": 2.74,
     "gbt": 2.05,
-    "arima_plus": 1.83
+    "arima_plus": 1.83,
+    "transformer": 1.8
    }
   },
   {
@@ -2188,7 +2387,8 @@
     "naive": 0.04,
     "damped_trend": 0.07,
     "gbt": 0.07,
-    "arima_plus": 0.06
+    "arima_plus": 0.06,
+    "transformer": 0.06
    }
   },
   {
@@ -2199,7 +2399,8 @@
     "naive": 4.18,
     "damped_trend": 6.6,
     "gbt": 3.67,
-    "arima_plus": 6.09
+    "arima_plus": 6.09,
+    "transformer": 4.29
    }
   },
   {
@@ -2210,7 +2411,8 @@
     "naive": 0.22,
     "damped_trend": 0.24,
     "gbt": 0.55,
-    "arima_plus": 1.62
+    "arima_plus": 1.62,
+    "transformer": 1.71
    }
   },
   {
@@ -2221,7 +2423,8 @@
     "naive": 19.28,
     "damped_trend": 21.08,
     "gbt": 17.53,
-    "arima_plus": 15.71
+    "arima_plus": 15.71,
+    "transformer": 26.18
    }
   },
   {
@@ -2232,7 +2435,8 @@
     "naive": 3.85,
     "damped_trend": 5.82,
     "gbt": 13.9,
-    "arima_plus": 8.29
+    "arima_plus": 8.29,
+    "transformer": 4.03
    }
   },
   {
@@ -2243,7 +2447,8 @@
     "naive": 1.21,
     "damped_trend": 1.23,
     "gbt": 1.23,
-    "arima_plus": 0.93
+    "arima_plus": 0.93,
+    "transformer": 1.06
    }
   },
   {
@@ -2254,7 +2459,8 @@
     "naive": 0.29,
     "damped_trend": 0.27,
     "gbt": 0.31,
-    "arima_plus": 0.25
+    "arima_plus": 0.25,
+    "transformer": 0.3
    }
   },
   {
@@ -2265,7 +2471,8 @@
     "naive": 2.73,
     "damped_trend": 4.03,
     "gbt": 4.08,
-    "arima_plus": 3.39
+    "arima_plus": 3.39,
+    "transformer": 6.33
    }
   },
   {
@@ -2276,18 +2483,20 @@
     "naive": 0.29,
     "damped_trend": 0.25,
     "gbt": 0.67,
-    "arima_plus": 0.21
+    "arima_plus": 0.21,
+    "transformer": 0.29
    }
   },
   {
    "city": "Vadodara",
    "parameter": "pm10",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
     "naive": 10.27,
     "damped_trend": 10.12,
     "gbt": 31.41,
-    "arima_plus": 18.81
+    "arima_plus": 18.81,
+    "transformer": 9.15
    }
   },
   {
@@ -2298,7 +2507,8 @@
     "naive": 4.66,
     "damped_trend": 4.91,
     "gbt": 8.02,
-    "arima_plus": 10.72
+    "arima_plus": 10.72,
+    "transformer": 5.15
    }
   },
   {
@@ -2309,7 +2519,8 @@
     "naive": 0.6,
     "damped_trend": 0.5,
     "gbt": 1.12,
-    "arima_plus": 0.56
+    "arima_plus": 0.56,
+    "transformer": 0.64
    }
   },
   {
@@ -2320,7 +2531,8 @@
     "naive": 0.24,
     "damped_trend": 0.31,
     "gbt": 0.26,
-    "arima_plus": 0.21
+    "arima_plus": 0.21,
+    "transformer": 0.22
    }
   },
   {
@@ -2331,7 +2543,8 @@
     "naive": 9.0,
     "damped_trend": 9.06,
     "gbt": 10.74,
-    "arima_plus": 11.9
+    "arima_plus": 11.9,
+    "transformer": 12.54
    }
   },
   {
@@ -2342,7 +2555,8 @@
     "naive": 6.53,
     "damped_trend": 9.37,
     "gbt": 7.06,
-    "arima_plus": 8.04
+    "arima_plus": 8.04,
+    "transformer": 6.96
    }
   },
   {
@@ -2353,18 +2567,20 @@
     "naive": 35.89,
     "damped_trend": 41.14,
     "gbt": 36.0,
-    "arima_plus": 34.12
+    "arima_plus": 34.12,
+    "transformer": 41.24
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "pm25",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
     "naive": 7.95,
     "damped_trend": 9.58,
     "gbt": 7.17,
-    "arima_plus": 8.06
+    "arima_plus": 8.06,
+    "transformer": 6.63
    }
   },
   {
@@ -2375,7 +2591,8 @@
     "naive": 7.86,
     "damped_trend": 6.5,
     "gbt": 7.36,
-    "arima_plus": 5.63
+    "arima_plus": 5.63,
+    "transformer": 6.85
    }
   }
  ]
