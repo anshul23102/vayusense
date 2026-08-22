@@ -1060,7 +1060,7 @@ Expected: prints two lines; `scored` should be greater than 0 (most/all series t
 
 - [ ] **Step 5: Empirically verify no real fold overlaps the training cutoff**
 
-This is the belt-and-suspenders check the design spec calls for beyond the date-math assertion in Task 1 — confirms, against the real archive and the real `make_folds()` output, that the stored cutoff is never later than any fold's earliest test-window date:
+This is the belt-and-suspenders check the design spec calls for beyond the date-math assertion in Task 1. **First version of this check was itself wrong** — comparing a fold's row-position start against a single global calendar date is exactly the calendar/position conflation that caused a real bug (see the note after Task 6: `ml.backtest.make_folds` picks fold boundaries by row count, and a sparsely-reporting series, e.g. Imphal/Kochi in the real archive, can have its last `N_FOLDS*HORIZON` rows span far more calendar days than `TEST_MARGIN_DAYS`, so a calendar-only comparison misses real leakage). `ml/transformer_dataset.py`'s `build_training_examples` was fixed to also enforce a per-series row-position boundary (`make_folds(len(full_series))[0][0]`), taking whichever of the two boundaries — calendar or row-position — is more restrictive. This check must mirror that same logic, working in row-positions throughout rather than mixing dates and positions:
 
 ```bash
 python3 -c "
@@ -1074,22 +1074,26 @@ daily = pd.read_parquet('data/processed/daily_city.parquet')
 daily['date'] = pd.to_datetime(daily['date'])
 
 violations = 0
+checked = 0
 for (city, parameter), grp in daily.groupby(['city', 'parameter']):
     grp = grp.sort_values('date').reset_index(drop=True)
     if len(grp) < MIN_HISTORY:
         continue
+    checked += 1
+    row_safe_end = make_folds(len(grp))[0][0]
+    calendar_end = int((grp['date'] <= cutoff).sum())
+    effective_end = min(row_safe_end, calendar_end)
     for start, end in make_folds(len(grp)):
-        fold_start_date = grp['date'].iloc[start]
-        if fold_start_date <= cutoff:
+        if effective_end > start:
             violations += 1
-            print(f'LEAKAGE RISK: {city}/{parameter} fold starting '
-                  f'{fold_start_date.date()} <= cutoff {cutoff.date()}')
-assert violations == 0, f'{violations} fold(s) overlap the training cutoff'
-print('no fold overlaps the training cutoff -- leakage guard holds empirically')
+            print(f'LEAKAGE: {city}/{parameter} effective training end row '
+                  f'{effective_end} > fold start row {start}')
+assert violations == 0, f'{violations} fold(s) overlap the training cutoff across {checked} series checked'
+print(f'no fold overlaps the training cutoff -- leakage guard holds empirically across {checked} series')
 "
 ```
 
-Expected: `no fold overlaps the training cutoff -- leakage guard holds empirically`, zero violation lines printed. If this ever fails, the fix is increasing `TEST_MARGIN_DAYS` in `ml/transformer_config.py` and retraining (Steps 3-4) — never silencing the check.
+Expected: `no fold overlaps the training cutoff -- leakage guard holds empirically across 216 series`, zero violation lines. If this ever fails, the fix is increasing `TEST_MARGIN_DAYS` in `ml/transformer_config.py` and retraining (Steps 3-4) — never silencing the check.
 
 - [ ] **Step 6: Run the full test suite**
 

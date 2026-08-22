@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from .backtest import MIN_HISTORY, make_folds
 from .features import _seasonal
 from .transformer_config import CONTEXT_DAYS
 
@@ -46,19 +47,40 @@ def _series_windows(dates: pd.Series, normed_values: np.ndarray, horizon: int):
 def build_training_examples(daily: pd.DataFrame, cutoff: pd.Timestamp,
                              horizon: int, vocab: Vocab):
     """Returns (X, y, city_idx, param_idx, norm_stats). norm_stats is
-    {(city, parameter): (mean, std)} computed ONLY from the cutoff-truncated
+    {(city, parameter): (mean, std)} computed ONLY from the training-safe
     history -- ml/transformer_forecaster.py must reuse these exact stats at
     inference time rather than recomputing from a shorter backtest-fold
-    slice."""
+    slice.
+
+    Two independent guards decide how much of each series' history is safe
+    to train on, and the more restrictive one wins:
+
+    1. The calendar `cutoff` (date-based).
+    2. A row-position guard: ml.backtest.make_folds picks fold boundaries by
+       ROW COUNT, not by date, so a series with a big date gap right before
+       its final N_FOLDS*HORIZON rows can have those rows still fall inside
+       a generous calendar cutoff -- a purely date-based guard would call
+       that safe when it isn't. This is computed against each series' FULL
+       history (before any date truncation), matching exactly what
+       ml/bench.py's backtest_series() will later run folds against."""
     daily = daily.copy()
     daily["date"] = pd.to_datetime(daily["date"])
-    daily = daily[daily["date"] <= cutoff]
 
     xs, ys, city_idxs, param_idxs = [], [], [], []
     norm_stats: dict[tuple[str, str], tuple[float, float]] = {}
 
-    for (city, parameter), grp in daily.groupby(["city", "parameter"]):
-        grp = grp.sort_values("date")
+    for (city, parameter), full_grp in daily.groupby(["city", "parameter"]):
+        full_grp = full_grp.sort_values("date").reset_index(drop=True)
+        if len(full_grp) >= MIN_HISTORY:
+            row_safe_end = make_folds(len(full_grp))[0][0]
+            grp = full_grp.iloc[:row_safe_end]
+        else:
+            # Shorter than MIN_HISTORY means ml/bench.py's run_bench() never
+            # backtests this series at all (see its own MIN_HISTORY gate),
+            # so no real fold will ever run against it -- nothing to guard.
+            grp = full_grp
+        grp = grp[grp["date"] <= cutoff]
+
         raw = grp["mean"].to_numpy(dtype=float)
         if len(raw) < CONTEXT_DAYS + horizon:
             continue

@@ -12,7 +12,7 @@ def test_get_forecast_serves_winner_with_citation():
     _clear_caches()
     out = json.loads(tools.get_forecast("Delhi", "pm25", 3))
     assert "error" not in out
-    assert out["method"] in {"naive", "damped_trend", "gbt", "arima_plus"}
+    assert out["method"] in {"naive", "damped_trend", "gbt", "arima_plus", "transformer"}
     assert out["method_label"]
     assert out["methods_compared"] >= 3
     assert isinstance(out["backtest_mae"], float)
