@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-22T11:52:16.728287+00:00",
+ "generated_at": "2026-08-22T12:46:27.757307+00:00",
  "fold_scheme": {
   "n_folds": 8,
   "horizon_days": 3,
@@ -89,25 +89,25 @@
   {
    "city": "Ahmedabad",
    "parameter": "co",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.06,
-    "damped_trend": 0.06,
-    "gbt": 0.06,
+    "naive": 0.16,
+    "damped_trend": 0.12,
+    "gbt": 0.15,
     "arima_plus": 0.09,
-    "transformer": 0.05
+    "transformer": 0.16
    }
   },
   {
    "city": "Ahmedabad",
    "parameter": "no2",
-   "winner": "transformer",
+   "winner": "gbt",
    "mae": {
-    "naive": 2.81,
-    "damped_trend": 2.8,
-    "gbt": 3.19,
+    "naive": 2.14,
+    "damped_trend": 2.32,
+    "gbt": 2.05,
     "arima_plus": 2.8,
-    "transformer": 2.21
+    "transformer": 4.12
    }
   },
   {
@@ -115,23 +115,23 @@
    "parameter": "o3",
    "winner": "damped_trend",
    "mae": {
-    "naive": 1.85,
-    "damped_trend": 1.52,
-    "gbt": 2.24,
+    "naive": 2.1,
+    "damped_trend": 1.92,
+    "gbt": 3.17,
     "arima_plus": 9.87,
-    "transformer": 2.12
+    "transformer": 3.11
    }
   },
   {
    "city": "Ahmedabad",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 10.62,
-    "damped_trend": 15.86,
-    "gbt": 13.57,
+    "naive": 21.77,
+    "damped_trend": 18.35,
+    "gbt": 20.82,
     "arima_plus": 11.78,
-    "transformer": 12.56
+    "transformer": 29.45
    }
   },
   {
@@ -139,11 +139,11 @@
    "parameter": "pm25",
    "winner": "arima_plus",
    "mae": {
-    "naive": 3.2,
-    "damped_trend": 3.87,
-    "gbt": 3.99,
+    "naive": 14.45,
+    "damped_trend": 9.52,
+    "gbt": 10.95,
     "arima_plus": 2.88,
-    "transformer": 3.0
+    "transformer": 14.28
    }
   },
   {
@@ -151,11 +151,11 @@
    "parameter": "so2",
    "winner": "naive",
    "mae": {
-    "naive": 2.53,
-    "damped_trend": 3.43,
-    "gbt": 3.15,
+    "naive": 4.54,
+    "damped_trend": 4.61,
+    "gbt": 4.61,
     "arima_plus": 7.77,
-    "transformer": 2.7
+    "transformer": 8.52
    }
   },
   {
@@ -379,71 +379,71 @@
    "parameter": "co",
    "winner": "arima_plus",
    "mae": {
-    "naive": 0.05,
-    "damped_trend": 0.06,
-    "gbt": 0.08,
+    "naive": 0.08,
+    "damped_trend": 0.1,
+    "gbt": 0.14,
     "arima_plus": 0.04,
-    "transformer": 0.05
+    "transformer": 0.14
    }
   },
   {
    "city": "Bhopal",
    "parameter": "no2",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 2.56,
-    "damped_trend": 2.75,
-    "gbt": 2.8,
+    "naive": 5.26,
+    "damped_trend": 3.48,
+    "gbt": 5.02,
     "arima_plus": 2.43,
-    "transformer": 1.71
+    "transformer": 3.36
    }
   },
   {
    "city": "Bhopal",
    "parameter": "o3",
-   "winner": "transformer",
+   "winner": "gbt",
    "mae": {
-    "naive": 4.66,
-    "damped_trend": 3.59,
-    "gbt": 4.6,
+    "naive": 4.15,
+    "damped_trend": 4.08,
+    "gbt": 3.74,
     "arima_plus": 11.73,
-    "transformer": 3.35
+    "transformer": 6.63
    }
   },
   {
    "city": "Bhopal",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 16.54,
-    "damped_trend": 23.91,
-    "gbt": 18.01,
+    "naive": 19.17,
+    "damped_trend": 22.37,
+    "gbt": 20.4,
     "arima_plus": 20.58,
-    "transformer": 17.1
+    "transformer": 17.35
    }
   },
   {
    "city": "Bhopal",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 3.62,
-    "damped_trend": 5.9,
-    "gbt": 4.11,
+    "naive": 5.9,
+    "damped_trend": 7.69,
+    "gbt": 6.04,
     "arima_plus": 3.94,
-    "transformer": 4.44
+    "transformer": 6.24
    }
   },
   {
    "city": "Bhopal",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 2.68,
-    "damped_trend": 3.24,
-    "gbt": 4.43,
+    "naive": 5.41,
+    "damped_trend": 4.82,
+    "gbt": 7.17,
     "arima_plus": 6.37,
-    "transformer": 3.09
+    "transformer": 5.39
    }
   },
   {
@@ -523,59 +523,59 @@
    "parameter": "co",
    "winner": "arima_plus",
    "mae": {
-    "naive": 0.07,
-    "damped_trend": 0.07,
-    "gbt": 0.1,
+    "naive": 0.13,
+    "damped_trend": 0.13,
+    "gbt": 0.14,
     "arima_plus": 0.05,
-    "transformer": 0.07
+    "transformer": 0.4
    }
   },
   {
    "city": "Chennai",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
-    "naive": 0.62,
-    "damped_trend": 0.53,
-    "gbt": 0.86,
+    "naive": 0.3,
+    "damped_trend": 0.3,
+    "gbt": 0.39,
     "arima_plus": 1.76,
-    "transformer": 0.71
+    "transformer": 0.28
    }
   },
   {
    "city": "Chennai",
    "parameter": "o3",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 9.74,
-    "damped_trend": 10.58,
-    "gbt": 9.66,
+    "naive": 0.66,
+    "damped_trend": 1.77,
+    "gbt": 2.46,
     "arima_plus": 6.38,
-    "transformer": 9.35
+    "transformer": 6.91
    }
   },
   {
    "city": "Chennai",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 10.99,
-    "damped_trend": 12.04,
-    "gbt": 16.83,
+    "naive": 8.2,
+    "damped_trend": 7.86,
+    "gbt": 11.07,
     "arima_plus": 18.68,
-    "transformer": 18.38
+    "transformer": 11.32
    }
   },
   {
    "city": "Chennai",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 4.56,
-    "damped_trend": 5.78,
-    "gbt": 5.99,
+    "naive": 4.85,
+    "damped_trend": 6.76,
+    "gbt": 12.71,
     "arima_plus": 5.1,
-    "transformer": 7.28
+    "transformer": 4.22
    }
   },
   {
@@ -583,11 +583,11 @@
    "parameter": "so2",
    "winner": "arima_plus",
    "mae": {
-    "naive": 1.11,
-    "damped_trend": 0.95,
-    "gbt": 1.8,
+    "naive": 7.52,
+    "damped_trend": 6.04,
+    "gbt": 5.37,
     "arima_plus": 0.76,
-    "transformer": 1.1
+    "transformer": 4.15
    }
   },
   {
@@ -595,11 +595,11 @@
    "parameter": "co",
    "winner": "transformer",
    "mae": {
-    "naive": 0.11,
-    "damped_trend": 0.13,
-    "gbt": 0.31,
+    "naive": 0.07,
+    "damped_trend": 0.09,
+    "gbt": 0.13,
     "arima_plus": 0.12,
-    "transformer": 0.1
+    "transformer": 0.07
    }
   },
   {
@@ -607,35 +607,35 @@
    "parameter": "no2",
    "winner": "naive",
    "mae": {
-    "naive": 1.45,
-    "damped_trend": 2.4,
-    "gbt": 1.96,
+    "naive": 0.08,
+    "damped_trend": 0.33,
+    "gbt": 1.33,
     "arima_plus": 6.02,
-    "transformer": 4.55
+    "transformer": 6.02
    }
   },
   {
    "city": "Coimbatore",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 0.07,
+    "naive": 0.11,
     "damped_trend": 0.08,
-    "gbt": 0.94,
+    "gbt": 0.67,
     "arima_plus": 0.86,
-    "transformer": 2.04
+    "transformer": 3.92
    }
   },
   {
    "city": "Coimbatore",
    "parameter": "pm10",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 4.69,
-    "damped_trend": 5.09,
-    "gbt": 9.79,
+    "naive": 6.81,
+    "damped_trend": 6.21,
+    "gbt": 7.76,
     "arima_plus": 4.22,
-    "transformer": 4.12
+    "transformer": 6.62
    }
   },
   {
@@ -643,23 +643,23 @@
    "parameter": "pm25",
    "winner": "arima_plus",
    "mae": {
-    "naive": 6.72,
-    "damped_trend": 8.56,
-    "gbt": 7.23,
+    "naive": 6.17,
+    "damped_trend": 8.59,
+    "gbt": 7.96,
     "arima_plus": 5.74,
-    "transformer": 5.89
+    "transformer": 7.13
    }
   },
   {
    "city": "Coimbatore",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 2.68,
-    "damped_trend": 4.4,
-    "gbt": 3.48,
+    "naive": 0.72,
+    "damped_trend": 0.66,
+    "gbt": 0.83,
     "arima_plus": 6.34,
-    "transformer": 3.35
+    "transformer": 2.54
    }
   },
   {
@@ -739,59 +739,59 @@
    "parameter": "co",
    "winner": "gbt",
    "mae": {
-    "naive": 0.19,
-    "damped_trend": 0.15,
-    "gbt": 0.15,
+    "naive": 0.18,
+    "damped_trend": 0.22,
+    "gbt": 0.16,
     "arima_plus": 0.21,
-    "transformer": 0.15
+    "transformer": 0.18
    }
   },
   {
    "city": "Delhi",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 4.38,
-    "damped_trend": 4.3,
-    "gbt": 4.54,
+    "naive": 6.9,
+    "damped_trend": 5.9,
+    "gbt": 7.04,
     "arima_plus": 5.85,
-    "transformer": 4.32
+    "transformer": 7.94
    }
   },
   {
    "city": "Delhi",
    "parameter": "o3",
-   "winner": "gbt",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 6.23,
-    "damped_trend": 5.13,
-    "gbt": 4.91,
+    "naive": 9.51,
+    "damped_trend": 10.11,
+    "gbt": 10.52,
     "arima_plus": 5.33,
-    "transformer": 5.18
+    "transformer": 8.74
    }
   },
   {
    "city": "Delhi",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 90.49,
-    "damped_trend": 69.8,
-    "gbt": 94.62,
+    "naive": 28.86,
+    "damped_trend": 29.13,
+    "gbt": 31.91,
     "arima_plus": 62.39,
-    "transformer": 73.75
+    "transformer": 29.93
    }
   },
   {
    "city": "Delhi",
    "parameter": "pm25",
-   "winner": "gbt",
+   "winner": "naive",
    "mae": {
-    "naive": 16.37,
-    "damped_trend": 13.44,
-    "gbt": 12.76,
+    "naive": 11.93,
+    "damped_trend": 13.83,
+    "gbt": 15.34,
     "arima_plus": 13.3,
-    "transformer": 12.81
+    "transformer": 13.4
    }
   },
   {
@@ -799,11 +799,11 @@
    "parameter": "so2",
    "winner": "arima_plus",
    "mae": {
-    "naive": 4.09,
-    "damped_trend": 3.64,
-    "gbt": 3.85,
+    "naive": 5.52,
+    "damped_trend": 5.29,
+    "gbt": 5.33,
     "arima_plus": 3.48,
-    "transformer": 3.57
+    "transformer": 5.78
    }
   },
   {
@@ -1097,73 +1097,73 @@
   {
    "city": "Hyderabad",
    "parameter": "co",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.06,
-    "damped_trend": 0.05,
-    "gbt": 0.07,
+    "naive": 0.19,
+    "damped_trend": 0.23,
+    "gbt": 0.18,
     "arima_plus": 0.09,
-    "transformer": 0.05
+    "transformer": 0.17
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.95,
-    "damped_trend": 0.71,
-    "gbt": 0.9,
+    "naive": 3.38,
+    "damped_trend": 2.44,
+    "gbt": 2.46,
     "arima_plus": 1.19,
-    "transformer": 2.14
+    "transformer": 4.11
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "o3",
-   "winner": "arima_plus",
+   "winner": "gbt",
    "mae": {
-    "naive": 1.96,
-    "damped_trend": 2.46,
-    "gbt": 2.57,
+    "naive": 1.36,
+    "damped_trend": 1.53,
+    "gbt": 1.33,
     "arima_plus": 1.75,
-    "transformer": 2.77
+    "transformer": 15.69
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 7.06,
-    "damped_trend": 7.18,
-    "gbt": 8.83,
+    "naive": 10.55,
+    "damped_trend": 8.63,
+    "gbt": 10.23,
     "arima_plus": 11.53,
-    "transformer": 17.03
+    "transformer": 49.04
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "pm25",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 3.36,
-    "damped_trend": 3.34,
-    "gbt": 3.98,
+    "naive": 5.34,
+    "damped_trend": 4.4,
+    "gbt": 4.72,
     "arima_plus": 4.24,
-    "transformer": 7.19
+    "transformer": 13.47
    }
   },
   {
    "city": "Hyderabad",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 0.95,
-    "damped_trend": 1.18,
-    "gbt": 1.94,
+    "naive": 1.45,
+    "damped_trend": 1.13,
+    "gbt": 1.48,
     "arima_plus": 1.74,
-    "transformer": 1.71
+    "transformer": 4.58
    }
   },
   {
@@ -1235,25 +1235,25 @@
   {
    "city": "Indore",
    "parameter": "co",
-   "winner": "arima_plus",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 0.13,
-    "damped_trend": 0.14,
-    "gbt": 0.17,
+    "naive": 0.03,
+    "damped_trend": 0.02,
+    "gbt": 0.06,
     "arima_plus": 0.09,
-    "transformer": 0.18
+    "transformer": 0.05
    }
   },
   {
    "city": "Indore",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "transformer",
    "mae": {
-    "naive": 5.0,
-    "damped_trend": 3.95,
-    "gbt": 5.6,
+    "naive": 3.19,
+    "damped_trend": 2.68,
+    "gbt": 2.5,
     "arima_plus": 5.23,
-    "transformer": 5.24
+    "transformer": 2.35
    }
   },
   {
@@ -1261,47 +1261,47 @@
    "parameter": "o3",
    "winner": "arima_plus",
    "mae": {
-    "naive": 4.29,
-    "damped_trend": 3.63,
-    "gbt": 5.42,
+    "naive": 8.84,
+    "damped_trend": 7.0,
+    "gbt": 8.44,
     "arima_plus": 3.11,
-    "transformer": 3.62
+    "transformer": 14.74
    }
   },
   {
    "city": "Indore",
    "parameter": "pm10",
-   "winner": "gbt",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 7.94,
-    "damped_trend": 8.74,
-    "gbt": 7.61,
+    "naive": 27.11,
+    "damped_trend": 33.78,
+    "gbt": 23.44,
     "arima_plus": 9.17,
-    "transformer": 7.77
+    "transformer": 42.11
    }
   },
   {
    "city": "Indore",
    "parameter": "pm25",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 4.92,
-    "damped_trend": 5.26,
-    "gbt": 5.67,
+    "naive": 12.04,
+    "damped_trend": 13.92,
+    "gbt": 10.76,
     "arima_plus": 6.33,
-    "transformer": 4.37
+    "transformer": 20.42
    }
   },
   {
    "city": "Indore",
    "parameter": "so2",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 1.36,
-    "damped_trend": 2.09,
-    "gbt": 1.94,
+    "naive": 4.05,
+    "damped_trend": 4.04,
+    "gbt": 4.09,
     "arima_plus": 3.93,
-    "transformer": 1.34
+    "transformer": 4.53
    }
   },
   {
@@ -1379,13 +1379,13 @@
   {
    "city": "Jaipur",
    "parameter": "co",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
-    "naive": 0.08,
-    "damped_trend": 0.13,
-    "gbt": 0.07,
+    "naive": 0.14,
+    "damped_trend": 0.14,
+    "gbt": 0.16,
     "arima_plus": 0.17,
-    "transformer": 0.07
+    "transformer": 0.13
    }
   },
   {
@@ -1393,59 +1393,59 @@
    "parameter": "no2",
    "winner": "damped_trend",
    "mae": {
-    "naive": 3.82,
-    "damped_trend": 3.21,
-    "gbt": 5.03,
+    "naive": 4.93,
+    "damped_trend": 4.37,
+    "gbt": 4.7,
     "arima_plus": 4.85,
-    "transformer": 4.65
+    "transformer": 5.36
    }
   },
   {
    "city": "Jaipur",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 5.1,
-    "damped_trend": 6.59,
-    "gbt": 6.38,
+    "naive": 5.33,
+    "damped_trend": 4.36,
+    "gbt": 5.14,
     "arima_plus": 8.52,
-    "transformer": 8.49
+    "transformer": 4.62
    }
   },
   {
    "city": "Jaipur",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 23.94,
-    "damped_trend": 35.91,
-    "gbt": 28.05,
+    "naive": 17.48,
+    "damped_trend": 23.17,
+    "gbt": 20.86,
     "arima_plus": 28.39,
-    "transformer": 27.2
+    "transformer": 16.28
    }
   },
   {
    "city": "Jaipur",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "gbt",
    "mae": {
-    "naive": 7.85,
-    "damped_trend": 11.15,
-    "gbt": 10.18,
+    "naive": 8.17,
+    "damped_trend": 9.21,
+    "gbt": 7.97,
     "arima_plus": 11.54,
-    "transformer": 9.36
+    "transformer": 8.16
    }
   },
   {
    "city": "Jaipur",
    "parameter": "so2",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 1.25,
-    "damped_trend": 1.7,
-    "gbt": 6.09,
+    "naive": 3.74,
+    "damped_trend": 3.09,
+    "gbt": 3.9,
     "arima_plus": 2.96,
-    "transformer": 1.53
+    "transformer": 6.84
    }
   },
   {
@@ -1453,35 +1453,35 @@
    "parameter": "co",
    "winner": "arima_plus",
    "mae": {
-    "naive": 0.03,
+    "naive": 0.06,
     "damped_trend": 0.05,
-    "gbt": 0.04,
+    "gbt": 0.06,
     "arima_plus": 0.03,
-    "transformer": 0.03
+    "transformer": 0.08
    }
   },
   {
    "city": "Kanpur",
    "parameter": "no2",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 1.11,
-    "damped_trend": 1.02,
-    "gbt": 1.59,
+    "naive": 0.68,
+    "damped_trend": 0.75,
+    "gbt": 1.01,
     "arima_plus": 0.86,
-    "transformer": 2.77
+    "transformer": 6.11
    }
   },
   {
    "city": "Kanpur",
    "parameter": "o3",
-   "winner": "damped_trend",
+   "winner": "naive",
    "mae": {
-    "naive": 1.51,
-    "damped_trend": 1.44,
-    "gbt": 1.62,
+    "naive": 1.01,
+    "damped_trend": 1.19,
+    "gbt": 2.26,
     "arima_plus": 1.78,
-    "transformer": 1.51
+    "transformer": 1.6
    }
   },
   {
@@ -1489,23 +1489,23 @@
    "parameter": "pm10",
    "winner": "gbt",
    "mae": {
-    "naive": 14.92,
-    "damped_trend": 25.9,
-    "gbt": 12.71,
+    "naive": 15.38,
+    "damped_trend": 15.11,
+    "gbt": 11.02,
     "arima_plus": 29.53,
-    "transformer": 15.46
+    "transformer": 11.94
    }
   },
   {
    "city": "Kanpur",
    "parameter": "pm25",
-   "winner": "gbt",
+   "winner": "transformer",
    "mae": {
-    "naive": 7.89,
-    "damped_trend": 11.81,
-    "gbt": 7.52,
+    "naive": 11.53,
+    "damped_trend": 10.12,
+    "gbt": 12.2,
     "arima_plus": 11.58,
-    "transformer": 8.66
+    "transformer": 7.13
    }
   },
   {
@@ -1513,11 +1513,11 @@
    "parameter": "so2",
    "winner": "naive",
    "mae": {
-    "naive": 1.52,
-    "damped_trend": 2.13,
-    "gbt": 16.91,
+    "naive": 0.74,
+    "damped_trend": 0.91,
+    "gbt": 7.83,
     "arima_plus": 2.7,
-    "transformer": 2.86
+    "transformer": 2.52
    }
   },
   {
@@ -1662,109 +1662,109 @@
   {
    "city": "Kolkata",
    "parameter": "co",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 0.15,
-    "damped_trend": 0.12,
-    "gbt": 0.13,
+    "naive": 0.01,
+    "damped_trend": 0.06,
+    "gbt": 0.07,
     "arima_plus": 0.08,
-    "transformer": 0.12
+    "transformer": 0.5
    }
   },
   {
    "city": "Kolkata",
    "parameter": "no2",
-   "winner": "transformer",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 2.83,
-    "damped_trend": 3.4,
-    "gbt": 2.94,
+    "naive": 0.58,
+    "damped_trend": 0.57,
+    "gbt": 1.96,
     "arima_plus": 3.29,
-    "transformer": 2.54
+    "transformer": 1.78
    }
   },
   {
    "city": "Kolkata",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 2.38,
-    "damped_trend": 3.03,
-    "gbt": 3.13,
+    "naive": 4.09,
+    "damped_trend": 4.51,
+    "gbt": 4.89,
     "arima_plus": 3.83,
-    "transformer": 2.42
+    "transformer": 4.48
    }
   },
   {
    "city": "Kolkata",
    "parameter": "pm10",
-   "winner": "transformer",
+   "winner": "gbt",
    "mae": {
-    "naive": 15.02,
-    "damped_trend": 15.03,
-    "gbt": 13.75,
+    "naive": 12.07,
+    "damped_trend": 13.48,
+    "gbt": 8.83,
     "arima_plus": 10.49,
-    "transformer": 10.37
+    "transformer": 12.85
    }
   },
   {
    "city": "Kolkata",
    "parameter": "pm25",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 8.44,
-    "damped_trend": 8.81,
-    "gbt": 6.75,
+    "naive": 3.44,
+    "damped_trend": 4.68,
+    "gbt": 4.87,
     "arima_plus": 5.38,
-    "transformer": 5.8
+    "transformer": 3.96
    }
   },
   {
    "city": "Kolkata",
    "parameter": "so2",
-   "winner": "transformer",
+   "winner": "naive",
    "mae": {
-    "naive": 0.52,
-    "damped_trend": 1.08,
-    "gbt": 2.05,
+    "naive": 1.05,
+    "damped_trend": 1.17,
+    "gbt": 2.06,
     "arima_plus": 3.82,
-    "transformer": 0.49
+    "transformer": 1.46
    }
   },
   {
    "city": "Lucknow",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.06,
-    "damped_trend": 0.07,
-    "gbt": 0.07,
+    "naive": 0.21,
+    "damped_trend": 0.23,
+    "gbt": 0.25,
     "arima_plus": 0.08,
-    "transformer": 0.08
+    "transformer": 0.24
    }
   },
   {
    "city": "Lucknow",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 1.38,
-    "damped_trend": 1.25,
-    "gbt": 1.64,
+    "naive": 1.68,
+    "damped_trend": 1.98,
+    "gbt": 2.06,
     "arima_plus": 1.5,
-    "transformer": 1.9
+    "transformer": 4.22
    }
   },
   {
    "city": "Lucknow",
    "parameter": "o3",
-   "winner": "transformer",
+   "winner": "naive",
    "mae": {
-    "naive": 5.3,
-    "damped_trend": 5.81,
-    "gbt": 6.37,
+    "naive": 1.49,
+    "damped_trend": 2.14,
+    "gbt": 3.94,
     "arima_plus": 9.95,
-    "transformer": 5.29
+    "transformer": 23.14
    }
   },
   {
@@ -1772,23 +1772,23 @@
    "parameter": "pm10",
    "winner": "transformer",
    "mae": {
-    "naive": 19.2,
-    "damped_trend": 31.82,
-    "gbt": 19.66,
+    "naive": 18.24,
+    "damped_trend": 23.33,
+    "gbt": 14.15,
     "arima_plus": 32.99,
-    "transformer": 17.23
+    "transformer": 13.14
    }
   },
   {
    "city": "Lucknow",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 8.12,
-    "damped_trend": 12.38,
-    "gbt": 8.41,
+    "naive": 12.12,
+    "damped_trend": 11.49,
+    "gbt": 13.44,
     "arima_plus": 17.63,
-    "transformer": 8.39
+    "transformer": 9.57
    }
   },
   {
@@ -1796,11 +1796,11 @@
    "parameter": "so2",
    "winner": "arima_plus",
    "mae": {
-    "naive": 1.87,
-    "damped_trend": 1.86,
-    "gbt": 1.62,
+    "naive": 3.72,
+    "damped_trend": 3.67,
+    "gbt": 3.93,
     "arima_plus": 1.41,
-    "transformer": 1.62
+    "transformer": 5.12
    }
   },
   {
@@ -1880,23 +1880,23 @@
    "parameter": "co",
    "winner": "arima_plus",
    "mae": {
-    "naive": 0.07,
-    "damped_trend": 0.09,
-    "gbt": 0.1,
+    "naive": 0.16,
+    "damped_trend": 0.2,
+    "gbt": 0.23,
     "arima_plus": 0.07,
-    "transformer": 0.09
+    "transformer": 0.55
    }
   },
   {
    "city": "Mumbai",
    "parameter": "no2",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 1.78,
-    "damped_trend": 1.96,
-    "gbt": 1.85,
+    "naive": 5.89,
+    "damped_trend": 7.29,
+    "gbt": 6.06,
     "arima_plus": 1.72,
-    "transformer": 1.57
+    "transformer": 7.61
    }
   },
   {
@@ -1904,11 +1904,11 @@
    "parameter": "o3",
    "winner": "gbt",
    "mae": {
-    "naive": 4.94,
-    "damped_trend": 4.16,
-    "gbt": 4.08,
+    "naive": 4.76,
+    "damped_trend": 5.13,
+    "gbt": 3.93,
     "arima_plus": 4.53,
-    "transformer": 4.27
+    "transformer": 5.31
    }
   },
   {
@@ -1916,23 +1916,23 @@
    "parameter": "pm10",
    "winner": "transformer",
    "mae": {
-    "naive": 12.57,
-    "damped_trend": 31.48,
-    "gbt": 31.37,
+    "naive": 14.62,
+    "damped_trend": 13.27,
+    "gbt": 19.93,
     "arima_plus": 66.2,
-    "transformer": 12.21
+    "transformer": 12.1
    }
   },
   {
    "city": "Mumbai",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 3.53,
-    "damped_trend": 19.7,
-    "gbt": 6.58,
+    "naive": 8.92,
+    "damped_trend": 8.91,
+    "gbt": 15.38,
     "arima_plus": 18.53,
-    "transformer": 6.04
+    "transformer": 7.2
    }
   },
   {
@@ -1940,215 +1940,215 @@
    "parameter": "so2",
    "winner": "arima_plus",
    "mae": {
-    "naive": 1.76,
-    "damped_trend": 1.92,
-    "gbt": 1.89,
+    "naive": 2.34,
+    "damped_trend": 3.03,
+    "gbt": 2.97,
     "arima_plus": 1.06,
-    "transformer": 2.01
+    "transformer": 2.97
    }
   },
   {
    "city": "Nagpur",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "gbt",
    "mae": {
-    "naive": 0.05,
-    "damped_trend": 0.09,
-    "gbt": 0.07,
+    "naive": 0.08,
+    "damped_trend": 0.06,
+    "gbt": 0.05,
     "arima_plus": 0.07,
+    "transformer": 0.15
+   }
+  },
+  {
+   "city": "Nagpur",
+   "parameter": "no2",
+   "winner": "arima_plus",
+   "mae": {
+    "naive": 1.3,
+    "damped_trend": 1.47,
+    "gbt": 2.25,
+    "arima_plus": 1.26,
+    "transformer": 1.4
+   }
+  },
+  {
+   "city": "Nagpur",
+   "parameter": "o3",
+   "winner": "damped_trend",
+   "mae": {
+    "naive": 2.46,
+    "damped_trend": 1.39,
+    "gbt": 1.95,
+    "arima_plus": 6.43,
+    "transformer": 2.0
+   }
+  },
+  {
+   "city": "Nagpur",
+   "parameter": "pm10",
+   "winner": "transformer",
+   "mae": {
+    "naive": 13.45,
+    "damped_trend": 12.5,
+    "gbt": 12.99,
+    "arima_plus": 15.69,
+    "transformer": 10.52
+   }
+  },
+  {
+   "city": "Nagpur",
+   "parameter": "pm25",
+   "winner": "transformer",
+   "mae": {
+    "naive": 6.35,
+    "damped_trend": 5.99,
+    "gbt": 6.05,
+    "arima_plus": 5.8,
+    "transformer": 5.12
+   }
+  },
+  {
+   "city": "Nagpur",
+   "parameter": "so2",
+   "winner": "damped_trend",
+   "mae": {
+    "naive": 1.77,
+    "damped_trend": 1.56,
+    "gbt": 2.02,
+    "arima_plus": 3.5,
+    "transformer": 1.69
+   }
+  },
+  {
+   "city": "Nashik",
+   "parameter": "co",
+   "winner": "arima_plus",
+   "mae": {
+    "naive": 0.09,
+    "damped_trend": 0.08,
+    "gbt": 0.06,
+    "arima_plus": 0.04,
     "transformer": 0.06
    }
   },
   {
-   "city": "Nagpur",
-   "parameter": "no2",
-   "winner": "naive",
-   "mae": {
-    "naive": 0.88,
-    "damped_trend": 1.32,
-    "gbt": 1.26,
-    "arima_plus": 1.26,
-    "transformer": 1.04
-   }
-  },
-  {
-   "city": "Nagpur",
-   "parameter": "o3",
-   "winner": "naive",
-   "mae": {
-    "naive": 2.79,
-    "damped_trend": 4.19,
-    "gbt": 3.14,
-    "arima_plus": 6.43,
-    "transformer": 3.22
-   }
-  },
-  {
-   "city": "Nagpur",
-   "parameter": "pm10",
-   "winner": "naive",
-   "mae": {
-    "naive": 8.56,
-    "damped_trend": 16.95,
-    "gbt": 9.78,
-    "arima_plus": 15.69,
-    "transformer": 11.72
-   }
-  },
-  {
-   "city": "Nagpur",
-   "parameter": "pm25",
-   "winner": "gbt",
-   "mae": {
-    "naive": 4.35,
-    "damped_trend": 6.51,
-    "gbt": 4.2,
-    "arima_plus": 5.8,
-    "transformer": 4.95
-   }
-  },
-  {
-   "city": "Nagpur",
-   "parameter": "so2",
-   "winner": "naive",
-   "mae": {
-    "naive": 1.3,
-    "damped_trend": 1.53,
-    "gbt": 2.33,
-    "arima_plus": 3.5,
-    "transformer": 1.73
-   }
-  },
-  {
-   "city": "Nashik",
-   "parameter": "co",
-   "winner": "naive",
-   "mae": {
-    "naive": 0.03,
-    "damped_trend": 0.04,
-    "gbt": 0.03,
-    "arima_plus": 0.04,
-    "transformer": 0.05
-   }
-  },
-  {
    "city": "Nashik",
    "parameter": "no2",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.36,
-    "damped_trend": 0.32,
-    "gbt": 0.98,
+    "naive": 0.9,
+    "damped_trend": 0.71,
+    "gbt": 0.9,
     "arima_plus": 0.57,
-    "transformer": 1.28
+    "transformer": 1.08
    }
   },
   {
    "city": "Nashik",
    "parameter": "o3",
-   "winner": "naive",
-   "mae": {
-    "naive": 1.51,
-    "damped_trend": 1.85,
-    "gbt": 1.95,
-    "arima_plus": 2.4,
-    "transformer": 2.02
-   }
-  },
-  {
-   "city": "Nashik",
-   "parameter": "pm10",
-   "winner": "naive",
-   "mae": {
-    "naive": 9.02,
-    "damped_trend": 15.74,
-    "gbt": 14.95,
-    "arima_plus": 15.2,
-    "transformer": 10.66
-   }
-  },
-  {
-   "city": "Nashik",
-   "parameter": "pm25",
-   "winner": "naive",
-   "mae": {
-    "naive": 3.23,
-    "damped_trend": 4.96,
-    "gbt": 3.6,
-    "arima_plus": 4.95,
-    "transformer": 3.75
-   }
-  },
-  {
-   "city": "Nashik",
-   "parameter": "so2",
-   "winner": "naive",
-   "mae": {
-    "naive": 0.58,
-    "damped_trend": 0.82,
-    "gbt": 1.05,
-    "arima_plus": 0.88,
-    "transformer": 0.62
-   }
-  },
-  {
-   "city": "Patna",
-   "parameter": "co",
-   "winner": "damped_trend",
-   "mae": {
-    "naive": 0.13,
-    "damped_trend": 0.1,
-    "gbt": 0.11,
-    "arima_plus": 0.11,
-    "transformer": 0.11
-   }
-  },
-  {
-   "city": "Patna",
-   "parameter": "no2",
-   "winner": "damped_trend",
-   "mae": {
-    "naive": 0.92,
-    "damped_trend": 0.78,
-    "gbt": 1.49,
-    "arima_plus": 1.88,
-    "transformer": 1.35
-   }
-  },
-  {
-   "city": "Patna",
-   "parameter": "o3",
-   "winner": "naive",
-   "mae": {
-    "naive": 2.2,
-    "damped_trend": 2.75,
-    "gbt": 6.7,
-    "arima_plus": 2.81,
-    "transformer": 3.29
-   }
-  },
-  {
-   "city": "Patna",
-   "parameter": "pm10",
-   "winner": "naive",
-   "mae": {
-    "naive": 9.87,
-    "damped_trend": 16.2,
-    "gbt": 15.74,
-    "arima_plus": 28.27,
-    "transformer": 12.18
-   }
-  },
-  {
-   "city": "Patna",
-   "parameter": "pm25",
    "winner": "transformer",
    "mae": {
-    "naive": 5.42,
-    "damped_trend": 5.93,
-    "gbt": 5.09,
+    "naive": 2.13,
+    "damped_trend": 1.86,
+    "gbt": 2.25,
+    "arima_plus": 2.4,
+    "transformer": 1.53
+   }
+  },
+  {
+   "city": "Nashik",
+   "parameter": "pm10",
+   "winner": "transformer",
+   "mae": {
+    "naive": 12.9,
+    "damped_trend": 11.81,
+    "gbt": 11.15,
+    "arima_plus": 15.2,
+    "transformer": 10.65
+   }
+  },
+  {
+   "city": "Nashik",
+   "parameter": "pm25",
+   "winner": "damped_trend",
+   "mae": {
+    "naive": 6.4,
+    "damped_trend": 4.24,
+    "gbt": 6.11,
+    "arima_plus": 4.95,
+    "transformer": 5.25
+   }
+  },
+  {
+   "city": "Nashik",
+   "parameter": "so2",
+   "winner": "arima_plus",
+   "mae": {
+    "naive": 1.45,
+    "damped_trend": 1.46,
+    "gbt": 1.61,
+    "arima_plus": 0.88,
+    "transformer": 1.48
+   }
+  },
+  {
+   "city": "Patna",
+   "parameter": "co",
+   "winner": "naive",
+   "mae": {
+    "naive": 0.07,
+    "damped_trend": 0.09,
+    "gbt": 0.1,
+    "arima_plus": 0.11,
+    "transformer": 0.13
+   }
+  },
+  {
+   "city": "Patna",
+   "parameter": "no2",
+   "winner": "damped_trend",
+   "mae": {
+    "naive": 1.33,
+    "damped_trend": 1.22,
+    "gbt": 1.66,
+    "arima_plus": 1.88,
+    "transformer": 1.59
+   }
+  },
+  {
+   "city": "Patna",
+   "parameter": "o3",
+   "winner": "arima_plus",
+   "mae": {
+    "naive": 7.03,
+    "damped_trend": 5.43,
+    "gbt": 5.38,
+    "arima_plus": 2.81,
+    "transformer": 5.02
+   }
+  },
+  {
+   "city": "Patna",
+   "parameter": "pm10",
+   "winner": "naive",
+   "mae": {
+    "naive": 9.09,
+    "damped_trend": 10.44,
+    "gbt": 11.26,
+    "arima_plus": 28.27,
+    "transformer": 9.38
+   }
+  },
+  {
+   "city": "Patna",
+   "parameter": "pm25",
+   "winner": "damped_trend",
+   "mae": {
+    "naive": 5.13,
+    "damped_trend": 4.82,
+    "gbt": 5.94,
     "arima_plus": 10.3,
-    "transformer": 4.28
+    "transformer": 4.88
    }
   },
   {
@@ -2156,71 +2156,71 @@
    "parameter": "so2",
    "winner": "arima_plus",
    "mae": {
-    "naive": 1.97,
-    "damped_trend": 1.83,
-    "gbt": 2.02,
+    "naive": 1.62,
+    "damped_trend": 1.4,
+    "gbt": 1.91,
     "arima_plus": 1.08,
-    "transformer": 1.43
+    "transformer": 1.15
    }
   },
   {
    "city": "Pune",
    "parameter": "co",
-   "winner": "damped_trend",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 0.09,
-    "damped_trend": 0.07,
-    "gbt": 0.11,
+    "naive": 0.33,
+    "damped_trend": 0.24,
+    "gbt": 0.26,
     "arima_plus": 0.13,
-    "transformer": 0.1
+    "transformer": 0.27
    }
   },
   {
    "city": "Pune",
    "parameter": "no2",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 2.92,
-    "damped_trend": 3.05,
-    "gbt": 2.54,
+    "naive": 3.53,
+    "damped_trend": 3.62,
+    "gbt": 5.01,
     "arima_plus": 3.19,
-    "transformer": 2.45
+    "transformer": 6.9
    }
   },
   {
    "city": "Pune",
    "parameter": "o3",
-   "winner": "transformer",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 2.58,
-    "damped_trend": 2.46,
-    "gbt": 3.71,
+    "naive": 2.37,
+    "damped_trend": 1.72,
+    "gbt": 2.65,
     "arima_plus": 2.58,
-    "transformer": 1.95
+    "transformer": 2.61
    }
   },
   {
    "city": "Pune",
    "parameter": "pm10",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 6.83,
-    "damped_trend": 12.41,
-    "gbt": 10.79,
+    "naive": 11.88,
+    "damped_trend": 12.0,
+    "gbt": 14.15,
     "arima_plus": 11.62,
-    "transformer": 8.73
+    "transformer": 10.89
    }
   },
   {
    "city": "Pune",
    "parameter": "pm25",
-   "winner": "transformer",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 2.07,
-    "damped_trend": 2.59,
-    "gbt": 2.19,
+    "naive": 3.82,
+    "damped_trend": 2.98,
+    "gbt": 3.23,
     "arima_plus": 2.32,
-    "transformer": 1.55
+    "transformer": 3.25
    }
   },
   {
@@ -2382,11 +2382,11 @@
   {
    "city": "Surat",
    "parameter": "co",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
     "naive": 0.04,
-    "damped_trend": 0.07,
-    "gbt": 0.07,
+    "damped_trend": 0.04,
+    "gbt": 0.04,
     "arima_plus": 0.06,
     "transformer": 0.06
    }
@@ -2394,13 +2394,13 @@
   {
    "city": "Surat",
    "parameter": "no2",
-   "winner": "gbt",
+   "winner": "naive",
    "mae": {
-    "naive": 4.18,
-    "damped_trend": 6.6,
-    "gbt": 3.67,
+    "naive": 2.61,
+    "damped_trend": 2.87,
+    "gbt": 10.2,
     "arima_plus": 6.09,
-    "transformer": 4.29
+    "transformer": 2.61
    }
   },
   {
@@ -2408,71 +2408,71 @@
    "parameter": "o3",
    "winner": "naive",
    "mae": {
-    "naive": 0.22,
-    "damped_trend": 0.24,
-    "gbt": 0.55,
+    "naive": 0.53,
+    "damped_trend": 0.59,
+    "gbt": 0.57,
     "arima_plus": 1.62,
-    "transformer": 1.71
+    "transformer": 0.6
    }
   },
   {
    "city": "Surat",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 19.28,
-    "damped_trend": 21.08,
-    "gbt": 17.53,
+    "naive": 14.44,
+    "damped_trend": 14.74,
+    "gbt": 16.71,
     "arima_plus": 15.71,
-    "transformer": 26.18
+    "transformer": 23.45
    }
   },
   {
    "city": "Surat",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 3.85,
-    "damped_trend": 5.82,
-    "gbt": 13.9,
+    "naive": 3.41,
+    "damped_trend": 3.06,
+    "gbt": 7.68,
     "arima_plus": 8.29,
-    "transformer": 4.03
+    "transformer": 6.98
    }
   },
   {
    "city": "Surat",
    "parameter": "so2",
-   "winner": "arima_plus",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 1.21,
-    "damped_trend": 1.23,
-    "gbt": 1.23,
+    "naive": 1.37,
+    "damped_trend": 0.85,
+    "gbt": 1.5,
     "arima_plus": 0.93,
-    "transformer": 1.06
+    "transformer": 0.92
    }
   },
   {
    "city": "Vadodara",
    "parameter": "co",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 0.29,
-    "damped_trend": 0.27,
-    "gbt": 0.31,
+    "naive": 0.18,
+    "damped_trend": 0.29,
+    "gbt": 0.2,
     "arima_plus": 0.25,
-    "transformer": 0.3
+    "transformer": 0.29
    }
   },
   {
    "city": "Vadodara",
    "parameter": "no2",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 2.73,
-    "damped_trend": 4.03,
-    "gbt": 4.08,
+    "naive": 5.78,
+    "damped_trend": 2.83,
+    "gbt": 4.82,
     "arima_plus": 3.39,
-    "transformer": 6.33
+    "transformer": 6.37
    }
   },
   {
@@ -2480,11 +2480,11 @@
    "parameter": "o3",
    "winner": "arima_plus",
    "mae": {
-    "naive": 0.29,
-    "damped_trend": 0.25,
-    "gbt": 0.67,
+    "naive": 0.65,
+    "damped_trend": 0.44,
+    "gbt": 0.54,
     "arima_plus": 0.21,
-    "transformer": 0.29
+    "transformer": 0.54
    }
   },
   {
@@ -2492,23 +2492,23 @@
    "parameter": "pm10",
    "winner": "transformer",
    "mae": {
-    "naive": 10.27,
-    "damped_trend": 10.12,
-    "gbt": 31.41,
+    "naive": 19.62,
+    "damped_trend": 21.21,
+    "gbt": 21.81,
     "arima_plus": 18.81,
-    "transformer": 9.15
+    "transformer": 15.46
    }
   },
   {
    "city": "Vadodara",
    "parameter": "pm25",
-   "winner": "naive",
+   "winner": "transformer",
    "mae": {
-    "naive": 4.66,
-    "damped_trend": 4.91,
-    "gbt": 8.02,
+    "naive": 10.96,
+    "damped_trend": 11.41,
+    "gbt": 14.24,
     "arima_plus": 10.72,
-    "transformer": 5.15
+    "transformer": 9.02
    }
   },
   {
@@ -2516,83 +2516,83 @@
    "parameter": "so2",
    "winner": "damped_trend",
    "mae": {
-    "naive": 0.6,
-    "damped_trend": 0.5,
-    "gbt": 1.12,
+    "naive": 0.38,
+    "damped_trend": 0.27,
+    "gbt": 0.61,
     "arima_plus": 0.56,
-    "transformer": 0.64
+    "transformer": 0.65
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "co",
-   "winner": "arima_plus",
+   "winner": "naive",
    "mae": {
-    "naive": 0.24,
-    "damped_trend": 0.31,
+    "naive": 0.18,
+    "damped_trend": 0.24,
     "gbt": 0.26,
     "arima_plus": 0.21,
-    "transformer": 0.22
+    "transformer": 0.2
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "no2",
-   "winner": "naive",
+   "winner": "arima_plus",
    "mae": {
-    "naive": 9.0,
-    "damped_trend": 9.06,
-    "gbt": 10.74,
+    "naive": 16.22,
+    "damped_trend": 15.84,
+    "gbt": 16.81,
     "arima_plus": 11.9,
-    "transformer": 12.54
+    "transformer": 17.03
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "o3",
-   "winner": "naive",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 6.53,
-    "damped_trend": 9.37,
-    "gbt": 7.06,
+    "naive": 4.77,
+    "damped_trend": 3.38,
+    "gbt": 5.82,
     "arima_plus": 8.04,
-    "transformer": 6.96
+    "transformer": 5.03
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "pm10",
-   "winner": "arima_plus",
+   "winner": "gbt",
    "mae": {
-    "naive": 35.89,
-    "damped_trend": 41.14,
-    "gbt": 36.0,
+    "naive": 31.85,
+    "damped_trend": 24.03,
+    "gbt": 23.3,
     "arima_plus": 34.12,
-    "transformer": 41.24
+    "transformer": 26.51
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "pm25",
-   "winner": "transformer",
+   "winner": "damped_trend",
    "mae": {
-    "naive": 7.95,
-    "damped_trend": 9.58,
-    "gbt": 7.17,
+    "naive": 8.66,
+    "damped_trend": 7.06,
+    "gbt": 9.58,
     "arima_plus": 8.06,
-    "transformer": 6.63
+    "transformer": 7.3
    }
   },
   {
    "city": "Visakhapatnam",
    "parameter": "so2",
-   "winner": "arima_plus",
+   "winner": "transformer",
    "mae": {
-    "naive": 7.86,
-    "damped_trend": 6.5,
-    "gbt": 7.36,
+    "naive": 4.08,
+    "damped_trend": 4.37,
+    "gbt": 6.05,
     "arima_plus": 5.63,
-    "transformer": 6.85
+    "transformer": 3.75
    }
   }
  ]
