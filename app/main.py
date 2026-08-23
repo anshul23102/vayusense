@@ -16,6 +16,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Python's root logger defaults to WARNING with no handler configured, so
+# every log.info() call across this codebase's own loggers (all namespaced
+# "vayusense.*" -- app/data_sync.py, app/live.py, app/weather.py, app/wind.py,
+# this module) was silently invisible in Cloud Run's log stream, including
+# the GCS data-sync success confirmation. Scoped to "vayusense" specifically,
+# not the root logger, so this doesn't also crank up verbose INFO-level
+# chatter from every third-party dependency (httpx, google-genai, etc.).
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+logging.getLogger("vayusense").setLevel(logging.INFO)
+
 from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -37,7 +47,11 @@ from app import card, data_sync, live, weather, wind
 
 log = logging.getLogger("vayusense.main")
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="VayuSense")
+# No third-party consumes this API -- it's called only by this app's own
+# frontend -- so the interactive docs/schema (/docs, /redoc, /openapi.json)
+# have no legitimate audience and only hand a would-be attacker a free map
+# of every endpoint, parameter, and internal model shape.
+app = FastAPI(title="VayuSense", docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory=ROOT / "app" / "static"), name="static")
 
 runner = InMemoryRunner(agent=root_agent, app_name="vayusense")
@@ -578,6 +592,7 @@ async def vision_check_api(request: Request, city: str = "Delhi", file: UploadFi
     the sensor data, never a substitute for it."""
     client_id = _client_id(request)
     if _rate_limited(client_id, _vision_hits, VISION_RATE_LIMIT, VISION_RATE_WINDOW):
+        log.warning("rate limit hit: vision-check client=%s", client_id)
         return JSONResponse(
             {"error": "Too many photo uploads right now. Please wait a moment and try again."},
             status_code=429,
@@ -661,6 +676,7 @@ def _validate_ask(body: AskBody, request: Request) -> str | None:
         return "That question is too long. Try something shorter."
     client_id = _client_id(request)
     if _rate_limited(client_id):
+        log.warning("rate limit hit: ask client=%s", client_id)
         return "You're asking questions faster than VayuSense can think. Please wait a moment and try again."
     return None
 

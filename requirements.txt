@@ -1,14 +1,23 @@
-fastapi>=0.111
-uvicorn[standard]>=0.30
-google-adk>=1.15
-google-genai>=1.0
-pandas>=2.2
-pyarrow>=16.0
-plotly>=5.22
-python-dotenv>=1.0
-requests>=2.32
-jinja2>=3.1
-httpx
-Pillow>=10.0
-google-cloud-storage>=2.10
-torch
+# Pinned to exact versions tested against this codebase, not floors (>=) --
+# an unpinned build can silently resolve to a newer, untested, or (in a
+# supply-chain-attack scenario) compromised release. Bump deliberately, one
+# package at a time, and rerun the full test suite before committing a bump.
+fastapi==0.139.2
+uvicorn[standard]==0.51.0
+google-adk==2.5.0
+google-genai==2.12.1
+pandas==3.0.3
+pyarrow==25.0.0
+plotly==6.9.0
+python-dotenv==1.2.2
+requests==2.34.2
+jinja2==3.1.6
+httpx==0.28.1
+Pillow==12.3.0
+google-cloud-storage==3.13.0
+torch==2.13.0
+# Not imported directly -- pulled in transitively (google-auth / authlib /
+# google-genai). Pinned explicitly anyway: 49.0.0 carries a known CVE
+# (PYSEC-2026-3552), and leaving it to the resolver means whichever
+# transitive dependency asks first wins, silently.
+cryptography>=50.0.0
