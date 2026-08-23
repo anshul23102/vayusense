@@ -85,13 +85,13 @@ VayuSense is one FastAPI app serving three distinct experiences, all sharing the
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │                    VAYUSENSE                                      │
-│         ● GPU-accelerated · Multi-agent AI · 35.4M readings        │
+│         ● GPU-accelerated · Multi-agent AI · 47.4M readings        │
 │                                                                    │
 │              Know when the air is safe.                           │
 │     Every breath in Delhi carries a cost most dashboards          │
 │           never show you. [See your city's air →]                 │
 │                                                                    │
-│   35.4M readings   48.39× faster   36 cities·6 pollutants   2 agents│
+│   47.4M readings   48.39× faster   36 cities·6 pollutants   2 agents│
 ├──────────────────────────────────────────────────────────────────┤
 │  WHAT'S ACTUALLY INSIDE: not a score, a whole instrument panel    │
 │  [Live trends] [Health guidance] [Forecast bench] [Human impact]  │
@@ -200,7 +200,7 @@ Embedded at the bottom of every city page (and reachable app-wide), with a **Liv
 
 ```mermaid
 flowchart TD
-    A["OpenAQ public archive (AWS S3)\n35.4M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
+    A["OpenAQ public archive (AWS S3)\n47.4M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
     B["NVIDIA layer: cuDF / RAPIDS on T4 GPU\nclean → resample daily → 7-day trend → anomaly flag\n(48.39× faster than pandas, mean of 8 benchmarked runs)"] --> C
     C["Processed parquet datasets\ndaily_city.parquet · station_league.parquet · forecasts.parquet"] --> D
     C --> E
@@ -262,7 +262,7 @@ Both are clearly labeled as illustrative, decision-support estimates, never a me
 
 ## ⚡ Why GPU acceleration matters here
 
-The live archive spans **35,404,493** real sensor readings across 36 cities and 6 pollutants, every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **19,858,185** rows in the benchmarked pipeline.
+The live archive spans **47,389,827** real sensor readings across 36 cities and 6 pollutants, every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **19,858,185** rows in the benchmarked pipeline.
 
 A single timing measurement can be skewed by GPU warm-up effects, other Colab tenants sharing the GPU, or one-off system noise, so this isn't a single run: it's the mean of **8 independent timed runs each**, CPU and GPU, with the full per-run distribution published, not just the average.
 
