@@ -253,7 +253,7 @@
     a clinic bracing for admissions, a city planner drafting tomorrow's advisory.</p>
   <div class="heroBtns reveal d4">
     <a class="btn primary" href="/dashboard">See your city's air →</a>
-    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> <span class="js-gpu-speedup">42.16×</span> faster on GPU: see how</a>
+    <a class="btn ghost" href="#bench"><svg class="ic-i"><use href="#ic-bolt"/></svg> <span class="js-gpu-speedup">48.39×</span> faster on GPU: see how</a>
   </div>
   <div class="searchWrap reveal d4">
     <input class="searchInput" id="citySearch" type="text" autocomplete="off"
@@ -265,7 +265,7 @@
   </div>
   <div class="statRow reveal d4">
     <div class="stat"><svg class="ic-i"><use href="#ic-signal"/></svg> <b class="js-archive-readings-full">35,391,063</b> readings analyzed</div>
-    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b class="js-gpu-speedup">42.16×</b> faster with NVIDIA</div>
+    <div class="stat"><svg class="ic-i"><use href="#ic-bolt"/></svg> <b class="js-gpu-speedup">48.39×</b> faster with NVIDIA</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-city"/></svg> <b>36</b> cities · <b>6</b> pollutants</div>
     <div class="stat"><svg class="ic-i"><use href="#ic-chip"/></svg> <b>2</b> reasoning agents</div>
   </div>
@@ -310,7 +310,7 @@
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
     <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-bolt"/></svg></div><h3>Accelerated by NVIDIA</h3>
-      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 10,443,350 OpenAQ readings, done in <b class="nvg">0.19s on GPU (cuDF)</b> instead of 7.994s on CPU. Fresh insight, every time you ask.</p></div>
+      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 19,858,185 OpenAQ readings, done in <b class="nvg">0.32s on GPU (cuDF)</b> instead of 15.37s on CPU: mean of 8 independent timed runs, not one. Fresh insight, every time you ask.</p></div>
     <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-chip"/></svg></div><h3>Reasoned by Google ADK + Gemini</h3>
       <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
     <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-target"/></svg></div><h3>Built to be used, not admired</h3>
@@ -320,16 +320,18 @@
 
 <section id="bench">
   <div class="kicker reveal">The acceleration, proven</div>
-  <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">42.16×</span> faster than pandas.</h2>
-  <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 10,443,350 rows. Timed honestly, side by side. When air quality
-    can shift by the hour, a 7.994-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
+  <h2 class="reveal d1"><span class="big nvg js-gpu-speedup">48.39×</span> faster than pandas.</h2>
+  <p class="lead reveal d2" id="gpuBenchLead">Same pipeline. Same 19,858,185 rows. Timed honestly, 8 independent runs
+    averaged, not a single lucky measurement: ±1.7× spread across those runs, published alongside the mean. When air
+    quality can shift by the hour, a 15-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision.</p>
   <div class="benchWrap">
-    <img class="benchImg reveal" src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time over 10,443,350 sensor readings: pandas on CPU took 7.99 seconds versus cuDF on an NVIDIA T4 GPU at 0.19 seconds, a 42.2 times speedup">
+    <img class="benchImg reveal" src="/static/benchmark.png" alt="Bar chart comparing pipeline processing time over 19,858,185 sensor readings, mean of 8 runs: pandas on CPU took 15.37 seconds versus cuDF on an NVIDIA T4 GPU at 0.32 seconds, a 48.4 times speedup">
     <div class="rows">
-      <div class="row reveal"><span>Dataset</span><b id="gpuDatasetRow">10,443,350 readings</b></div>
-      <div class="row reveal d1"><span>pandas (CPU)</span><b id="gpuCpuRow">7.994 s</b></div>
-      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg" id="gpuGpuRow">0.19 s</b></div>
+      <div class="row reveal"><span>Dataset</span><b id="gpuDatasetRow">19,858,185 readings</b></div>
+      <div class="row reveal d1"><span>pandas (CPU)</span><b id="gpuCpuRow">15.373 s</b></div>
+      <div class="row reveal d2"><span>cuDF (NVIDIA T4 GPU)</span><b class="nvg" id="gpuGpuRow">0.318 s</b></div>
+      <div class="row reveal d2"><span>Runs averaged</span><b id="gpuRunsRow">8 (±1.7× spread)</b></div>
       <div class="row stack reveal d3"><span>Stack</span><b>OpenAQ · RAPIDS · Google ADK · Gemini · Cloud Run</b></div>
     </div>
   </div>
@@ -543,19 +545,29 @@ function renderGpuBench(){
   if(cpuRow)cpuRow.textContent=`${g.cpu_seconds} s`;
   const gpuRow=document.getElementById('gpuGpuRow');
   if(gpuRow)gpuRow.textContent=`${g.gpu_seconds} s`;
+  // n_runs/speedup_std are only present once the notebook has actually been
+  // re-run with repeated-measurement averaging (see
+  // benchmark/vayusense_gpu_benchmark.ipynb) -- optional so an older
+  // benchmark_results.json (a single-run result) doesn't render a broken
+  // "undefined runs" line.
+  const hasRuns=typeof g.n_runs==='number' && typeof g.speedup_std==='number';
+  const runsRow=document.getElementById('gpuRunsRow');
+  if(runsRow){
+    if(hasRuns) runsRow.textContent=`${g.n_runs} (±${g.speedup_std.toFixed(1)}× spread)`;
+    else runsRow.closest('.row').style.display='none';
+  }
+  const runsClause=hasRuns
+    ? `mean of ${g.n_runs} independent timed runs, not one`
+    : `timed once, side by side`;
   const howCard=document.getElementById('gpuHowCard');
-  if(howCard)howCard.innerHTML=`Clean → aggregate → trend → anomaly-detect, over ${rows} OpenAQ readings, done in <b class="nvg">${g.gpu_seconds}s on GPU (cuDF)</b> instead of ${g.cpu_seconds}s on CPU. Fresh insight, every time you ask.`;
-  // The static lead honestly discloses this was the original 4-city proof
-  // run, not yet re-earned on the full dataset -- that caveat is only true
-  // while benchmark_results.json is still the original 5,922,378-row run.
-  // Once the notebook is actually re-run on the current ~25M-row archive,
-  // g.rows changes and this swaps in a lead that matches the real dataset,
-  // instead of silently keeping a disclaimer that's no longer accurate.
-  if(g.rows===5922378)return;
+  if(howCard)howCard.innerHTML=`Clean → aggregate → trend → anomaly-detect, over ${rows} OpenAQ readings, done in <b class="nvg">${g.gpu_seconds}s on GPU (cuDF)</b> instead of ${g.cpu_seconds}s on CPU: ${runsClause}. Fresh insight, every time you ask.`;
   const lead=document.getElementById('gpuBenchLead');
-  if(lead)lead.innerHTML=`Same pipeline. Same ${rows} rows. Timed honestly, side by side. When air quality
+  if(lead){
+    const spread=hasRuns ? ` ±${g.speedup_std.toFixed(1)}× spread across those runs, published alongside the mean.` : '';
+    lead.innerHTML=`Same pipeline. Same ${rows} rows. Timed honestly, ${hasRuns ? `${g.n_runs} independent runs averaged, not a single lucky measurement.${spread}` : 'side by side.'} When air quality
     can shift by the hour, a ${g.cpu_seconds}-second wait isn't just slow: it's a stale answer. This is what NVIDIA RAPIDS
     buys back: the moment between a question and a decision.`;
+  }
 }
 function renderShowcase(){
   const grid=document.getElementById('showcaseGrid');

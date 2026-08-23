@@ -91,7 +91,7 @@ VayuSense is one FastAPI app serving three distinct experiences, all sharing the
 │     Every breath in Delhi carries a cost most dashboards          │
 │           never show you. [See your city's air →]                 │
 │                                                                    │
-│   35.4M readings   42.16× faster   36 cities·6 pollutants   2 agents│
+│   35.4M readings   48.39× faster   36 cities·6 pollutants   2 agents│
 ├──────────────────────────────────────────────────────────────────┤
 │  WHAT'S ACTUALLY INSIDE: not a score, a whole instrument panel    │
 │  [Live trends] [Health guidance] [Forecast bench] [Human impact]  │
@@ -99,7 +99,7 @@ VayuSense is one FastAPI app serving three distinct experiences, all sharing the
 │  PICK A CITY: worst-AQI-8 cities shown, "+28 more" → search/dash  │
 ├──────────────────────────────────────────────────────────────────┤
 │  THE REAL NUMBER: cigarette-equivalent exposure, life expectancy  │
-│  GPU BENCHMARK: 42.16× cuDF vs pandas, live from /api/benchmark   │
+│  GPU BENCHMARK: 48.39× cuDF vs pandas, live from /api/benchmark   │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -201,7 +201,7 @@ Embedded at the bottom of every city page (and reachable app-wide), with a **Liv
 ```mermaid
 flowchart TD
     A["OpenAQ public archive (AWS S3)\n35.4M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
-    B["NVIDIA layer: cuDF / RAPIDS on T4 GPU\nclean → resample daily → 7-day trend → anomaly flag\n(42.16× faster than pandas, benchmarked)"] --> C
+    B["NVIDIA layer: cuDF / RAPIDS on T4 GPU\nclean → resample daily → 7-day trend → anomaly flag\n(48.39× faster than pandas, mean of 8 benchmarked runs)"] --> C
     C["Processed parquet datasets\ndaily_city.parquet · station_league.parquet · forecasts.parquet"] --> D
     C --> E
     D["Google ADK agent pipeline (Gemini 2.5 Flash)\ndata_analyst_agent → health_advisor_agent"] --> F
@@ -262,17 +262,19 @@ Both are clearly labeled as illustrative, decision-support estimates, never a me
 
 ## ⚡ Why GPU acceleration matters here
 
-The live archive spans **35,404,493** real sensor readings across 36 cities and 6 pollutants, every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **10,443,350** rows in the benchmarked pipeline.
+The live archive spans **35,404,493** real sensor readings across 36 cities and 6 pollutants, every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **19,858,185** rows in the benchmarked pipeline.
+
+A single timing measurement can be skewed by GPU warm-up effects, other Colab tenants sharing the GPU, or one-off system noise, so this isn't a single run: it's the mean of **8 independent timed runs each**, CPU and GPU, with the full per-run distribution published, not just the average.
 
 <div align="center">
 
 | | pandas (CPU) | NVIDIA cuDF/RAPIDS (T4 GPU) | Speedup |
 |---|:---:|:---:|:---:|
-| **Pipeline time** | 7.994s | 0.19s | **42.16×** |
+| **Pipeline time (mean of 8 runs)** | 15.373s | 0.318s | **48.39×** (±1.71× across runs) |
 
 </div>
 
-This isn't a cosmetic optimization: it's the difference between a nightly batch report and a dashboard that refreshes per city, per pollutant, the moment someone actually needs an answer. The benchmark notebook and raw output live in `benchmark/vayusense_gpu_benchmark.ipynb` / `benchmark/benchmark_results.json`, and the same numbers are served live at [`/api/benchmark`](https://vayusense-663068003180.us-central1.run.app/api/benchmark), never hardcoded into the UI.
+This isn't a cosmetic optimization: it's the difference between a nightly batch report and a dashboard that refreshes per city, per pollutant, the moment someone actually needs an answer. The benchmark notebook and raw output, including every individual run's timing, live in `benchmark/vayusense_gpu_benchmark.ipynb` / `benchmark/benchmark_results.json`, and the same numbers are served live at [`/api/benchmark`](https://vayusense-663068003180.us-central1.run.app/api/benchmark), never hardcoded into the UI.
 
 ---
 

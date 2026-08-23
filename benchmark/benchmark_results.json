@@ -1,8 +1,42 @@
 {
-  "rows": 10443350,
-  "cpu_seconds": 7.994,
-  "gpu_seconds": 0.19,
-  "speedup": 42.16,
+  "rows": 19858185,
+  "n_runs": 8,
+  "cpu_seconds": 15.373,
+  "gpu_seconds": 0.318,
+  "speedup": 48.39,
+  "cpu_seconds_std": 0.363,
+  "gpu_seconds_std": 0.008,
+  "speedup_std": 1.706,
+  "cpu_seconds_all_runs": [
+    15.734,
+    16.161,
+    15.135,
+    14.989,
+    15.306,
+    15.357,
+    15.156,
+    15.15
+  ],
+  "gpu_seconds_all_runs": [
+    0.316,
+    0.315,
+    0.31,
+    0.307,
+    0.31,
+    0.332,
+    0.327,
+    0.325
+  ],
+  "speedup_all_runs": [
+    49.86,
+    51.254,
+    48.831,
+    48.752,
+    49.38,
+    46.324,
+    46.297,
+    46.661
+  ],
   "gpu": "NVIDIA T4 (Google Colab)",
   "lib": "cuDF / RAPIDS"
 }
