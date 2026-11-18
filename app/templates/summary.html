@@ -944,9 +944,12 @@ async function renderWindMap(ranking){
     // past India's borders. A fixed zoom tuned for this container's actual
     // shape gives a tighter, honestly-India-focused default view instead.
     WIND_MAP=L.map(container, {center:[22.5,80], zoom:5, minZoom:3, maxZoom:9, scrollWheelZoom:false, zoomControl:true});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19,
-    }).addTo(WIND_MAP);
+    // No raster basemap on purpose. The free Carto tile endpoint this used to
+    // call now answers every tile with an "API KEY REQUIRED" placeholder, and
+    // a third-party tile host is one more dependency, one more allowed CSP
+    // origin and one more place a visitor's browser gets contacted. The state
+    // outlines below are vendored, so the map is complete without it.
+    WIND_MAP.attributionControl.addAttribution('State outlines &copy; <a href="https://www.geoboundaries.org" target="_blank" rel="noopener">geoBoundaries</a> (CC BY)');
 
     // Scroll normally scrolls the page; hold Ctrl/Cmd to zoom the map,
     // same interaction pattern as the aqi.in/IQAir reference maps.

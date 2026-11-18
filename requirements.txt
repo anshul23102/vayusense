@@ -7,6 +7,9 @@ uvicorn[standard]==0.51.0
 google-adk==2.5.0
 google-genai==2.12.1
 pandas==3.0.3
+# Imported directly by agents/rag.py and ml/*; pinned here instead of left to
+# whatever version pandas happens to pull in.
+numpy==2.4.6
 pyarrow==25.0.0
 plotly==6.9.0
 python-dotenv==1.2.2
@@ -20,4 +23,4 @@ torch==2.13.0
 # google-genai). Pinned explicitly anyway: 49.0.0 carries a known CVE
 # (PYSEC-2026-3552), and leaving it to the resolver means whichever
 # transitive dependency asks first wins, silently.
-cryptography>=50.0.0
+cryptography==50.0.0

@@ -2,7 +2,7 @@
 
 Sequential two-stage pipeline, mirroring the critic->reviser pattern:
 
-  1. data_analyst_agent  — pulls hard numbers from the GPU-processed dataset
+  1. data_analyst_agent  — pulls hard numbers from the processed OpenAQ archive
                             (tools: snapshots, trends, hotspots) and writes a
                             factual analysis into session state.
   2. health_advisor_agent — turns that analysis into a clear, WHO-guideline-aware
@@ -28,7 +28,7 @@ MODEL = os.getenv("MODEL", "gemini-2.5-flash")
 data_analyst_agent = Agent(
     name="data_analyst",
     model=MODEL,
-    description="Analyzes GPU-processed air-quality data: levels, trends, anomalies, hotspots.",
+    description="Analyzes processed OpenAQ air-quality data: levels, trends, anomalies, hotspots.",
     instruction="""
 You are VayuSense's data analyst. The user asks a question about air quality
 (often about Delhi or another Indian/APAC city, and often implicitly: 'is it safe
@@ -52,9 +52,10 @@ Use your tools to gather FACTS before answering:
   it really" — this converts PM2.5 into cigarette-equivalent exposure and an
   illustrative life-expectancy impact, which is far more visceral than a raw AQI number
 - get_forecast(city, parameter, days) whenever the question is about tomorrow, the
-  next few days, or "will it get better/worse" — this serves whichever of four
-  benchmarked forecasting methods won the held-out backtest for that city and
-  pollutant. Always cite the method name and its backtest error from the response
+  next few days, or "will it get better/worse" — this serves the best-scoring of five
+  benchmarked forecasting methods that has stored forecasts for that city and
+  pollutant (naive, damped trend, gradient boosting, the global Transformer;
+  BigQuery ML ARIMA_PLUS is scored but its forecasts are not stored). Always cite the method name and its backtest error from the response
   (e.g. "projected by BigQuery ML ARIMA_PLUS; historical error ±11 µg/m³ on
   held-out data") and never state a forecast value with the same confidence as a
   measured one
@@ -66,6 +67,14 @@ Use your tools to gather FACTS before answering:
 - get_active_alerts_tool() when asked about active alerts, warnings, or which
   cities need attention right now across the whole tracked region, rather than a
   single city's routine status
+
+Data freshness is part of every answer. get_city_snapshot returns data_as_of
+(the date of the newest archived reading) and data_age_days. Always say which
+date the numbers are from. Only call them "today" or "right now" when
+data_age_days is 0 or 1. When data_is_stale is true, say plainly that this is
+the latest archived reading from that date and may not reflect conditions now,
+and never present it as a live measurement. Forecast dates are projections from
+that date, not from today.
 
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
 24h guidelines (state the multiple, e.g. '6.2x the WHO limit'), 7-day trend
@@ -96,6 +105,10 @@ decision-ready guidance:
   sensitive groups: children, elderly, asthma/heart conditions).
 - Reference the numbers briefly (e.g. 'PM2.5 is ~6x the WHO 24-hour guideline').
 - Be honest about uncertainty; do not invent data the analyst did not provide.
+- Keep the data date the analyst reported ("as of 19 Aug") in your answer. If the
+  analyst said the reading is stale, the verdict line must not say "today" or
+  "right now": open with "Based on the latest archived reading (date), ..." and
+  say that current conditions may differ.
 - If the analyst's report includes a forecast, present it with hedged language
   ('likely', 'projected to', 'may') rather than stating it as a measured fact, and
   keep the same weight of confidence the analyst gave it. Never let a projection

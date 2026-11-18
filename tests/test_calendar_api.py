@@ -30,4 +30,5 @@ def test_calendar_multi_year_city():
 
 def test_calendar_unknown_city():
     out = calendar_api(city="Atlantis", year=2025)
-    assert "error" in out
+    assert out.status_code == 404
+    assert b"Atlantis" in out.body

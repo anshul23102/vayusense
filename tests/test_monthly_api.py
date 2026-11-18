@@ -32,4 +32,6 @@ def test_delhi_also_spans_multiple_years():
 
 
 def test_monthly_unknown_city():
-    assert "error" in monthly_api(city="Atlantis")
+    out = monthly_api(city="Atlantis")
+    assert out.status_code == 404
+    assert b"Atlantis" in out.body

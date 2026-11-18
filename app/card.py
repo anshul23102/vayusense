@@ -7,11 +7,14 @@ no knowledge of the web app's routing or data-access layers."""
 from __future__ import annotations
 
 import io
+import logging
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 from agents.aqi import pollutant_label
+
+log = logging.getLogger("vayusense.card")
 
 FONTS = Path(__file__).resolve().parent / "static" / "fonts"
 W, H = 1200, 630
@@ -72,8 +75,10 @@ def render_card(*, city: str, aqi: int, category_key: str, category_label: str,
         logo = Image.open(Path(__file__).resolve().parent / "static" / "logo-mark.png").convert("RGBA")
         logo = logo.resize((52, 52))
         img.alpha_composite(logo, (64, 52))
-    except Exception:
-        pass
+    except Exception as e:
+        # The logo is decoration; a missing or corrupt file must not stop the
+        # share card rendering, but it should not vanish silently either.
+        log.warning("share card rendered without its logo: %s", e)
     d.text((128, 58), "VayuSense", font=_font("bold", 32), fill=INK)
     d.text((128, 98), "Know when the air is safe", font=_font("regular", 16), fill=MIST)
 
@@ -128,7 +133,7 @@ def render_card(*, city: str, aqi: int, category_key: str, category_label: str,
     # The host is passed in from the live request rather than hardcoded: this
     # card is the artifact people share, and it previously printed a domain
     # that was never registered and does not resolve.
-    footer = f"{src_label} · OpenAQ archive, GPU-processed"
+    footer = f"{src_label} · OpenAQ archive"
     if site_host:
         footer += f" · {site_host}"
     d.text((64, 592), footer, font=_font("regular", 16), fill=MIST)

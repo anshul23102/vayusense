@@ -65,11 +65,16 @@ def generate_advisory(city: str) -> dict:
     outlook = _forecast_outlook(city, dominant)
 
     general = GUIDANCE["general"][cat_key]
+    as_of = snap.get("data_as_of")
+    stale = bool(snap.get("data_is_stale"))
     lines = [
         f"{city.upper()} AIR QUALITY ADVISORY, "
         f"{datetime.now(timezone.utc).strftime('%B %d, %Y')}",
         "",
-        f"Current status: {cat['label']} (AQI {snap['aqi']}), driven by {pollutant_label(dominant)}."
+        (f"Data as of {as_of}" + (f" ({snap['data_age_days']} days old: the latest archived reading, "
+                                  "not a live measurement)." if stale else "."))
+        if as_of else "Data date unavailable.",
+        f"Status at that time: {cat['label']} (AQI {snap['aqi']}), driven by {pollutant_label(dominant)}."
         + (f" Today's exposure carries a health burden comparable to smoking "
            f"{cigs} cigarettes." if cigs is not None else ""),
     ]
@@ -99,6 +104,8 @@ def generate_advisory(city: str) -> dict:
         "category": cat["label"],
         "category_key": cat_key,
         "dominant_pollutant": dominant,
+        "data_as_of": as_of,
+        "data_is_stale": stale,
         "cigarette_equivalent": cigs,
         "outlook": outlook,
         "text": "\n".join(lines),

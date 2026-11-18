@@ -246,7 +246,7 @@
 
 <div class="hero">
   <div class="kicker reveal on" style="text-align:center">VAYUSENSE</div>
-  <div class="chip reveal on"><span class="pulse"></span><span class="chipSeg">GPU-accelerated · Multi-agent AI</span><b class="chipSeg"><span class="js-archive-readings">47.4M</span> real sensor readings</b></div>
+  <div class="chip reveal on"><span class="pulse"></span><span class="chipSeg">GPU-benchmarked · Multi-agent AI</span><b class="chipSeg"><span class="js-archive-readings">47.4M</span> real sensor readings</b></div>
   <h1><span class="soft reveal d1">Know when the</span><br><span class="blue reveal d2">air is safe.</span></h1>
   <p class="sub reveal d3">Every breath in Delhi carries a cost most dashboards never show you. VayuSense turns
     millions of raw sensor readings into one honest answer, for a parent deciding on sports practice,
@@ -310,7 +310,7 @@
   <h2 class="reveal d1">Three layers. One honest answer.</h2>
   <div class="cards">
     <div class="card tilt reveal"><div class="ic"><svg><use href="#ic-bolt"/></svg></div><h3>Accelerated by NVIDIA</h3>
-      <p id="gpuHowCard">Clean → aggregate → trend → anomaly-detect, over 19,858,185 OpenAQ readings, done in <b class="nvg">0.32s on GPU (cuDF)</b> instead of 15.37s on CPU: mean of 8 independent timed runs, not one. Fresh insight, every time you ask.</p></div>
+      <p id="gpuHowCard">Benchmarked on an NVIDIA T4: the clean → aggregate → trend → anomaly-detect pipeline over 19,858,185 OpenAQ readings took <b class="nvg">0.32s with cuDF</b> versus 15.37s with pandas on CPU, the mean of 8 independent timed runs, not one.</p></div>
     <div class="card tilt reveal d1"><div class="ic"><svg><use href="#ic-chip"/></svg></div><h3>Reasoned by Google ADK + Gemini</h3>
       <p>A <b>Data Analyst</b> agent pulls hard numbers with real tools. A <b>Health Advisor</b> agent turns them into a WHO-aware, plain-language verdict. No hallucinated stats.</p></div>
     <div class="card tilt reveal d2"><div class="ic"><svg><use href="#ic-target"/></svg></div><h3>Built to be used, not admired</h3>
@@ -560,7 +560,7 @@ function renderGpuBench(){
     ? `mean of ${g.n_runs} independent timed runs, not one`
     : `timed once, side by side`;
   const howCard=document.getElementById('gpuHowCard');
-  if(howCard)howCard.innerHTML=`Clean → aggregate → trend → anomaly-detect, over ${rows} OpenAQ readings, done in <b class="nvg">${g.gpu_seconds}s on GPU (cuDF)</b> instead of ${g.cpu_seconds}s on CPU: ${runsClause}. Fresh insight, every time you ask.`;
+  if(howCard)howCard.innerHTML=`Benchmarked on an NVIDIA T4: the clean → aggregate → trend → anomaly-detect pipeline over ${rows} OpenAQ readings took <b class="nvg">${g.gpu_seconds}s with cuDF</b> versus ${g.cpu_seconds}s with pandas on CPU, ${runsClause}.`;
   const lead=document.getElementById('gpuBenchLead');
   if(lead){
     const spread=hasRuns ? ` ±${g.speedup_std.toFixed(1)}× spread across those runs, published alongside the mean.` : '';

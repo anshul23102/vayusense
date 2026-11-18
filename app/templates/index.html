@@ -763,7 +763,7 @@
   <div class="sectionHead">
     <div class="kicker">Forecast bench</div>
     <h2>Four models compete on held-out data</h2>
-    <p>Lower MAE is better. The app serves whichever method wins for this city and pollutant.</p>
+    <p>Lower MAE is better. The app serves the best-scoring method that has stored forecasts for this city and pollutant.</p>
   </div>
   <div class="kpiStrip" id="benchGrid"></div>
   <p class="impactNote" id="benchFoldNote"></p>
@@ -1442,19 +1442,20 @@ async function refresh(){
       if(fb.series){
         bc.style.display='';
         const ranked=Object.entries(fb.series.mae).sort((a,b)=>a[1]-b[1]);
+        const served=fb.series.served||ranked[0][0];
         const maxMae=Math.max(...ranked.map(([,v])=>v));
         // A bare MAE number doesn't communicate "by how much" -- a mini bar
         // makes the winning margin visually obvious in the same glance,
         // without turning this into a separate chart or changing the layout.
         $('benchGrid').innerHTML=ranked.map(([m,v],i)=>
-          `<div class="objCard cardIn" style="flex:1;min-width:150px;animation-delay:${i*40}ms;${i===0?'border-color:rgba(157,193,255,.55)':''}">
+          `<div class="objCard cardIn" style="flex:1;min-width:150px;animation-delay:${i*40}ms;${m===served?'border-color:rgba(157,193,255,.55)':''}">
             <div class="l" style="color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.8px">${fb.methods[m]}</div>
             <div class="v num" style="font-size:22px;font-weight:650;margin:3px 0">${v}</div>
-            <div class="who ${i===0?'ok':''}" style="font-size:11px;font-weight:600">${i===0?'serving · ':''}MAE µg/m³</div>
+            <div class="who ${m===served?'ok':''}" style="font-size:11px;font-weight:600">${m===served?'serving · ':''}MAE µg/m³</div>
             <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden">
-              <div style="height:100%;border-radius:99px;width:${Math.max(4,v/maxMae*100)}%;background:${i===0?'var(--blueSolid)':'rgba(169,180,208,.4)'};transition:width .6s cubic-bezier(.2,.8,.2,1)"></div>
+              <div style="height:100%;border-radius:99px;width:${Math.max(4,v/maxMae*100)}%;background:${m===served?'var(--blueSolid)':'rgba(169,180,208,.4)'};transition:width .6s cubic-bezier(.2,.8,.2,1)"></div>
             </div></div>`).join('');
-        $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves whichever method wins for this city and pollutant.`;
+        $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves the best-scoring method that has stored forecasts for this city and pollutant (ARIMA_PLUS is scored for comparison; its forecasts come from a one-off BigQuery run).`;
       }else bc.style.display='none';
     }catch(e){$('bench').style.display='none'}
   }

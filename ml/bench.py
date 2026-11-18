@@ -120,7 +120,7 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "fold_scheme": {
             "n_folds": N_FOLDS, "horizon_days": HORIZON, "min_history_days": MIN_HISTORY,
-            "note": ("identical rolling-origin folds for naive/damped_trend/gbt; "
+            "note": ("identical rolling-origin folds for naive/damped_trend/gbt/transformer; "
                      "arima_plus scored on a single 24-day holdout"),
         },
         "methods": METHOD_LABELS,

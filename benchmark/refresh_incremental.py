@@ -24,6 +24,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from benchmark.archive_config import select_stations  # noqa: E402
 from benchmark.extend_2026 import (  # noqa: E402
     CITY_QUERIES, HEADERS, fetch_csv, list_keys, recompute_trend, run_pipeline,
 )
@@ -99,9 +100,7 @@ def _discover_locations(cities_needing_refresh: dict) -> dict[int, tuple[str, st
                 headers=HEADERS, timeout=30,
             )
             r.raise_for_status()
-            results = r.json()["results"]
-            results.sort(key=lambda x: len(x.get("sensors", [])), reverse=True)
-            for loc in results[:12]:
+            for loc in select_stations(r.json()["results"]):
                 locations[loc["id"]] = (city, loc["name"])
         return locations
     except Exception as e:

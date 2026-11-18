@@ -55,7 +55,7 @@ Delhi NCR, and most of urban India, breathes some of the most dangerous air of a
 
 The raw data to answer these questions already exists in public sensor networks, but it's fragmented across stations, buried in raw CSVs, and unreadable to anyone who isn't a data analyst.
 
-**VayuSense closes that gap.** It takes tens of millions of raw sensor readings, processes them at GPU speed, reasons over them with a grounded two-agent AI pipeline, and turns all of it into one direct, human answer to the question *"is it safe right now?"*, wrapped in an interface designed to feel like a living instrument, not a spreadsheet.
+**VayuSense closes that gap.** It takes tens of millions of raw sensor readings, processes them with a pipeline that was benchmarked 48x faster on a GPU, reasons over them with a grounded two-agent AI pipeline, and turns all of it into one direct, human answer to the question *"is it safe right now?"*, wrapped in an interface designed to feel like a living instrument, not a spreadsheet.
 
 ## 🎯 What VayuSense actually does
 
@@ -64,12 +64,12 @@ The raw data to answer these questions already exists in public sensor networks,
 | 🗺️ **36 cities, live** | Every major Indian state except Goa (verified zero OpenAQ stations there before deciding not to fake a data point), 6 pollutants each, ranked nationally every request |
 | 🩺 **Health guidance, instantly** | Six-condition, six-category rule-based guidance table: zero LLM latency, because a parent asking "is it safe for my child" shouldn't wait on a model |
 | 🤖 **A grounded AI analyst + advisor** | Ask a plain-language question, get a numbers-first analysis and a safety-first recommendation, never a hallucinated statistic |
-| 📈 **Forecasts that compete in public** | Four forecasting methods, backtested identically, and the app serves whichever one actually wins for each city/pollutant series |
+| 📈 **Forecasts that compete in public** | Five forecasting methods, backtested identically, and the app serves the best-scoring one that has stored forecasts for each city/pollutant series |
 | 🚬 **Human impact, not just AQI** | Cigarette-equivalent exposure and estimated life-expectancy impact: numbers a non-expert actually feels |
 | 🌬️ **Real weather woven in** | Wind direction/speed, temperature, humidity, and UV per city, and the *ambient visuals themselves* respond to that live weather |
 | 🚨 **Early-warning system** | Category breaches, WHO-guideline exceedances, and statistically detected anomalies surfaced across all 36 cities, worst-first |
 | 👁️ **Multimodal sky check** | Upload a photo of the sky; Gemini vision reads it against the city's *actual measured* AQI as a complement, never a substitute |
-| ⚡ **GPU-accelerated pipeline** | NVIDIA cuDF/RAPIDS turns a 10.4M-row daily pipeline into a **42×** speedup over pandas, proven, reproducible, on-record |
+| ⚡ **GPU-benchmarked pipeline** | The clean, aggregate, trend and anomaly pipeline runs **48.39×** faster on an NVIDIA T4 with cuDF/RAPIDS than pandas on CPU: the mean of 8 independent runs over 19.9M readings, with the per-run spread published |
 
 ---
 
@@ -201,11 +201,11 @@ Embedded at the bottom of every city page (and reachable app-wide), with a **Liv
 ```mermaid
 flowchart TD
     A["OpenAQ public archive (AWS S3)\n47.4M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
-    B["NVIDIA layer: cuDF / RAPIDS on T4 GPU\nclean → resample daily → 7-day trend → anomaly flag\n(48.39× faster than pandas, mean of 8 benchmarked runs)"] --> C
+    B["Ingestion pipeline: clean → resample daily → 7-day trend → anomaly flag\n(pandas in the scripts and nightly job; the cuDF/RAPIDS version of the same logic\nbenchmarked on a T4 at 48.39× faster, mean of 8 runs)"] --> C
     C["Processed parquet datasets\ndaily_city.parquet · station_league.parquet · forecasts.parquet"] --> D
     C --> E
     D["Google ADK agent pipeline (Gemini 2.5 Flash)\ndata_analyst_agent → health_advisor_agent"] --> F
-    E["BigQuery ML: ARIMA_PLUS time-series models\none of four methods competing on the Forecast Bench"] --> F
+    E["BigQuery ML: ARIMA_PLUS time-series models\none of five methods competing on the Forecast Bench"] --> F
     F["FastAPI application (app/main.py)\nlanding + dashboard + city pages + REST API + chat SSE"] --> G
     G["Docker container\ndeployed on Google Cloud Run"]
 ```
@@ -242,14 +242,15 @@ Most projects bolt on an ML forecast; VayuSense makes its forecasters **compete 
 
 | # | Method | How it works | Series won |
 |---|---|---|---|
-| 1 | **Naive persistence** | Tomorrow equals today: the baseline every honest evaluation needs | **104** |
-| 2 | **Damped trend** | Holt's damped-trend (φ=0.85) on the 7-day rolling average, clamped to historical range | 34 |
-| 3 | **Gradient boosting** | scikit-learn `HistGradientBoosting` on lag/rolling-mean/seasonality features | 32 |
-| 4 | **BigQuery ML ARIMA_PLUS** | SQL-trained time-series models, one model covering all 216 series | 46 |
+| 1 | **Naive persistence** | Tomorrow equals today: the baseline every honest evaluation needs | **75** |
+| 2 | **Transformer (global)** | One 2-layer Transformer encoder (d_model 64, 4 heads, 60-day context) shared across all 36 cities and 6 pollutants, trained offline in PyTorch with a 45-day leakage margin | **66** |
+| 3 | **BigQuery ML ARIMA_PLUS** | SQL-trained time-series models, one model covering all 216 series | 31 |
+| 4 | **Damped trend** | Holt's damped-trend (φ=0.85) on the 7-day rolling average, clamped to historical range | 26 |
+| 5 | **Gradient boosting** | scikit-learn `HistGradientBoosting` on lag/rolling-mean/seasonality features | 18 |
 
-The three local methods are scored with an identical rolling-origin backtest (8 held-out 3-day windows); ARIMA_PLUS is scored on a single 24-day holdout and labeled as such. The app **serves whichever method actually won** for each series and cites it everywhere: the scoreboard (`/api/forecast_bench`), the trend chart's dotted projection legend, and the chat agent's own phrasing ("projected by [method]; historical error ±X µg/m³").
+The four local methods (naive, damped trend, gradient boosting, Transformer) are scored with an identical rolling-origin backtest (8 held-out 3-day windows); ARIMA_PLUS is scored on a single 24-day holdout and labeled as such. The app **serves the best-scoring method that has stored forecasts** for each series (ARIMA_PLUS can top the scoreboard on 31 series, but its forecasts come from a one-off BigQuery run and are not stored, so the next best method serves those) and cites it everywhere: the scoreboard (`/api/forecast_bench`), the trend chart's dotted projection legend, and the chat agent's own phrasing ("projected by [method]; historical error ±X µg/m³").
 
-The honest result, naive persistence wins **nearly half** the series, is the point: daily air-quality data is genuinely hard to forecast, and the scoreboard says so instead of pretending otherwise. All training/backtesting runs offline (`ml/bench.py`, `ml/bq_arima.py`); the live app only reads precomputed artifacts, so there's no runtime BigQuery dependency or new failure mode at request time.
+The honest result is the point: daily air-quality data is genuinely hard to forecast, and the scoreboard says so instead of pretending otherwise. Naive persistence still wins the most series (75 of 216) and has the lowest mean error across the whole bench, with the Transformer a close second on both counts. The Transformer was retrained on the expanded 257-station archive (training cutoff 2026-07-05) and its mean error fell from 5.59 to 4.67 against the previous training run, moving it from 40 series won to 66. `python -m ml.freshness` reports when the model or the forecast cache has fallen behind the archive. All training/backtesting runs offline (`ml/bench.py`, `ml/bq_arima.py`); the live app only reads precomputed artifacts, so there's no runtime BigQuery dependency or new failure mode at request time.
 
 ## 🚬 Human impact methodology
 
@@ -275,6 +276,8 @@ A single timing measurement can be skewed by GPU warm-up effects, other Colab te
 </div>
 
 This isn't a cosmetic optimization: it's the difference between a nightly batch report and a dashboard that refreshes per city, per pollutant, the moment someone actually needs an answer. The benchmark notebook and raw output, including every individual run's timing, live in `benchmark/vayusense_gpu_benchmark.ipynb` / `benchmark/benchmark_results.json`, and the same numbers are served live at [`/api/benchmark`](https://vayusense-663068003180.us-central1.run.app/api/benchmark), never hardcoded into the UI.
+
+**Where the GPU is used, and where it is not.** The same clean, aggregate, trend and anomaly logic exists in two forms: cuDF on a T4 (the benchmark notebook) and pandas (the ingestion scripts and the nightly job). The nightly refresh deliberately stays on pandas: it pulls a handful of new days, and for a batch that small the cost of moving data onto a GPU outweighs the gain. The 48x figure is a measured result for the full-scale pipeline, not a claim that every request or every nightly run executes on a GPU.
 
 ---
 
@@ -317,12 +320,13 @@ Every one of these was built from a real, measured signal (AQI, wind, time, rank
 
 **NVIDIA**
 - cuDF / RAPIDS: GPU dataframe processing
-- T4 GPU (Google Colab): benchmark + processing hardware
+- T4 GPU (Google Colab): benchmark hardware (the production web app and nightly job do not use a GPU)
 
 </td><td valign="top">
 
 **ML bench (offline)**
 - scikit-learn `HistGradientBoosting`
+- PyTorch: the global Transformer forecaster (trained offline, served as a 441 KB weights file on CPU)
 - Rolling-origin backtesting, identical folds per method
 
 </td></tr>
@@ -359,12 +363,12 @@ ingest/           OpenAQ archive discovery and bulk download scripts
 benchmark/        cuDF vs pandas GPU benchmark notebook, results, forecast bench
 agents/           ADK agent definitions (analyst, advisor), tools, alerts, vision
 app/              FastAPI application: routes, Jinja2 templates, static assets
-data/             Raw and GPU-processed datasets (parquet)
+data/             Processed datasets (parquet)
 deploy/           Dockerfile and deployment configuration
 docs/             Pitch deck, architecture diagrams, design specs, README assets
 ml/               Forecast training, backtesting, BigQuery ML integration
-tests/            112 tests across 26 files, pytest
-render.yaml       One-click Render deployment blueprint (alternate path)
+tests/            234 tests across 35 files, pytest (run in CI by .github/workflows/tests.yml)
+render.yaml       Render blueprint, written but never used for the live deployment
 ```
 
 <details>
@@ -399,7 +403,7 @@ vayusense/
 │   ├── deck/                # hackathon submission deck
 │   ├── superpowers/specs/   # every feature's design spec, written before code
 │   └── readme/              # README banner + assets
-├── tests/                  # 112 tests, 26 files
+├── tests/                  # 234 tests, 35 files
 ├── deploy/Dockerfile
 └── render.yaml
 ```
@@ -477,11 +481,11 @@ vayusense/
 
 ## ✅ Testing
 
-**112 tests across 26 files**, covering the AQI computation, the agent tools, forecast serving and backtesting, alerts, live-data overlay logic, calendar/monthly/YoY endpoints, health guidance, solutions, weather, wind, and share-card rendering.
+**234 tests across 35 files**, covering the AQI computation, the agent tools and ADK wiring, RAG retrieval, forecast serving and backtesting, the Transformer pipeline, alerts, the advisory generator, live-data overlay logic, the GCS data-sync safeguards, the ingestion merge logic, and the HTTP layer itself (status codes, security headers, rate limits, the `/api/ask` and streaming endpoints, the vision upload, with Gemini faked so nothing needs the network or a key).
 
 ```bash
 pytest -q
-# 112 passed
+# 234 passed
 ```
 
 ## 🚀 Running locally
@@ -503,14 +507,28 @@ Then open `http://localhost:8090` for the landing page or `http://localhost:8090
 
 ## ☁️ Deployment
 
-VayuSense ships as a single Docker container (`deploy/Dockerfile`) and is deployed publicly on **Google Cloud Run**, using Vertex AI mode for Gemini access so the agent pipeline draws on real Cloud Billing quota rather than a rate-limited API key. The same image also deploys cleanly to Render via the included `render.yaml` blueprint. The GPU benchmark itself runs separately, offline, on a Colab T4 instance: the production web app serves already-processed data and needs no live GPU access at request time.
+VayuSense ships as a single Docker container (`deploy/Dockerfile`, non-root user, pinned dependencies) and was deployed on **Google Cloud Run**, using Vertex AI mode for Gemini access. Cloud Run scales to zero, the service was capped at 3 instances, and a nightly Cloud Run Job refreshes the data (see `deploy/nightly-refresh.md`). The service account follows least privilege (`deploy/harden_refresh_sa.sh`).
+
+The deployment ran on Google Cloud's free-trial credit, which has ended, so the public URL is not guaranteed to be up. Everything needed to run it is in this repository (the processed data and model weights are committed), and the local setup below takes a few minutes. `render.yaml` is a Render blueprint that was written as an alternative but has never been used or tested. The GPU benchmark runs separately, offline, on a Colab T4: the web app serves already-processed data and needs no GPU at request time.
+
+## ⚖️ Design decisions and known limitations
+
+Stated up front because they are the first things worth asking about.
+
+- **AQI is computed from daily averages**, using the US EPA method, not from the 1-hour and 8-hour windows EPA specifies. It is labelled "EPA-method AQI from daily averages" everywhere it appears, and it is a decision-support number, not a regulatory one.
+- **Live versus archive.** When OpenAQ has a reading from the last 24 hours the app uses it; otherwise it falls back to the archive and says so (`source` is returned with every figure). The archive lags real time by several days.
+- **The forecasts are short-horizon statistical projections** (up to 7 days), not weather-model forecasts, and none of the five methods use weather inputs. Naive persistence is a strong baseline for daily air quality, and it wins the most series: the bench reports that plainly.
+- **The bench is not perfectly like-for-like.** The four local methods share identical rolling-origin folds. BigQuery ML ARIMA_PLUS was scored once on a single 24-day holdout, and is labelled that way. Picking the best of five methods on the same folds it was scored on also makes the winner's error slightly optimistic.
+- **Chat sessions and rate limits live in process memory.** Fine for the single small instance this runs on; with several instances, conversation memory and the per-IP limit would need a shared store such as Redis.
+- **The sky-photo check is qualitative.** It is a Gemini vision read shown next to the measured AQI, never in place of it.
+- **Hosting.** See Deployment: the free-trial credit that paid for the Cloud Run deployment has ended.
 
 ## 🗺️ Roadmap
 
 - [ ] Push-notification early warnings (email/SMS) when a saved city crosses a category boundary
 - [ ] Wider live-sensor coverage as more OpenAQ stations come online per city
 - [ ] A public API key tier for third-party integrations
-- [ ] Expand the Forecast Bench with a seasonal/weather-conditioned model as a fifth competitor
+- [ ] Add weather covariates (wind, temperature, humidity) to the forecasters; none of the five use them today
 - [ ] Localized guidance copy (Hindi and regional languages)
 
 ## 🙏 Credits

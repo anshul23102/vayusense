@@ -1,11 +1,14 @@
 """Data-access tools exposed to the VayuSense ADK agents.
 
-All tools read the processed parquet produced by the GPU pipeline
-(benchmark notebook) in data/processed/.
+All tools read the processed parquet in data/processed/, produced by the
+OpenAQ ingestion pipeline (see benchmark/). The same clean, aggregate, trend
+and anomaly logic exists as a pandas version (used by the scripts and the
+nightly job) and a cuDF version (the Colab GPU benchmark).
 """
 from __future__ import annotations
 
 import json
+from datetime import date, datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
@@ -20,6 +23,10 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 # so 100 is its 8-hour level and is compared as the nearest published bound.
 WHO_24H = {"pm25": 15.0, "pm10": 45.0, "no2": 25.0, "so2": 40.0, "o3": 100.0,
            "co": 4.0}
+
+# Archive data lags real time (OpenAQ publishes days late), so every snapshot says
+# how old it is and the agents must repeat that instead of saying "today".
+STALE_AFTER_DAYS = 3
 
 from .aqi import ARCHIVE_UNITS, category as _aqi_category, overall_aqi as _overall_aqi
 
@@ -97,6 +104,11 @@ def get_city_snapshot(city: str) -> str:
             "times_who_limit": round(float(last["mean"]) / who, 1) if who else None,
             "is_anomaly_day": bool(last["anomaly"]),
         }
+    as_of = max(v["latest_date"] for v in out["pollutants"].values())
+    age_days = (datetime.now(timezone.utc).date() - date.fromisoformat(as_of)).days
+    out["data_as_of"] = as_of
+    out["data_age_days"] = max(age_days, 0)
+    out["data_is_stale"] = age_days > STALE_AFTER_DAYS
     concs = {p: v["daily_mean"] for p, v in out["pollutants"].items()}
     try:
         aqi_val, dominant, _subs = _overall_aqi(concs, ARCHIVE_UNITS)
@@ -189,10 +201,22 @@ def _damped_fallback(city: str, parameter: str, days: int, d: pd.DataFrame) -> s
     })
 
 
+def _served_method(series_rows: pd.DataFrame, mae: dict) -> str | None:
+    """The method actually served for a series: the lowest-error method whose
+    forecasts are stored. The scoreboard can crown BigQuery ML ARIMA_PLUS, but
+    its forecasts come from a one-off BigQuery run and are deliberately not
+    stored (they would go stale), so it can be the scoreboard winner without
+    being servable. Serving the best method that exists, and saying so, beats
+    silently substituting a generic fallback that has no measured error."""
+    available = set(series_rows["method"])
+    candidates = {m: v for m, v in mae.items() if m in available}
+    return min(candidates, key=candidates.get) if candidates else None
+
+
 def get_forecast(city: str, parameter: str, days: int = 3) -> str:
     """Project the next few days of a pollutant's daily mean. Serves whichever of
-    four benchmarked methods (naive persistence, damped trend, gradient boosting,
-    BigQuery ML ARIMA_PLUS) won the held-out backtest for this city+pollutant,
+    five benchmarked methods (naive persistence, damped trend, gradient boosting,
+    BigQuery ML ARIMA_PLUS, global Transformer) won the held-out backtest for this city+pollutant,
     and cites that method's measured historical error. A short-term statistical
     projection, NOT a meteorological forecast; accuracy degrades beyond 3-5 days.
 
@@ -204,6 +228,8 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
     days = max(1, min(int(days), 7))
     df = _daily()
     d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date")
+    if d.empty:
+        return json.dumps({"error": f"no {parameter} data for {city}"})
     if len(d) < 14:
         return json.dumps({"error": f"not enough {parameter} history for {city} to forecast"})
     try:
@@ -212,13 +238,13 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
                      if s["city"].lower() == city.lower() and s["parameter"] == parameter)
         winner = entry["winner"]
         fc = _forecasts()
-        rows = fc[(fc["city"].str.lower() == city.lower())
-                  & (fc["parameter"] == parameter)
-                  & (fc["method"] == winner)].sort_values("date").head(days)
-        if rows.empty:
-            raise LookupError("no forecast rows for winner")
-        label = bench["methods"][winner]
-        mae_val = entry["mae"][winner]
+        series_rows = fc[(fc["city"].str.lower() == city.lower()) & (fc["parameter"] == parameter)]
+        served = _served_method(series_rows, entry["mae"])
+        if served is None:
+            raise LookupError("no stored forecast rows for this series")
+        rows = series_rows[series_rows["method"] == served].sort_values("date").head(days)
+        label = bench["methods"][served]
+        mae_val = entry["mae"][served]
         # Same sensor-fault guard as get_city_snapshot(): don't present a
         # dead-channel zero reading as "where things stand now".
         d_nonzero = d[d["mean"] > 0]
@@ -227,7 +253,8 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
             "city": city, "parameter": parameter,
             "last_date": str(last_row["date"].date()),
             "last_value": round(float(last_row["roll7"]), 1),
-            "method": winner, "method_label": label,
+            "method": served, "method_label": label,
+            "scoreboard_winner": winner,
             "backtest_mae": float(mae_val),
             "methods_compared": len(entry["mae"]),
             "forecast": [
@@ -235,9 +262,15 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
                 for r in rows.itertuples()
             ],
             "methodology": (
-                f"Served by {label}, which beat {len(entry['mae']) - 1} competing methods "
-                f"on held-out backtests of real data (MAE {mae_val} ug/m3; "
-                f"{bench['fold_scheme']['note']}). A short-term statistical projection, "
+                (f"Served by {label}, which beat {len(entry['mae']) - 1} competing methods "
+                 f"on held-out backtests of real data (MAE {mae_val} ug/m3; "
+                 f"{bench['fold_scheme']['note']}). "
+                 if served == winner else
+                 f"Served by {label}, the best-scoring method with stored forecasts "
+                 f"(MAE {mae_val} ug/m3). {bench['methods'][winner]} scored lower on its "
+                 "single holdout, but its forecasts come from a one-off BigQuery run and "
+                 "are not stored, so it cannot be served. ")
+                + "A short-term statistical projection, "
                 "not a meteorological forecast; reliability drops beyond 3-5 days."
             ),
         })
@@ -259,9 +292,15 @@ def get_forecast_bench(city: str, parameter: str) -> str:
                       if s["city"].lower() == city.lower() and s["parameter"] == parameter), None)
         if entry is None:
             return json.dumps({"error": f"no bench results for {city}/{parameter}"})
+        try:
+            fc = _forecasts()
+            rows = fc[(fc["city"].str.lower() == city.lower()) & (fc["parameter"] == parameter)]
+            served = _served_method(rows, entry["mae"])
+        except Exception:
+            served = None
         return json.dumps({
             "city": entry["city"], "parameter": parameter,
-            "series": {"winner": entry["winner"], "mae": entry["mae"]},
+            "series": {"winner": entry["winner"], "served": served or entry["winner"], "mae": entry["mae"]},
             "methods": bench["methods"], "fold_scheme": bench["fold_scheme"],
         })
     except FileNotFoundError:

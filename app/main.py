@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 import time
 import uuid
 from collections import defaultdict, deque
@@ -89,7 +90,11 @@ async def static_cache_control(request: Request, call_next):
 # fonts.googleapis.com/fonts.gstatic.com (webfont). Leaflet used to come from
 # unpkg.com; it is now vendored under /static/vendor/leaflet alongside its
 # plugins, so that origin is gone from the policy entirely rather than left
-# trusted for a script the app no longer fetches.
+# trusted for a script the app no longer fetches. The dashboard map used to
+# pull Carto basemap tiles from JavaScript at runtime, which a grep of the
+# HTML tags missed (the hardened policy blocked them); Carto has since put its
+# free tiles behind an API key, so the basemap was removed rather than allowed.
+# tests/test_http_api.py checks that any tile host a template names is allowed.
 # Templates use inline <script>/style= throughout, so
 # 'unsafe-inline' is required for script-src/style-src -- a stricter,
 # nonce-based CSP isn't a realistic option without rewriting every template's
@@ -157,16 +162,23 @@ VISION_RATE_WINDOW = 60
 _vision_hits: dict[str, deque] = defaultdict(deque)
 
 
+# Number of trusted reverse proxies in front of the app. On Cloud Run's default
+# URL there is one (Google's front end), which APPENDS the connecting client's
+# address to X-Forwarded-For. Everything to the left of that entry is whatever
+# the client chose to send, so it must never be used as an identity: a caller
+# could rotate a fake value per request and never hit the rate limit on the
+# billed Gemini endpoints. Behind an extra load balancer, set this to 2.
+TRUSTED_PROXY_HOPS = int(os.environ.get("VAYUSENSE_TRUSTED_PROXY_HOPS", "1"))
+
+
 def _client_id(request: Request) -> str:
-    """Identify the caller for rate-limiting. Behind Cloud Run's front end
-    request.client.host is the proxy, not the user, so every caller would
-    otherwise share one bucket and strangers' traffic would 429 real users.
-    The left-most X-Forwarded-For entry is the originating client; it is
-    client-settable in general, but Cloud Run appends the true peer and
-    rewrites the header, so on this deployment it is trustworthy."""
-    xff = request.headers.get("x-forwarded-for", "")
-    if xff:
-        return xff.split(",")[0].strip()
+    """Identify the caller for rate-limiting. Behind a proxy request.client.host
+    is the proxy, so every caller would share one bucket. The address a TRUSTED
+    proxy appended is the one to use: the TRUSTED_PROXY_HOPS-th entry counted
+    from the right of X-Forwarded-For, never the left-most (client-controlled)."""
+    parts = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p.strip()]
+    if parts:
+        return parts[-TRUSTED_PROXY_HOPS] if len(parts) >= TRUSTED_PROXY_HOPS else parts[0]
     return request.client.host if request.client else "unknown"
 
 
@@ -215,7 +227,7 @@ def city_page(slug: str):
     if row is not None:
         title = f"{match} air quality: {row['aqi']} AQI ({row['category']['label']}) | VayuSense"
         desc = (f"{match}'s AQI is {row['aqi']} ({row['category']['label']}), driven by "
-                f"{aqi_pollutant_label(row['dominant'])}. Real-time, GPU-processed air quality intelligence.")
+                f"{aqi_pollutant_label(row['dominant'])}. Air quality intelligence from real OpenAQ sensor data.")
         image = f"/city/{slug.lower()}/card.png"
         meta = (
             f'<meta property="og:title" content="{title}">'
@@ -253,6 +265,20 @@ def city_card(slug: str, request: Request):
                      headers={"Cache-Control": "public, max-age=1800"})
 
 
+def _tool_response(raw: str):
+    """agents/tools.py reports failure as {"error": ...}, which is the right
+    contract for an LLM tool call. Over HTTP it is not: a 200 with an error body
+    makes a missing city look like a success to every client, proxy and
+    monitor. Keep the body identical (the frontend only reads .error) and set a
+    real status: 404 when the thing asked for does not exist, 422 when it does
+    but cannot be answered (not enough history)."""
+    payload = json.loads(raw)
+    if isinstance(payload, dict) and "error" in payload:
+        status = 404 if str(payload["error"]).startswith("no ") else 422
+        return JSONResponse(payload, status_code=status)
+    return payload
+
+
 @app.get("/api/cities")
 def cities():
     return json.loads(data_tools.list_cities())
@@ -261,6 +287,8 @@ def cities():
 @app.get("/api/snapshot")
 def snapshot(city: str = "Delhi"):
     snap = json.loads(data_tools.get_city_snapshot(city))
+    if "error" in snap:
+        return JSONResponse(snap, status_code=404)
     # Overlay live concentrations where available, same live-preferred/
     # archive-fallback discipline as _city_aqi(), so this KPI strip never
     # shows a stale winter-archive reading next to a live hero AQI for the
@@ -320,22 +348,22 @@ def city_coords_api():
 
 @app.get("/api/trend")
 def trend(city: str = "Delhi", parameter: str = "pm25", days: int = 60):
-    return json.loads(data_tools.get_trend(city, parameter, days))
+    return _tool_response(data_tools.get_trend(city, parameter, days))
 
 
 @app.get("/api/stations")
 def stations(city: str = "Delhi"):
-    return json.loads(data_tools.get_worst_stations(city))
+    return _tool_response(data_tools.get_worst_stations(city))
 
 
 @app.get("/api/impact")
 def impact(city: str = "Delhi"):
-    return json.loads(data_tools.get_human_impact(city))
+    return _tool_response(data_tools.get_human_impact(city))
 
 
 @app.get("/api/yoy")
 def yoy(city: str = "Delhi", window: int = 7):
-    return json.loads(data_tools.get_year_over_year(city, window))
+    return _tool_response(data_tools.get_year_over_year(city, window))
 
 
 @lru_cache(maxsize=8)
@@ -376,12 +404,12 @@ def yoy_ranking(window: int = 7):
 
 @app.get("/api/forecast")
 def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
-    return json.loads(data_tools.get_forecast(city, parameter, days))
+    return _tool_response(data_tools.get_forecast(city, parameter, days))
 
 
 @app.get("/api/forecast_bench")
 def forecast_bench(city: str = "Delhi", parameter: str = "pm25"):
-    return json.loads(data_tools.get_forecast_bench(city, parameter))
+    return _tool_response(data_tools.get_forecast_bench(city, parameter))
 
 
 def _archive_concs(city: str) -> tuple[dict, dict, str] | None:
@@ -493,7 +521,7 @@ def _daily_overall(city: str) -> list[dict]:
 def calendar_api(city: str = "Delhi", year: int = 2025):
     days = _daily_overall(city)
     if not days:
-        return {"error": f"no data for city '{city}'"}
+        return JSONResponse({"error": f"no data for city '{city}'"}, status_code=404)
     years = sorted({int(d["date"][:4]) for d in days})
     sel = [d for d in days if d["date"].startswith(f"{year}-")]
     return {"city": city, "year": year, "years_available": years,
@@ -504,7 +532,7 @@ def calendar_api(city: str = "Delhi", year: int = 2025):
 def monthly_api(city: str = "Delhi"):
     days = _daily_overall(city)
     if not days:
-        return {"error": f"no data for city '{city}'"}
+        return JSONResponse({"error": f"no data for city '{city}'"}, status_code=404)
     by_month: dict[str, list[int]] = {}
     by_year: dict[int, list[int]] = {}
     for d in days:
@@ -528,6 +556,10 @@ def monthly_api(city: str = "Delhi"):
 
 @app.get("/api/export")
 def export_data(city: str = "Delhi", format: str = "csv"):
+    # An unrecognised format used to fall through to CSV silently, so a client
+    # asking for XML got a CSV file and no hint that XML is unsupported.
+    if format not in ("csv", "json"):
+        return JSONResponse({"error": f"unsupported format '{format}'; use csv or json"}, status_code=400)
     df = data_tools._daily()
     d = df[df["city"].str.lower() == city.lower()][
         ["date", "parameter", "mean", "max", "count", "roll7", "anomaly"]
@@ -541,7 +573,7 @@ def export_data(city: str = "Delhi", format: str = "csv"):
         records = json.loads(d.to_json(orient="records", date_format="iso"))
         return JSONResponse({
             "city": city, "rows": len(records),
-            "source": "OpenAQ archive (AWS Open Data), GPU-processed",
+            "source": "OpenAQ archive (AWS Open Data)",
             "data": records,
         }, headers={"Content-Disposition": f'attachment; filename="{fname_base}.json"'})
     buf = io.StringIO()

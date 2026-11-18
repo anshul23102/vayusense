@@ -26,12 +26,12 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from benchmark.archive_config import select_stations
 from benchmark.extend_2026 import (
     HEADERS, PARAMS, fetch_csv, list_keys, run_pipeline,
 )
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
-MAX_LOCATIONS_PER_CITY = 30
 YEARS = [2023, 2024, 2025, 2026]
 
 CITY_QUERIES = {
@@ -107,10 +107,9 @@ def discover_new_stations(known_names: dict[str, set[str]]) -> dict[int, tuple[s
         else:
             raise RuntimeError(f"Repeated 429s discovering {city}, giving up")
         results = r.json()["results"]
-        results.sort(key=lambda x: len(x.get("sensors", [])), reverse=True)
         existing = known_names.get(city, set())
         added = 0
-        for loc in results[:MAX_LOCATIONS_PER_CITY]:
+        for loc in select_stations(results):
             if any(known.startswith(loc["name"]) for known in existing):
                 continue
             locations[loc["id"]] = (city, loc["name"])
