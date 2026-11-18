@@ -4,8 +4,8 @@
 
 ### AI decision intelligence for the air 36 Indian cities breathe, right now.
 
-[![Live Demo](https://img.shields.io/badge/live_demo-vayusense-7fb0ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vayusense-663068003180.us-central1.run.app)
-[![Cloud Run](https://img.shields.io/badge/deployed_on-Cloud%20Run-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://vayusense-663068003180.us-central1.run.app)
+[![Live Demo](https://img.shields.io/badge/live_demo-offline_(trial_ended)-lightgrey?style=for-the-badge&logo=googlechrome&logoColor=white)](#-running-locally)
+[![Cloud Run](https://img.shields.io/badge/built_for-Cloud%20Run-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](deploy/Dockerfile)
 [![Tests](https://github.com/anshul23102/vayusense/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/anshul23102/vayusense/actions/workflows/tests.yml)
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
@@ -275,7 +275,7 @@ A single timing measurement can be skewed by GPU warm-up effects, other Colab te
 
 </div>
 
-This isn't a cosmetic optimization: it's the difference between a nightly batch report and a dashboard that refreshes per city, per pollutant, the moment someone actually needs an answer. The benchmark notebook and raw output, including every individual run's timing, live in `benchmark/vayusense_gpu_benchmark.ipynb` / `benchmark/benchmark_results.json`, and the same numbers are served live at [`/api/benchmark`](https://vayusense-663068003180.us-central1.run.app/api/benchmark), never hardcoded into the UI.
+This isn't a cosmetic optimization: it's the difference between a nightly batch report and a dashboard that refreshes per city, per pollutant, the moment someone actually needs an answer. The benchmark notebook and raw output, including every individual run's timing, live in `benchmark/vayusense_gpu_benchmark.ipynb` / `benchmark/benchmark_results.json`, and the same numbers are served by the running app at `/api/benchmark` (the same file, `benchmark/benchmark_results.json`, is in the repository), never hardcoded into the UI.
 
 **Where the GPU is used, and where it is not.** The same clean, aggregate, trend and anomaly logic exists in two forms: cuDF on a T4 (the benchmark notebook) and pandas (the ingestion scripts and the nightly job). The nightly refresh deliberately stays on pandas: it pulls a handful of new days, and for a batch that small the cost of moving data onto a GPU outweighs the gain. The 48x figure is a measured result for the full-scale pipeline, not a claim that every request or every nightly run executes on a GPU.
 
@@ -538,6 +538,6 @@ Air quality data courtesy of the [OpenAQ](https://openaq.org) project · Weather
 
 <div align="center">
 
-**[🌐 Live demo](https://vayusense-663068003180.us-central1.run.app) · [📊 Dashboard](https://vayusense-663068003180.us-central1.run.app/dashboard) · [⚡ GPU benchmark](https://vayusense-663068003180.us-central1.run.app/api/benchmark)**
+**[Run it locally](#-running-locally) · [GPU benchmark results](benchmark/benchmark_results.json) · [Deployment notes](deploy/nightly-refresh.md)**
 
 </div>
