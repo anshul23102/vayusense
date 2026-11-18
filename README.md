@@ -6,7 +6,7 @@
 
 [![Live Demo](https://img.shields.io/badge/live_demo-vayusense-7fb0ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vayusense-663068003180.us-central1.run.app)
 [![Cloud Run](https://img.shields.io/badge/deployed_on-Cloud%20Run-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://vayusense-663068003180.us-central1.run.app)
-[![Tests](https://img.shields.io/badge/tests-112%20passing-3dfc9e?style=for-the-badge&logo=pytest&logoColor=white)](#-testing)
+[![Tests](https://github.com/anshul23102/vayusense/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/anshul23102/vayusense/actions/workflows/tests.yml)
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
