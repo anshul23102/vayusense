@@ -762,7 +762,7 @@
 <section class="section reveal" id="bench" style="display:none">
   <div class="sectionHead">
     <div class="kicker">Forecast bench</div>
-    <h2>Four models compete on held-out data</h2>
+    <h2 id="benchTitle">Four models compete on held-out data</h2>
     <p>Lower MAE is better. The app serves the best-scoring method that has stored forecasts for this city and pollutant.</p>
   </div>
   <div class="kpiStrip" id="benchGrid"></div>
@@ -1455,7 +1455,9 @@ async function refresh(){
             <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden">
               <div style="height:100%;border-radius:99px;width:${Math.max(4,v/maxMae*100)}%;background:${m===served?'var(--blueSolid)':'rgba(169,180,208,.4)'};transition:width .6s cubic-bezier(.2,.8,.2,1)"></div>
             </div></div>`).join('');
-        $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data (ARIMA_PLUS: single 24-day holdout). The app serves the best-scoring method that has stored forecasts for this city and pollutant (ARIMA_PLUS is scored for comparison; its forecasts come from a one-off BigQuery run).`;
+        const hasArima=Object.prototype.hasOwnProperty.call(fb.series.mae,'arima_plus');
+        $('benchFoldNote').textContent=`Every method scored on the same ${fb.fold_scheme.n_folds} held-out ${fb.fold_scheme.horizon_days}-day windows of real measured data`+(hasArima?` (ARIMA_PLUS: single 24-day holdout). The app serves the best-scoring method that has stored forecasts for this city and pollutant (ARIMA_PLUS is scored for comparison; its forecasts come from a one-off BigQuery run).`:`. The app serves the best-scoring method that has stored forecasts for this city and pollutant. ARIMA_PLUS (BigQuery) is not scored here because its last run is too old to compare fairly with the current test window.`);
+        const hd=$('benchTitle'); if(hd) hd.textContent=(['No','One','Two','Three','Four','Five'][ranked.length]||ranked.length)+(ranked.length===1?' model':' models')+' compete on held-out data';
       }else bc.style.display='none';
     }catch(e){$('bench').style.display='none'}
   }
