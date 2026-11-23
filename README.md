@@ -64,7 +64,7 @@ The raw data to answer these questions already exists in public sensor networks,
 | 🗺️ **36 cities, live** | Every major Indian state except Goa (verified zero OpenAQ stations there before deciding not to fake a data point), 6 pollutants each, ranked nationally every request |
 | 🩺 **Health guidance, instantly** | Six-condition, six-category rule-based guidance table: zero LLM latency, because a parent asking "is it safe for my child" shouldn't wait on a model |
 | 🤖 **A grounded AI analyst + advisor** | Ask a plain-language question, get a numbers-first analysis and a safety-first recommendation, never a hallucinated statistic |
-| 📈 **Forecasts that compete in public** | Five forecasting methods, backtested identically, and the app serves the best-scoring one that has stored forecasts for each city/pollutant series |
+| 📈 **Forecasts that compete in public** | Four forecasting methods (plus BigQuery ML ARIMA_PLUS when a current run exists), backtested identically, and the app serves the best-scoring one that has stored forecasts for each city/pollutant series |
 | 🚬 **Human impact, not just AQI** | Cigarette-equivalent exposure and estimated life-expectancy impact: numbers a non-expert actually feels |
 | 🌬️ **Real weather woven in** | Wind direction/speed, temperature, humidity, and UV per city, and the *ambient visuals themselves* respond to that live weather |
 | 🚨 **Early-warning system** | Category breaches, WHO-guideline exceedances, and statistically detected anomalies surfaced across all 36 cities, worst-first |
@@ -85,13 +85,13 @@ VayuSense is one FastAPI app serving three distinct experiences, all sharing the
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │                    VAYUSENSE                                      │
-│         ● GPU-accelerated · Multi-agent AI · 47.4M readings        │
+│         ● GPU-accelerated · Multi-agent AI · 57.1M readings        │
 │                                                                    │
 │              Know when the air is safe.                           │
 │     Every breath in Delhi carries a cost most dashboards          │
 │           never show you. [See your city's air →]                 │
 │                                                                    │
-│   47.4M readings   48.39× faster   36 cities·6 pollutants   2 agents│
+│   57.1M readings   48.39× faster   36 cities·6 pollutants   2 agents│
 ├──────────────────────────────────────────────────────────────────┤
 │  WHAT'S ACTUALLY INSIDE: not a score, a whole instrument panel    │
 │  [Live trends] [Health guidance] [Forecast bench] [Human impact]  │
@@ -200,12 +200,12 @@ Embedded at the bottom of every city page (and reachable app-wide), with a **Liv
 
 ```mermaid
 flowchart TD
-    A["OpenAQ public archive (AWS S3)\n47.4M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
+    A["OpenAQ public archive (AWS S3)\n57.1M+ raw sensor readings, 36 cities, 6 pollutants"] --> B
     B["Ingestion pipeline: clean → resample daily → 7-day trend → anomaly flag\n(pandas in the scripts and nightly job; the cuDF/RAPIDS version of the same logic\nbenchmarked on a T4 at 48.39× faster, mean of 8 runs)"] --> C
     C["Processed parquet datasets\ndaily_city.parquet · station_league.parquet · forecasts.parquet"] --> D
     C --> E
     D["Google ADK agent pipeline (Gemini 2.5 Flash)\ndata_analyst_agent → health_advisor_agent"] --> F
-    E["BigQuery ML: ARIMA_PLUS time-series models\none of five methods competing on the Forecast Bench"] --> F
+    E["Forecast Bench (offline)\nnaive, damped trend, gradient boosting, Transformer\n(BigQuery ML ARIMA_PLUS when a current run exists)"] --> F
     F["FastAPI application (app/main.py)\nlanding + dashboard + city pages + REST API + chat SSE"] --> G
     G["Docker container\ndeployed on Google Cloud Run"]
 ```
@@ -242,15 +242,15 @@ Most projects bolt on an ML forecast; VayuSense makes its forecasters **compete 
 
 | # | Method | How it works | Series won |
 |---|---|---|---|
-| 1 | **Naive persistence** | Tomorrow equals today: the baseline every honest evaluation needs | **75** |
-| 2 | **Transformer (global)** | One 2-layer Transformer encoder (d_model 64, 4 heads, 60-day context) shared across all 36 cities and 6 pollutants, trained offline in PyTorch with a 45-day leakage margin | **66** |
-| 3 | **BigQuery ML ARIMA_PLUS** | SQL-trained time-series models, one model covering all 216 series | 31 |
-| 4 | **Damped trend** | Holt's damped-trend (φ=0.85) on the 7-day rolling average, clamped to historical range | 26 |
-| 5 | **Gradient boosting** | scikit-learn `HistGradientBoosting` on lag/rolling-mean/seasonality features | 18 |
+| 1 | **Naive persistence** | Tomorrow equals today: the baseline every honest evaluation needs | **105** |
+| 2 | **Transformer (global)** | One 2-layer Transformer encoder (d_model 64, 4 heads, 60-day context) shared across all 36 cities and 6 pollutants, trained offline in PyTorch with a 45-day leakage margin | 49 |
+| 3 | **Damped trend** | Holt's damped-trend (φ=0.85) on the 7-day rolling average, clamped to historical range | 36 |
+| 4 | **Gradient boosting** | scikit-learn `HistGradientBoosting` on lag/rolling-mean/seasonality features | 26 |
+| - | **BigQuery ML ARIMA_PLUS** | SQL-trained time-series models. Scored only when a BigQuery run covers the same period as the backtest; the last run (data to July 2026) is too old to compare with a November backtest, so it is currently excluded | not scored |
 
-The four local methods (naive, damped trend, gradient boosting, Transformer) are scored with an identical rolling-origin backtest (8 held-out 3-day windows); ARIMA_PLUS is scored on a single 24-day holdout and labeled as such. The app **serves the best-scoring method that has stored forecasts** for each series (ARIMA_PLUS can top the scoreboard on 31 series, but its forecasts come from a one-off BigQuery run and are not stored, so the next best method serves those) and cites it everywhere: the scoreboard (`/api/forecast_bench`), the trend chart's dotted projection legend, and the chat agent's own phrasing ("projected by [method]; historical error ±X µg/m³").
+The four local methods are scored with an identical rolling-origin backtest (8 held-out 3-day windows over the archive's latest 24 days). The app **serves the best-scoring method that has stored forecasts** for each series and cites it everywhere: the scoreboard (`/api/forecast_bench`), the trend chart's dotted projection legend, and the chat agent's own phrasing ("projected by [method]; historical error ±X µg/m³").
 
-The honest result is the point: daily air-quality data is genuinely hard to forecast, and the scoreboard says so instead of pretending otherwise. Naive persistence still wins the most series (75 of 216) and has the lowest mean error across the whole bench, with the Transformer a close second on both counts. The Transformer was retrained on the expanded 257-station archive (training cutoff 2026-07-05) and its mean error fell from 5.59 to 4.67 against the previous training run, moving it from 40 series won to 66. `python -m ml.freshness` reports when the model or the forecast cache has fallen behind the archive. All training/backtesting runs offline (`ml/bench.py`, `ml/bq_arima.py`); the live app only reads precomputed artifacts, so there's no runtime BigQuery dependency or new failure mode at request time.
+The honest result is the point: daily air-quality data is genuinely hard to forecast, and the scoreboard says so instead of pretending otherwise. Naive persistence wins the most series (105 of 216) and has the lowest mean error (8.33, against 9.39 for gradient boosting, 10.14 for the Transformer and 10.78 for the damped trend). The backtest window is the archive's last 24 days, 27 October to 19 November 2026, which spans Diwali and the smog season (Delhi's PM2.5 daily mean swung between about 50 and 280 in it), so every method's error is much higher than in the calmer summer window it was scored on previously. Errors from different windows must not be compared with each other. The Transformer was retrained on the expanded archive (training cutoff 2026-10-05). `python -m ml.freshness` reports when the model or the forecast cache has fallen behind the archive. All training/backtesting runs offline (`ml/bench.py`, `ml/bq_arima.py`); the live app only reads precomputed artifacts, so there's no runtime BigQuery dependency or new failure mode at request time.
 
 ## 🚬 Human impact methodology
 
@@ -263,7 +263,7 @@ Both are clearly labeled as illustrative, decision-support estimates, never a me
 
 ## ⚡ Why GPU acceleration matters here
 
-The live archive spans **47,389,827** real sensor readings across 36 cities and 6 pollutants, every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **19,858,185** rows in the benchmarked pipeline.
+The archive spans **57,116,820** real sensor readings from 262 stations across 36 cities and 6 pollutants (31 December 2022 to 19 November 2026), every Indian state except Goa. Turning that into a usable daily snapshot means cleaning, resampling to daily means, computing 7-day rolling trends, and flagging anomaly days, over **19,858,185** rows in the benchmarked pipeline.
 
 A single timing measurement can be skewed by GPU warm-up effects, other Colab tenants sharing the GPU, or one-off system noise, so this isn't a single run: it's the mean of **8 independent timed runs each**, CPU and GPU, with the full per-run distribution published, not just the average.
 
@@ -367,7 +367,7 @@ data/             Processed datasets (parquet)
 deploy/           Dockerfile and deployment configuration
 docs/             Pitch deck, architecture diagrams, design specs, README assets
 ml/               Forecast training, backtesting, BigQuery ML integration
-tests/            234 tests across 35 files, pytest (run in CI by .github/workflows/tests.yml)
+tests/            243 tests across 35 files, pytest (run in CI by .github/workflows/tests.yml)
 render.yaml       Render blueprint, written but never used for the live deployment
 ```
 
@@ -403,7 +403,7 @@ vayusense/
 │   ├── deck/                # hackathon submission deck
 │   ├── superpowers/specs/   # every feature's design spec, written before code
 │   └── readme/              # README banner + assets
-├── tests/                  # 234 tests, 35 files
+├── tests/                  # 243 tests, 35 files
 ├── deploy/Dockerfile
 └── render.yaml
 ```
@@ -481,11 +481,11 @@ vayusense/
 
 ## ✅ Testing
 
-**234 tests across 35 files**, covering the AQI computation, the agent tools and ADK wiring, RAG retrieval, forecast serving and backtesting, the Transformer pipeline, alerts, the advisory generator, live-data overlay logic, the GCS data-sync safeguards, the ingestion merge logic, and the HTTP layer itself (status codes, security headers, rate limits, the `/api/ask` and streaming endpoints, the vision upload, with Gemini faked so nothing needs the network or a key).
+**243 tests across 35 files**, covering the AQI computation, the agent tools and ADK wiring, RAG retrieval, forecast serving and backtesting, the Transformer pipeline, alerts, the advisory generator, live-data overlay logic, the GCS data-sync safeguards, the ingestion merge logic, and the HTTP layer itself (status codes, security headers, rate limits, the `/api/ask` and streaming endpoints, the vision upload, with Gemini faked so nothing needs the network or a key).
 
 ```bash
 pytest -q
-# 234 passed
+# 243 passed
 ```
 
 ## 🚀 Running locally
@@ -517,8 +517,8 @@ Stated up front because they are the first things worth asking about.
 
 - **AQI is computed from daily averages**, using the US EPA method, not from the 1-hour and 8-hour windows EPA specifies. It is labelled "EPA-method AQI from daily averages" everywhere it appears, and it is a decision-support number, not a regulatory one.
 - **Live versus archive.** When OpenAQ has a reading from the last 24 hours the app uses it; otherwise it falls back to the archive and says so (`source` is returned with every figure). The archive lags real time by several days.
-- **The forecasts are short-horizon statistical projections** (up to 7 days), not weather-model forecasts, and none of the five methods use weather inputs. Naive persistence is a strong baseline for daily air quality, and it wins the most series: the bench reports that plainly.
-- **The bench is not perfectly like-for-like.** The four local methods share identical rolling-origin folds. BigQuery ML ARIMA_PLUS was scored once on a single 24-day holdout, and is labelled that way. Picking the best of five methods on the same folds it was scored on also makes the winner's error slightly optimistic.
+- **The forecasts are short-horizon statistical projections** (up to 7 days), not weather-model forecasts, and none of the methods use weather inputs. Naive persistence is a strong baseline for daily air quality, and it wins the most series: the bench reports that plainly.
+- **The bench has two honest limits.** Picking the best of four methods on the same folds it was scored on makes the winner's error slightly optimistic. And BigQuery ML ARIMA_PLUS is only included when its run covers the same period as the backtest: scores from a run on older data were measured on a different window and are not comparable (comparing them once made it appear to win 104 series). Re-running it needs a Google Cloud project with billing.
 - **Chat sessions and rate limits live in process memory.** Fine for the single small instance this runs on; with several instances, conversation memory and the per-IP limit would need a shared store such as Redis.
 - **The sky-photo check is qualitative.** It is a Gemini vision read shown next to the measured AQI, never in place of it.
 - **Hosting.** See Deployment: the free-trial credit that paid for the Cloud Run deployment has ended.

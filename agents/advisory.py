@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 
 from .aqi import category as aqi_category, pollutant_label
 from .health_guidance import CONDITION_LABELS, GUIDANCE
-from .tools import get_city_snapshot, get_forecast, get_human_impact, list_cities
+from .tools import _today, get_city_snapshot, get_forecast, get_human_impact, list_cities
 
 # Conditions worth calling out by name once the air is bad enough that
 # "general population" guidance alone understates the real risk for them.
@@ -31,7 +31,7 @@ def _forecast_outlook(city: str, parameter: str) -> str | None:
         fc = json.loads(get_forecast(city, parameter, days=3))
     except Exception:
         return None
-    if "error" in fc or not fc.get("forecast"):
+    if "error" in fc or not fc.get("forecast") or fc.get("forecast_is_stale"):
         return None
     values = [row["value"] for row in fc["forecast"]]
     first, last = values[0], values[-1]
@@ -69,7 +69,7 @@ def generate_advisory(city: str) -> dict:
     stale = bool(snap.get("data_is_stale"))
     lines = [
         f"{city.upper()} AIR QUALITY ADVISORY, "
-        f"{datetime.now(timezone.utc).strftime('%B %d, %Y')}",
+        f"{_today().strftime('%B %d, %Y')}",
         "",
         (f"Data as of {as_of}" + (f" ({snap['data_age_days']} days old: the latest archived reading, "
                                   "not a live measurement)." if stale else "."))

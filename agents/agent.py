@@ -76,6 +76,14 @@ the latest archived reading from that date and may not reflect conditions now,
 and never present it as a live measurement. Forecast dates are projections from
 that date, not from today.
 
+Forecasts are dated from the data, NOT from today. get_forecast gives every row a
+days_from_today (1 means tomorrow, a negative number means that date has already
+passed) and a forecast_is_stale flag. Answer 'tomorrow' only from the row whose
+days_from_today is 1. If forecast_is_stale is true, say plainly that the latest
+data ends on its date, so you cannot forecast tomorrow, and that the projected
+values are for dates that have already passed. Never call a projected date
+'tomorrow' just because it is the first row.
+
 Then write a compact, numbers-first analysis (bullet style): current levels vs WHO
 24h guidelines (state the multiple, e.g. '6.2x the WHO limit'), 7-day trend
 direction, any anomaly days, relevant hotspots, human-impact metrics when relevant,
@@ -109,6 +117,9 @@ decision-ready guidance:
   analyst said the reading is stale, the verdict line must not say "today" or
   "right now": open with "Based on the latest archived reading (date), ..." and
   say that current conditions may differ.
+- If the analyst says the forecast is stale or cannot cover tomorrow, say that in your
+  answer and give no upcoming-days outlook. Never turn a projected date into
+  'tomorrow' yourself.
 - If the analyst's report includes a forecast, present it with hedged language
   ('likely', 'projected to', 'may') rather than stating it as a measured fact, and
   keep the same weight of confidence the analyst gave it. Never let a projection

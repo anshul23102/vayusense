@@ -263,18 +263,96 @@ def test_every_series_is_served_by_its_best_method_that_has_stored_forecasts():
         assert out["scoreboard_winner"] == s["winner"]
 
 
-def test_arima_wins_are_served_by_the_next_best_method_and_say_why():
-    bench, _ = _bench_and_stored()
-    arima = [s for s in bench["series"] if s["winner"] == "arima_plus"]
-    assert arima, "expected ARIMA_PLUS to top some series"
-    out = json.loads(tools.get_forecast(arima[0]["city"], arima[0]["parameter"], 3))
-    assert out["method"] != "arima_plus" and out["scoreboard_winner"] == "arima_plus"
-    assert "not stored" in out["methodology"]
+def test_a_method_without_stored_forecasts_is_skipped_when_choosing_what_to_serve():
+    import pandas as pd
+    stored = pd.DataFrame({"method": ["naive", "gbt"]})
+    mae = {"arima_plus": 0.1, "naive": 3.0, "gbt": 2.0, "transformer": 1.0}   # best two are not stored
+    assert tools._served_method(stored, mae) == "gbt"
+    assert tools._served_method(pd.DataFrame({"method": []}), mae) is None
 
 
 def test_bench_endpoint_reports_the_served_method():
-    bench, _ = _bench_and_stored()
-    arima = next(s for s in bench["series"] if s["winner"] == "arima_plus")
-    out = json.loads(tools.get_forecast_bench(arima["city"], arima["parameter"]))
-    assert out["series"]["winner"] == "arima_plus"
-    assert out["series"]["served"] in out["series"]["mae"] and out["series"]["served"] != "arima_plus"
+    bench, fc = _bench_and_stored()
+    s = bench["series"][0]
+    out = json.loads(tools.get_forecast_bench(s["city"], s["parameter"]))
+    stored = set(fc[(fc["city"] == s["city"]) & (fc["parameter"] == s["parameter"])]["method"])
+    assert out["series"]["served"] in stored and out["series"]["served"] in out["series"]["mae"]
+
+
+# ---- "tomorrow" must mean tomorrow, not "the day after the data ends" ------------
+
+def _data_end():
+    return json.loads(tools._get_forecast_unanchored("Delhi", "pm25", 7))["last_date"]
+
+
+def _fc(monkeypatch, days_after_data, days=3):
+    """Pretend today is N days after the data's last day, so the tests do not depend on when the archive ends."""
+    import datetime as dt
+    today = dt.date.fromisoformat(_data_end()) + dt.timedelta(days=days_after_data)
+    monkeypatch.setattr(tools, "_today", lambda: today)
+    return json.loads(tools.get_forecast("Delhi", "pm25", days)), today
+
+
+def test_forecast_from_old_data_is_flagged_and_cannot_answer_tomorrow(monkeypatch):
+    out, today = _fc(monkeypatch, 30)
+    assert out["forecast_is_stale"] is True
+    assert all(r["days_from_today"] < 0 for r in out["forecast"])
+    assert "NOT a forecast for tomorrow" in out["forecast_note"]
+    assert out["today"] == str(today)
+
+
+def test_days_counts_from_today_so_one_means_tomorrow(monkeypatch):
+    import datetime as dt
+    for lag in (1, 3, 5):
+        out, today = _fc(monkeypatch, lag, days=1)
+        assert out["forecast_is_stale"] is False
+        assert [r["days_from_today"] for r in out["forecast"]] == [1]
+        assert out["forecast"][0]["date"] == str(today + dt.timedelta(days=1))
+
+
+def test_fresh_data_has_no_warning(monkeypatch):
+    out, _ = _fc(monkeypatch, 1, days=3)
+    assert out["forecast_note"] is None
+    assert [r["days_from_today"] for r in out["forecast"]] == [1, 2, 3]
+
+
+def test_a_few_days_old_data_still_forecasts_but_says_it_is_less_certain(monkeypatch):
+    out, _ = _fc(monkeypatch, 4, days=2)
+    assert out["forecast_is_stale"] is False
+    assert "less certain" in out["forecast_note"]
+
+
+def test_the_chart_keeps_rows_that_continue_from_the_last_data_point(monkeypatch):
+    import datetime as dt
+    end = dt.date.fromisoformat(_data_end())
+    monkeypatch.setattr(tools, "_today", lambda: end + dt.timedelta(days=4))
+    chart = json.loads(tools.get_forecast_for_chart("Delhi", "pm25", 3))
+    assert chart["forecast"][0]["date"] == str(end + dt.timedelta(days=1))
+    assert chart["forecast_is_stale"] is False        # judged on all 7 stored rows, not the 3 drawn
+
+
+def test_today_follows_indian_time_not_utc(monkeypatch):
+    import datetime as dt
+    real = dt.datetime
+
+    class Fake(real):
+        @classmethod
+        def now(cls, tz=None):
+            utc = real(2026, 11, 22, 19, 31, tzinfo=dt.timezone.utc)    # 1:01 AM on 23 Nov in India
+            return utc.astimezone(tz) if tz else utc
+
+    monkeypatch.setattr(tools, "datetime", Fake)
+    assert tools._today() == dt.date(2026, 11, 23)
+
+
+def test_agents_are_told_how_to_handle_tomorrow():
+    a = agent.data_analyst_agent.instruction
+    assert "days_from_today" in a and "forecast_is_stale" in a and "'tomorrow'" in a
+    assert "Never turn a projected date" in agent.health_advisor_agent.instruction
+
+
+def test_stale_forecast_gives_no_upcoming_outlook(monkeypatch):
+    fc = {"method_label": "Naive", "backtest_mae": 1.0, "forecast_is_stale": True,
+          "forecast": [{"value": 5}, {"value": 9}]}
+    monkeypatch.setattr(advisory, "get_forecast", lambda c, p, days=3: json.dumps(fc))
+    assert advisory._forecast_outlook("Delhi", "pm25") is None

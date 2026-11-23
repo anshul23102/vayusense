@@ -404,7 +404,7 @@ def yoy_ranking(window: int = 7):
 
 @app.get("/api/forecast")
 def forecast(city: str = "Delhi", parameter: str = "pm25", days: int = 3):
-    return _tool_response(data_tools.get_forecast(city, parameter, days))
+    return _tool_response(data_tools.get_forecast_for_chart(city, parameter, days))
 
 
 @app.get("/api/forecast_bench")

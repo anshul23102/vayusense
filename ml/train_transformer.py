@@ -7,6 +7,7 @@ with how the model was trained."""
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -91,6 +92,7 @@ def train(daily: pd.DataFrame, horizon: int = HORIZON,
                 val_loss_sum += loss_fn(val_pred, y_t[batch]).item() * len(batch)
                 val_count += len(batch)
         val_loss = val_loss_sum / val_count
+        print(f"epoch {epoch + 1}: validation MAE {val_loss:.4f} (best {min(best_val, val_loss):.4f})", flush=True)
 
         if val_loss < best_val - 1e-4:
             best_val = val_loss
@@ -123,7 +125,10 @@ def save(model: SequenceTransformer, vocab: Vocab, norm_stats: dict,
 
 def main() -> None:
     daily = pd.read_parquet(ROOT / "data" / "processed" / "daily_city.parquet")
-    model, vocab, norm_stats, cutoff = train(daily)
+    # VAYUSENSE_MAX_EPOCHS lets an unattended run cap the number of rounds; early
+    # stopping still ends it sooner when the validation error stops improving.
+    model, vocab, norm_stats, cutoff = train(
+        daily, max_epochs=int(os.environ.get("VAYUSENSE_MAX_EPOCHS", MAX_EPOCHS)))
     save(model, vocab, norm_stats, cutoff)
     print(f"trained on data through {cutoff.date()}, "
           f"{len(vocab.city_to_idx)} cities, {len(vocab.param_to_idx)} parameters")

@@ -68,9 +68,26 @@ def _final_forecast_rows(series: pd.DataFrame, city: str, parameter: str) -> lis
     return rows
 
 
+BQ_MAX_LAG_DAYS = 7
+
+
+def _bq_is_current(daily: pd.DataFrame, bq: dict | None) -> bool:
+    """ARIMA_PLUS scores come from a one-off BigQuery run on data up to some day. A score
+    measured on a different period is NOT comparable with the local methods, which are
+    re-scored on the archive's latest window every run (a November backtest through
+    Diwali smog is far more volatile than a July one; comparing them made ARIMA_PLUS
+    "win" 104 series on a calm-window score). It only takes part when that run saw
+    (almost) the archive's current last day."""
+    if not bq or not bq.get("forecasts"):
+        return False
+    first = min(pd.to_datetime(f["date"]) for f in bq["forecasts"])
+    return (daily["date"].max() - (first - pd.Timedelta(days=1))).days <= BQ_MAX_LAG_DAYS
+
+
 def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]:
     daily = daily.copy()
     daily["date"] = pd.to_datetime(daily["date"])
+    bq_used = bq if _bq_is_current(daily, bq) else None
     series_out, forecast_rows = [], []
     for (city, parameter), grp in daily.groupby(["city", "parameter"]):
         grp = grp.sort_values("date").reset_index(drop=True)
@@ -85,8 +102,8 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
         if len(grp) < MIN_HISTORY:
             continue
         scores = backtest_series(grp, LOCAL_FORECASTERS)
-        if bq:
-            match = next((s for s in bq["series"]
+        if bq_used:
+            match = next((s for s in bq_used["series"]
                           if s["city"] == city and s["parameter"] == parameter), None)
             if match:
                 scores["arima_plus"] = float(match["mae"])
@@ -120,10 +137,12 @@ def run_bench(daily: pd.DataFrame, bq: dict | None) -> tuple[dict, pd.DataFrame]
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "fold_scheme": {
             "n_folds": N_FOLDS, "horizon_days": HORIZON, "min_history_days": MIN_HISTORY,
-            "note": ("identical rolling-origin folds for naive/damped_trend/gbt/transformer; "
-                     "arima_plus scored on a single 24-day holdout"),
+            "note": ("identical rolling-origin folds for naive/damped_trend/gbt/transformer"
+                     + ("; arima_plus scored on a single 24-day holdout" if bq_used else "")),
         },
         "methods": METHOD_LABELS,
+        "excluded_methods": ({} if bq_used or not bq else {"arima_plus": (
+            "its BigQuery run is too old to compare with the current backtest window")}),
         "series": series_out,
     }
     return bench, pd.DataFrame(forecast_rows)
@@ -137,7 +156,7 @@ def main() -> None:
     (ROOT / "benchmark" / "forecast_bench.json").write_text(json.dumps(bench, indent=1))
     forecasts.to_parquet(ROOT / "data" / "processed" / "forecasts.parquet", index=False)
     print(f"bench: {len(bench['series'])} series, {len(forecasts)} forecast rows, "
-          f"bq={'merged' if bq else 'absent'}")
+          f"bq={'merged' if _bq_is_current(daily.assign(date=pd.to_datetime(daily['date'])), bq) else ('excluded (stale)' if bq else 'absent')}")
 
 
 if __name__ == "__main__":

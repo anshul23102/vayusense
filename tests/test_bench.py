@@ -52,3 +52,17 @@ def test_bq_mae_is_merged_but_stale_forecast_rows_are_not():
     assert tv["mae"]["arima_plus"] == 0.01
     assert tv["winner"] == "arima_plus"                  # 0.01 beats everything
     assert (forecasts["method"] == "arima_plus").sum() == 0
+
+
+def test_a_stale_bigquery_run_is_excluded_from_the_comparison():
+    # ARIMA_PLUS scores from a run on much older data were measured on a different,
+    # calmer window, so they must not compete with methods scored on the current one.
+    bq = {
+        "series": [{"city": "Testville", "parameter": "pm25", "mae": 0.01}],
+        "forecasts": [{"city": "Testville", "parameter": "pm25", "method": "arima_plus",
+                       "date": "2025-07-01", "value": 80.0, "low": 70.0, "high": 90.0}],   # data runs to 2025-11-07
+    }
+    bench, _ = run_bench(_daily(), bq=bq)
+    tv = next(s for s in bench["series"] if s["city"] == "Testville")
+    assert "arima_plus" not in tv["mae"] and tv["winner"] != "arima_plus"
+    assert "arima_plus" in bench["excluded_methods"]

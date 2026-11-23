@@ -8,7 +8,7 @@ nightly job) and a cuDF version (the Colab GPU benchmark).
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 
@@ -27,6 +27,11 @@ WHO_24H = {"pm25": 15.0, "pm10": 45.0, "no2": 25.0, "so2": 40.0, "o3": 100.0,
 # Archive data lags real time (OpenAQ publishes days late), so every snapshot says
 # how old it is and the agents must repeat that instead of saying "today".
 STALE_AFTER_DAYS = 3
+
+# Every city is in India and India has no daylight saving, so a fixed UTC+5:30 offset is
+# exact. 'Today' and 'tomorrow' must follow the user's calendar: with UTC, a user who asks
+# after midnight in India is told it is still yesterday.
+IST = timezone(timedelta(hours=5, minutes=30))
 
 from .aqi import ARCHIVE_UNITS, category as _aqi_category, overall_aqi as _overall_aqi
 
@@ -105,7 +110,8 @@ def get_city_snapshot(city: str) -> str:
             "is_anomaly_day": bool(last["anomaly"]),
         }
     as_of = max(v["latest_date"] for v in out["pollutants"].values())
-    age_days = (datetime.now(timezone.utc).date() - date.fromisoformat(as_of)).days
+    age_days = (_today() - date.fromisoformat(as_of)).days
+    out["today"] = str(_today())
     out["data_as_of"] = as_of
     out["data_age_days"] = max(age_days, 0)
     out["data_is_stale"] = age_days > STALE_AFTER_DAYS
@@ -213,18 +219,8 @@ def _served_method(series_rows: pd.DataFrame, mae: dict) -> str | None:
     return min(candidates, key=candidates.get) if candidates else None
 
 
-def get_forecast(city: str, parameter: str, days: int = 3) -> str:
-    """Project the next few days of a pollutant's daily mean. Serves whichever of
-    five benchmarked methods (naive persistence, damped trend, gradient boosting,
-    BigQuery ML ARIMA_PLUS, global Transformer) won the held-out backtest for this city+pollutant,
-    and cites that method's measured historical error. A short-term statistical
-    projection, NOT a meteorological forecast; accuracy degrades beyond 3-5 days.
-
-    Args:
-        city: City name, e.g. "Delhi".
-        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
-        days: How many days ahead to project (default 3, max 7).
-    """
+def _get_forecast_unanchored(city: str, parameter: str, days: int) -> str:
+    """The stored forecast rows for a series, counted from the last day of DATA (not from today)."""
     days = max(1, min(int(days), 7))
     df = _daily()
     d = df[(df["city"].str.lower() == city.lower()) & (df["parameter"] == parameter)].sort_values("date")
@@ -276,6 +272,73 @@ def get_forecast(city: str, parameter: str, days: int = 3) -> str:
         })
     except Exception:
         return _damped_fallback(city, parameter, days, d)
+
+
+def _today() -> date:
+    return datetime.now(IST).date()
+
+
+def _annotate_forecast(payload: dict, days: int | None, upcoming_only: bool) -> dict:
+    """Say how far each projected date is from TODAY. Forecast rows are counted from the
+    last day of data, so when the archive lags their dates can already be in the past;
+    without this an agent reads 'the first row' as 'tomorrow'. For the agent
+    (upcoming_only) the rows are re-counted from today: days=1 is tomorrow."""
+    today = _today()
+    rows = payload.get("forecast") or []
+    for r in rows:
+        r["days_from_today"] = (date.fromisoformat(r["date"]) - today).days
+    upcoming = [r for r in rows if r["days_from_today"] >= 1]
+    stale = not upcoming
+    if upcoming_only:
+        payload["forecast"] = (upcoming or rows)[:days]
+    elif days is not None:
+        payload["forecast"] = rows[:days]
+    last = payload.get("last_date")
+    age = (today - date.fromisoformat(last)).days if last else 0
+    payload["today"] = str(today)
+    payload["forecast_is_stale"] = stale
+    if stale:
+        payload["forecast_note"] = (
+            f"The latest data ends {last}, so these projected dates have already passed "
+            f"(today is {today}). This is NOT a forecast for tomorrow or the coming days. "
+            "Say that plainly and do not present these values as upcoming.")
+    elif age > STALE_AFTER_DAYS:
+        payload["forecast_note"] = (
+            f"Projected from data that ends {last}, {age} days ago, so it is less certain "
+            "than a forecast from fresh data. Say so when you quote it.")
+    else:
+        payload["forecast_note"] = None
+    return payload
+
+
+def get_forecast_for_chart(city: str, parameter: str, days: int = 3) -> str:
+    """Same rows the chart has always drawn (continuing from the last data point),
+    plus the days-from-today annotations. Not an agent tool."""
+    days = max(1, min(int(days), 7))
+    raw = json.loads(_get_forecast_unanchored(city, parameter, 7))
+    return json.dumps(raw if "error" in raw else _annotate_forecast(raw, days, upcoming_only=False))
+
+
+def get_forecast(city: str, parameter: str, days: int = 3) -> str:
+    """Project the next few days of a pollutant's daily mean. Serves the best-scoring of
+    five benchmarked methods (naive persistence, damped trend, gradient boosting,
+    global Transformer; BigQuery ML ARIMA_PLUS is scored but its forecasts are not
+    stored) that has stored forecasts for this city+pollutant, and cites that method's
+    measured historical error. A short-term statistical projection, NOT a meteorological
+    forecast; accuracy degrades beyond 3-5 days.
+
+    Rows are counted from TODAY: days=1 is tomorrow. Every row has days_from_today.
+    If forecast_is_stale is true the projection starts from old data and CANNOT answer a
+    question about tomorrow: say so and give forecast_note's reason instead.
+
+    Args:
+        city: City name, e.g. "Delhi".
+        parameter: Pollutant code: pm25, pm10, no2, o3, so2, co.
+        days: How many days ahead to project (default 3, max 7).
+    """
+    days = max(1, min(int(days), 7))
+    raw = json.loads(_get_forecast_unanchored(city, parameter, 7))
+    return json.dumps(raw if "error" in raw else _annotate_forecast(raw, days, upcoming_only=True))
 
 
 def get_forecast_bench(city: str, parameter: str) -> str:
